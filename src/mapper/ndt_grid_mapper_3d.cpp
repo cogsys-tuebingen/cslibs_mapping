@@ -98,6 +98,7 @@ void NDTGridMapper3d::mapRequest()
 
         marker_map_->markers.clear();
         static_map_.stamp() = latest_time_;
+        distributions_->data.clear();
 
         auto sample = [](const dynamic_map_t::distribution_t * d,
                          const point_t &p) {
@@ -138,10 +139,8 @@ void NDTGridMapper3d::mapRequest()
                     static_map_.data()->resize(b->id() + 1);
                 static_map_.data()->points[b->id()] = prob;
 
-                if (static_cast<int>(distributions_->data.size()) <= b->id())
-                    distributions_->data.resize(b->id() + 1);
-                Distribution3d & distr = distributions_->data[b->id()];
-                distr.id.data      = b->id();
+                Distribution3d distr;
+                distr.id.data = b->id();
                 for (int i = 0; i < 3; ++ i) {
                     distr.mean[i].data          = p(i);
                     distr.eigen_values[i].data  = d.getEigenValues()(i);
@@ -150,6 +149,7 @@ void NDTGridMapper3d::mapRequest()
                     distr.eigen_vectors[i].data = d.getEigenVectors()(i);
                     distr.covariance[i].data    = d.getCovariance()(i);
                 }
+                distributions_->data.emplace_back(distr);
 
                 drawMarker(b->id(), d, prob.intensity);
             }
