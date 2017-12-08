@@ -13,10 +13,26 @@ find_package(catkin REQUIRED COMPONENTS
   cslibs_ndt_2d
   nav_msgs
   roscpp
+  sensor_msgs
+  geometry_msgs
+  std_msgs
   pcl_ros
+  message_generation
 )
+
 find_package(OpenCV REQUIRED)
 find_package(PCL REQUIRED COMPONENTS common filters segmentation io)
+
+add_message_files(
+    FILES
+    Distribution3d.msg
+    Distributions3d.msg
+)
+
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+)
 
 catkin_package(
   #INCLUDE_DIRS include
@@ -57,6 +73,7 @@ target_link_libraries(${PROJECT_NAME}_node_2d
     ${PROJECT_NAME}_2d
     ${catkin_LIBRARIES}
 )
+add_dependencies(${PROJECT_NAME}_node_2d ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
 add_executable(${PROJECT_NAME}_node_3d
     src/nodes/mapper_node_3d.cpp
@@ -71,6 +88,7 @@ target_link_libraries(${PROJECT_NAME}_node_3d
     ${PCL_SEGMENTATION_LIBRARIES}
     ${PCL_IO_LIBRARIES}
 )
+add_dependencies(${PROJECT_NAME}_node_3d ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
 install(DIRECTORY include/${PROJECT_NAME}/
         DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
