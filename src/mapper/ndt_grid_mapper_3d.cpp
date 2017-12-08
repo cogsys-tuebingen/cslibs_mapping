@@ -58,6 +58,13 @@ void NDTGridMapper3d::setMarkerCallback(
         marker_callback_ = cb;
 }
 
+void NDTGridMapper3d::setDistributionsCallback(
+        const distributions_callback_t & cb)
+{
+    if(!request_map_)
+        distributions_callback_ = cb;
+}
+
 void NDTGridMapper3d::loop()
 {
     lock_t notify_event_mutex_lock(notify_event_mutex_);
@@ -82,10 +89,12 @@ void NDTGridMapper3d::mapRequest()
     cslibs_time::Duration dur;
 
     if(request_map_ && dynamic_map_) {
-        if(!static_map_.data())
+        if (!static_map_.data())
             static_map_.data().reset(new static_map_t());
         if (!marker_map_)
             marker_map_.reset(new visualization_msgs::MarkerArray());
+        if (!distributions_)
+            distributions_.reset(new Distributions3d());
 
         marker_map_->markers.clear();
         static_map_.stamp() = latest_time_;
@@ -129,6 +138,19 @@ void NDTGridMapper3d::mapRequest()
                     static_map_.data()->resize(b->id() + 1);
                 static_map_.data()->points[b->id()] = prob;
 
+                if (static_cast<int>(distributions_->data.size()) <= b->id())
+                    distributions_->data.resize(b->id() + 1);
+                Distribution3d & distr = distributions_->data[b->id()];
+                distr.id.data      = b->id();
+                for (int i = 0; i < 3; ++ i) {
+                    distr.mean[i].data          = p(i);
+                    distr.eigen_values[i].data  = d.getEigenValues()(i);
+                }
+                for (int i = 0; i < 9; ++ i) {
+                    distr.eigen_vectors[i].data = d.getEigenVectors()(i);
+                    distr.covariance[i].data    = d.getCovariance()(i);
+                }
+
                 drawMarker(b->id(), d, prob.intensity);
             }
         }
@@ -136,6 +158,7 @@ void NDTGridMapper3d::mapRequest()
 
         callback_(static_map_);
         marker_callback_(marker_map_);
+        distributions_callback_(distributions_);
 
         std::cout << "Visualization [all]:      " << (cslibs_time::Time::now() - now).milliseconds() << "ms\n";
         std::cout << "Visualization [retrieve]: " << dur.milliseconds() << "ms \n";

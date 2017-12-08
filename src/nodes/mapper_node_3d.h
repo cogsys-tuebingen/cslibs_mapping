@@ -43,6 +43,7 @@ private:
         ros::Time           pub_last_time_;
 
         ros::Publisher      pub_marker_;
+        ros::Publisher      pub_distributions_;
 
         template <typename t = msg_t>
         typename std::enable_if<std::is_same<t, msg_2d_t>::value, void>::type
@@ -64,6 +65,10 @@ private:
             mapper_->setMarkerCallback(
                         map_t::marker_callback_t::template from<MapperWorker<map_t, msg_t>,
                         &MapperWorker<map_t, msg_t>::publish>(this));
+
+            mapper_->setDistributionsCallback(
+                        map_t::distributions_callback_t::template from<MapperWorker<map_t, msg_t>,
+                        &MapperWorker<map_t, msg_t>::publish>(this));
         }
 
         void setup(
@@ -76,7 +81,7 @@ private:
             pub_interval_  = ros::Duration(rate > 0.0 ? 1.0 / rate : 0.0);
             pub_last_time_ = now;            
 
-            setupMarkerPublisher(nh);
+            setupAdditionalPublisher(nh);
         }
 
         void requestMap(
@@ -91,16 +96,17 @@ private:
 
         template <typename t = msg_t>
         typename std::enable_if<std::is_same<t, msg_2d_t>::value, void>::type
-        setupMarkerPublisher(
+        setupAdditionalPublisher(
                 ros::NodeHandle & nh)
         { }
 
         template <typename t = msg_t>
         typename std::enable_if<std::is_same<t, msg_3d_t>::value, void>::type
-        setupMarkerPublisher(
+        setupAdditionalPublisher(
                 ros::NodeHandle & nh)
         {
-            pub_marker_ = nh.advertise<visualization_msgs::MarkerArray>("/map/ndt_3d_marker", 1);
+            pub_marker_        = nh.advertise<visualization_msgs::MarkerArray>("/map/ndt_3d_marker", 1);
+            pub_distributions_ = nh.advertise<Distributions3d>("/map/ndt_3d_distributions", 1);
         }
 
         template <typename t = msg_t>
@@ -140,10 +146,24 @@ private:
         {
             if (msg) {
                 for (auto & marker : msg->markers) {
-                    marker.header.stamp    = pub_last_time_;//ros::Time::now(); // TODO
+                    marker.header.stamp    = pub_last_time_;
                     marker.header.frame_id = map_frame_;
                 }
                 pub_marker_.publish(msg);
+            }
+        }
+
+        template <typename t = msg_t>
+        typename std::enable_if<std::is_same<t, msg_3d_t>::value, void>::type
+        publish(
+                const Distributions3d::Ptr & msg)
+        {
+            if (msg) {
+                for (auto & distr : msg->data) {
+                    distr.header.stamp    = pub_last_time_;
+                    distr.header.frame_id = map_frame_;
+                }
+                pub_distributions_.publish(msg);
             }
         }
     };

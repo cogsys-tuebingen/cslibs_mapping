@@ -8,6 +8,7 @@
 #include <cslibs_utility/synchronized/synchronized_queue.hpp>
 
 #include <cslibs_mapping/measurement/measurement.hpp>
+#include <cslibs_mapping/Distributions3d.h>
 
 #include <cslibs_gridmaps/static_maps/algorithms/normalize.hpp>
 #include <cslibs_gridmaps/static_maps/probability_gridmap.h>
@@ -28,16 +29,17 @@ namespace cslibs_mapping {
 class NDTGridMapper3d
 {
 public:
-    using Ptr                   = std::shared_ptr<NDTGridMapper3d>;
-    using lock_t                = std::unique_lock<std::mutex>;
-    using dynamic_map_t         = cslibs_ndt_3d::dynamic_maps::Gridmap;
-    using static_map_t          = pcl::PointCloud<pcl::PointXYZI>;//cslibs_gridmaps::static_maps::ProbabilityGridmap;
-    using static_map_stamped_t  = cslibs_time::Stamped<static_map_t::Ptr>;
-    using callback_t            = delegate<void(const static_map_stamped_t &)>;
-    using marker_callback_t     = delegate<void(const visualization_msgs::MarkerArrayPtr &)>;
-    using point_t               = cslibs_math_3d::Point3d;
-    using transform_t           = cslibs_math_3d::Transform3d;
-    using measurement_t         = Measurement<point_t, transform_t>;
+    using Ptr                       = std::shared_ptr<NDTGridMapper3d>;
+    using lock_t                    = std::unique_lock<std::mutex>;
+    using dynamic_map_t             = cslibs_ndt_3d::dynamic_maps::Gridmap;
+    using static_map_t              = pcl::PointCloud<pcl::PointXYZI>;
+    using static_map_stamped_t      = cslibs_time::Stamped<static_map_t::Ptr>;
+    using callback_t                = delegate<void(const static_map_stamped_t &)>;
+    using marker_callback_t         = delegate<void(const visualization_msgs::MarkerArrayPtr &)>;
+    using distributions_callback_t  = delegate<void(const Distributions3d::Ptr &)>;
+    using point_t                   = cslibs_math_3d::Point3d;
+    using transform_t               = cslibs_math_3d::Transform3d;
+    using measurement_t             = Measurement<point_t, transform_t>;
 
 
 public:
@@ -62,6 +64,9 @@ public:
     void setMarkerCallback(
             const marker_callback_t & cb);
 
+    void setDistributionsCallback(
+            const distributions_callback_t & cb);
+
 protected:
     cslibs_utility::synchronized::queue<measurement_t>  q_;
 
@@ -74,9 +79,11 @@ protected:
     std::mutex                                          static_map_mutex_;
 
     visualization_msgs::MarkerArray::Ptr                marker_map_;
+    Distributions3d::Ptr                                distributions_;
     static_map_stamped_t                                static_map_;
     std::unordered_set<dynamic_map_t::index_t>          updated_indices_;
 
+    distributions_callback_t                            distributions_callback_;
     marker_callback_t                                   marker_callback_;
     callback_t                                          callback_;
 
