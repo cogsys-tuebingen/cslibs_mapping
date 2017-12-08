@@ -1,0 +1,27 @@
+<?xml version="1.0" ?>
+<launch>
+    <param name="/use_sim_time" value="true" />
+
+    <arg name="in_bag_root" value="/home/hanten/Workspace/data/rawseeds/bags" />
+
+    <!-- <arg name="in_bag_file" value="Bicocca_2009-02-25a-dynamic-natural-light" /> -->
+    <!-- <arg name="in_bag_file" value="Bicocca_2009-02-25b-static-artificial-light" /> -->
+    <!-- <arg name="in_bag_file" value="Bicocca_2009-02-26a-dynamic-natural-light" /> -->
+    <!-- <arg name="in_bag_file" value="Bicocca_2009-02-26b-dynamic-natural-light" /> --> 
+    <!-- <arg name="in_bag_file" value="Bicocca_2009-02-27a-static-natural-light" />  -->
+    <!-- <arg name="in_bag_file" value="Bicocca_2009-02-25a-dynamic-natural-light-groundtruth" /> -->
+    <!-- <arg name="in_bag_file" value="Bicocca_2009-02-25b-static-artificial-light-groundtruth" /> -->
+    <!-- <arg name="in_bag_file" value="Bicocca_2009-02-26a-dynamic-natural-light-groundtruth" /> -->
+    <!-- <arg name="in_bag_file" value="Bicocca_2009-02-26b-dynamic-natural-light-groundtruth" /> --> 
+    <!-- <arg name="in_bag_file" value="Bicocca_2009-02-27a-static-natural-light-groundtruth" />  -->
+
+    <arg name="out_bag_root" value="/home/hanten/Workspace/data/rawseeds/bags" />
+    <arg name="out_bag_file" value="$(arg in_bag_file)-tf" />
+
+
+    <node pkg="rosbag" type="play" name="player" output="screen" args="--clock --immediate $(arg in_bag_root)/$(arg in_bag_file).bag" required="true" />
+    <include file="$(find rawseeds_ros)/launch/transforms.launch" />
+    
+    <node pkg="rosbag" type="record" name="record" output="screen" args="-a -O $(arg out_bag_root)/$(arg out_bag_file).bag" />
+
+</launch>
