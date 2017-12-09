@@ -1,6 +1,7 @@
 #include "qt/scenemodifier.h"
 
 #include <ui_cslibs_mapping_viewer_node_3d.h>
+#include <ui_widget.h>
 
 #include <QGuiApplication>
 
@@ -47,13 +48,11 @@ int main(int argc, char **argv)
     container->setMaximumSize(screenSize);
 
 
-
     QWidget *widget = new QWidget;
-    QHBoxLayout *hLayout = new QHBoxLayout(widget);
-    QVBoxLayout *vLayout = new QVBoxLayout();
-    vLayout->setAlignment(Qt::AlignTop);
-    hLayout->addWidget(container, 1);
-    hLayout->addLayout(vLayout);
+    Ui::MainWidget *ui_ = new Ui::MainWidget;
+    ui_->setupUi(widget);
+    ui_->layout_horizontal->addWidget(container, 1);
+    ui_->layout_vertical->setAlignment(Qt::AlignTop);
 
     widget->setWindowTitle(QStringLiteral("Basic shapes"));
 
@@ -119,11 +118,11 @@ int main(int argc, char **argv)
     sphereCB->setChecked(true);
     sphereCB->setText(QStringLiteral("Sphere"));
 
-    vLayout->addWidget(info);
-    vLayout->addWidget(torusCB);
-    vLayout->addWidget(cylinderCB);
-    vLayout->addWidget(cuboidCB);
-    vLayout->addWidget(sphereCB);
+    ui_->layout_vertical->addWidget(info);
+    ui_->layout_vertical->addWidget(torusCB);
+    ui_->layout_vertical->addWidget(cylinderCB);
+    ui_->layout_vertical->addWidget(cuboidCB);
+    ui_->layout_vertical->addWidget(sphereCB);
 
     QObject::connect(torusCB, &QCheckBox::stateChanged,
                      modifier, &SceneModifier::enableTorus);
