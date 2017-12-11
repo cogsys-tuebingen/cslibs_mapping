@@ -105,14 +105,19 @@ if(${Qt5_FOUND})
     )
 
     qt5_wrap_ui(QT_UI
-        src/nodes/qt/ui/cslibs_mapping_viewer_node_3d.ui
-        src/nodes/qt/ui/widget.ui
+        src/nodes/qt/ui/viewer_3d_main_widget.ui
     )
 
     message("[cslibs_mapping]: Building 3d viewer node.")
 
     add_executable(${PROJECT_NAME}_viewer_node_3d
         src/nodes/viewer_node_3d.cpp
+        src/nodes/qt/viewer_3d_window.cpp
+        src/nodes/qt/viewer_3d_renderer.cpp
+        src/nodes/qt/viewer_3d_controller.cpp
+        src/nodes/qt/viewer_3d_model.cpp
+
+
         src/nodes/qt/scenemodifier.cpp
         ${QT_UI}
     )

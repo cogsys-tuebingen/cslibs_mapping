@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Viewer3dMainWidget</class>
+ <widget class="QWidget" name="Viewer3dMainWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QVBoxLayout" name="layout_vertial_main_window">
+   <item>
+    <widget class="QMenuBar" name="menubar">
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>25</height>
+      </size>
+     </property>
+     <widget class="QMenu" name="menuFile">
+      <property name="title">
+       <string>File</string>
+      </property>
+     </widget>
+     <addaction name="menuFile"/>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="layout_horizontal"/>
+   </item>
+   <item>
+    <widget class="QStatusBar" name="statusbar">
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>20</height>
+      </size>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
