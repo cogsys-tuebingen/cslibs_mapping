@@ -23,23 +23,29 @@ public:
         using synchonized_t = cslibs_utility::synchronized::WrapAround<const Distribution>;
 
         using Ptr = std::shared_ptr<Distribution>;
-        std::mutex  mutex_;
+        std::mutex      mutex_;
 
-        QVector3D   origin;
-        QVector3D   rotation_axis;
-        float       rotation_angle;
-        QVector3D   eigen_values;
+        QVector3D       mean;
+        QVector3D       rotation_axis;
+        float           rotation_angle;
+        QVector3D       eigen_values;
+        uint64_t        id;
     };
 
     using mutex_t = std::mutex;
     using lock_t = std::unique_lock<mutex_t>;
+    using update_list_t = std::vector<uint64_t>;
+    using update_list_ptr_t = std::shared_ptr<update_list_t>;
 
-    Viewer3dModel();
+    Viewer3dModel(QObject *parent = nullptr);
     virtual ~Viewer3dModel();
 
     void setup();
 
-    Distribution::synchonized_t get(const unsigned int id);
+    Distribution::synchonized_t get(const uint64_t id);
+
+signals:
+    void modelChanged(const update_list_t &list);
 
 private:
     std::thread         ros_thread_;
@@ -48,8 +54,8 @@ private:
     ros::NodeHandle     nh_;
     ros::Subscriber     sub_;
 
-    mutex_t                                   data_mutex_;
-    std::map<unsigned int, Distribution::Ptr> data_;
+    mutex_t                               data_mutex_;
+    std::map<uint64_t, Distribution::Ptr> data_;
 
     void loop();
     void distribution3d(const cslibs_mapping::Distributions3d::ConstPtr &msg);

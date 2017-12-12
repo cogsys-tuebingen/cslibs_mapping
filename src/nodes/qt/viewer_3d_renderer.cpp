@@ -23,6 +23,8 @@
 
 #include <Qt3DInput/QInputAspect>
 
+#include "distribution3d_mesh.hpp"
+
 namespace cslibs_mapping {
 Viewer3dRenderer::Viewer3dRenderer(QObject *parent) :
     QObject(parent)
@@ -33,10 +35,13 @@ Viewer3dRenderer::~Viewer3dRenderer()
 {
 }
 
-void Viewer3dRenderer::setup(Qt3D::QWindow *view, const float zoom_factor)
+void Viewer3dRenderer::setup(Qt3D::QWindow *view,
+                             Viewer3dModel *model,
+                             const float zoom_factor)
 {
     /// preparing the engine
-    view_ = view;
+    view_  = view;
+    model_ = model;
     zoom_factor_ = zoom_factor;
     zoom_factor_inv_ = 1.f / zoom_factor;
 
@@ -81,6 +86,23 @@ void Viewer3dRenderer::aspectRatioUpdate(const float ratio)
 void Viewer3dRenderer::mouseWheelUpdate(const int delta)
 {
     camera_entity_->setPosition(camera_entity_->position() * (delta > 0 ? zoom_factor_ : zoom_factor_inv_));
+}
+
+bool once = true;
+
+void Viewer3dRenderer::modelUpdate(const update_list_t &updates)
+{
+    if(!once)
+        return;
+    once = false;
+    for(const auto id : updates) {
+        Qt3D::QEntity* &e = entities_[id];
+        if(e) {
+            e->setParent(static_cast<Qt3D::QNode*>(nullptr));
+            delete e;
+        };
+        e = Distribution3dMesh::create(model_->get(id), root_entity_);
+    }
 }
 
 Qt3D::QEntity * Viewer3dRenderer::getRootEntity()

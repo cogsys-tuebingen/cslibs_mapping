@@ -206,7 +206,9 @@ void NDTGridMapper3d::drawMarker(
     marker.color.r = prob;
     marker.color.g = prob;
     marker.color.b = prob;
-    marker_map_->markers.push_back(marker);
+
+    if(std::isnormal(prob))
+        marker_map_->markers.push_back(marker);
 }
 
 void NDTGridMapper3d::process(const measurement_t &m)

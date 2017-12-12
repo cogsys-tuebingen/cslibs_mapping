@@ -94,45 +94,56 @@ target_link_libraries(${PROJECT_NAME}_node_3d
 )
 add_dependencies(${PROJECT_NAME}_node_3d ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
-find_package(Qt5 COMPONENTS Core Gui Widgets 3DCore 3DRenderer 3DInput REQUIRED)
-if(${Qt5_FOUND})
-#   install package qt3d5-dev
-    set(CMAKE_INCLUDE_CURRENT_DIR ON)
-    set(CMAKE_AUTOMOC ON)
-    include_directories(
-        ${CMAKE_CURRENT_SOURCE_DIR}/src
-        ${CMAKE_CURRENT_BINARY_DIR}
-    )
-
-    qt5_wrap_ui(QT_UI
-        src/nodes/qt/ui/viewer_3d_main_widget.ui
-    )
-
-    message("[cslibs_mapping]: Building 3d viewer node.")
-
-    add_executable(${PROJECT_NAME}_viewer_node_3d
-        src/nodes/viewer_node_3d.cpp
-        src/nodes/qt/viewer_3d_window.cpp
-        src/nodes/qt/viewer_3d_renderer.cpp
-        src/nodes/qt/viewer_3d_controller.cpp
-        src/nodes/qt/viewer_3d_model.cpp
+#### TOO FREAKING SLOW , TRY TO BUILD AN VISUALIZATION PLUGIN FOR RVIZ
+#find_package(VTK REQUIRED)
+#include_directories(${VTK_INCLUDE_DIRS})
+#add_executable(viewer_3d_vtk
+#    src/nodes/qt/viewer_3d_vtk.cpp
+#)
+#target_link_libraries(viewer_3d_vtk
+#    ${VTK_LIBRARIES}
+#)
 
 
-        src/nodes/qt/scenemodifier.cpp
-        ${QT_UI}
-    )
-    target_link_libraries(${PROJECT_NAME}_viewer_node_3d
-        ${catkin_LIBRARIES}
-        Qt5::Core
-        Qt5::Gui
-        Qt5::Widgets
-        Qt5::3DCore
-        Qt5::3DRenderer
-        Qt5::3DInput
-    )
-else()
-    message("[cslibs_mapping]: Building 3d viewer node requires minimum version of Qt5.10.")
-endif()
+#find_package(Qt5 COMPONENTS Core Gui Widgets 3DCore 3DRenderer 3DInput REQUIRED)
+#if(${Qt5_FOUND})
+##   install package qt3d5-dev
+#    set(CMAKE_INCLUDE_CURRENT_DIR ON)
+#    set(CMAKE_AUTOMOC ON)
+#    include_directories(
+#        ${CMAKE_CURRENT_SOURCE_DIR}/src
+#        ${CMAKE_CURRENT_BINARY_DIR}
+#    )
+
+#    qt5_wrap_ui(QT_UI
+#        src/nodes/qt/ui/viewer_3d_main_widget.ui
+#    )
+
+#    message("[cslibs_mapping]: Building 3d viewer node.")
+
+#    add_executable(${PROJECT_NAME}_viewer_node_3d
+#        src/nodes/viewer_node_3d.cpp
+#        src/nodes/qt/viewer_3d_window.cpp
+#        src/nodes/qt/viewer_3d_renderer.cpp
+#        src/nodes/qt/viewer_3d_controller.cpp
+#        src/nodes/qt/viewer_3d_model.cpp
+
+
+#        src/nodes/qt/scenemodifier.cpp
+#        ${QT_UI}
+#    )
+#    target_link_libraries(${PROJECT_NAME}_viewer_node_3d
+#        ${catkin_LIBRARIES}
+#        Qt5::Core
+#        Qt5::Gui
+#        Qt5::Widgets
+#        Qt5::3DCore
+#        Qt5::3DRenderer
+#        Qt5::3DInput
+#    )
+#else()
+#    message("[cslibs_mapping]: Building 3d viewer node requires minimum version of Qt5.10.")
+#endif()
 
 install(DIRECTORY include/${PROJECT_NAME}/
         DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})

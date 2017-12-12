@@ -19,16 +19,13 @@ int main(int argc, char **argv)
 
     cslibs_mapping::Viewer3dWindow window(&app);
     window.setup("test name");
-    cslibs_mapping::Viewer3dRenderer renderer(&app);
-    renderer.setup(window.getView());
-    cslibs_mapping::Viewer3dModel model;
+    cslibs_mapping::Viewer3dModel model(&app);
     model.setup();
+    cslibs_mapping::Viewer3dRenderer renderer(&app);
+    renderer.setup(window.getView(),
+                   &model);
     cslibs_mapping::Viewer3dController controller;
     controller.setup(&window, &model, &renderer);
-
-    SceneModifier modifier(renderer.getRootEntity());
-
-
 
     return app.exec();
 }

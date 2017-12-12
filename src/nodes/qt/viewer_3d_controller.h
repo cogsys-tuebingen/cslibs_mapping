@@ -2,6 +2,8 @@
 #define CSLIBS_MAPPING_VIEWER_3D_CONTROLLER_H
 
 #include <QObject>
+#include <memory>
+#include <vector>
 
 namespace cslibs_mapping {
 class Viewer3dWindow;
@@ -13,6 +15,10 @@ class Viewer3dController : public QObject
     Q_OBJECT
 
 public:
+    using update_list_t = std::vector<uint64_t>;
+    using update_list_ptr_t = std::shared_ptr<update_list_t>;
+
+
     Viewer3dController();
     void setup(Viewer3dWindow   *gui,
                Viewer3dModel    *model,
@@ -21,11 +27,12 @@ public:
 public slots:
     void aspectRatioUpdate();
     void mouseWheelUpdate(const int delta);
-
+    void modelUpdate(const update_list_t &updates);
 
 signals:
     void aspectRatioChanged(const float ratio);
     void mouseWheelChanged(const int delta);
+    void modelChanged(const update_list_t &updates);
 
 private:
     Viewer3dWindow   *gui_;
