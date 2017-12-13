@@ -8,7 +8,7 @@
 #include <cslibs_utility/synchronized/synchronized_queue.hpp>
 
 #include <cslibs_mapping/measurement/measurement.hpp>
-#include <cslibs_mapping/Distributions3d.h>
+#include <cslibs_mapping/Distribution3dArray.h>
 
 #include <cslibs_gridmaps/static_maps/algorithms/normalize.hpp>
 #include <cslibs_gridmaps/static_maps/probability_gridmap.h>
@@ -36,7 +36,7 @@ public:
     using static_map_stamped_t      = cslibs_time::Stamped<static_map_t::Ptr>;
     using callback_t                = delegate<void(const static_map_stamped_t &)>;
     using marker_callback_t         = delegate<void(const visualization_msgs::MarkerArrayPtr &)>;
-    using distributions_callback_t  = delegate<void(const Distributions3d::Ptr &)>;
+    using distributions_callback_t  = delegate<void(const Distribution3dArray::Ptr &)>;
     using point_t                   = cslibs_math_3d::Point3d;
     using transform_t               = cslibs_math_3d::Transform3d;
     using measurement_t             = Measurement<point_t, transform_t>;
@@ -79,7 +79,7 @@ protected:
     std::mutex                                          static_map_mutex_;
 
     visualization_msgs::MarkerArray::Ptr                marker_map_;
-    Distributions3d::Ptr                                distributions_;
+    Distribution3dArray::Ptr                            distributions_;
     static_map_stamped_t                                static_map_;
     std::unordered_set<dynamic_map_t::index_t>          updated_indices_;
 

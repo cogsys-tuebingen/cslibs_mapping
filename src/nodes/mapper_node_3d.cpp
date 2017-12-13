@@ -102,24 +102,14 @@ bool MapperNode3d::setup()
 
 void MapperNode3d::run()
 {
-    if(node_rate_ == 0.0) {
-        while(ros::ok()) {
-            const ros::Time now = ros::Time::now();
-            occ_2d_mapper_.requestMap(now);
-            ndt_2d_mapper_.requestMap(now);
-            ndt_3d_mapper_.requestMap(now);
-            ros::spinOnce();
-        }
-    } else {
-        ros::Rate r(node_rate_);
-        while(ros::ok()) {
-            const ros::Time now = ros::Time::now();
-            occ_2d_mapper_.requestMap(now);
-            ndt_2d_mapper_.requestMap(now);
-            ndt_3d_mapper_.requestMap(now);
-            r.sleep();
-            ros::spinOnce();
-        }
+    ros::Rate r(node_rate_);
+    while(ros::ok()) {
+        const ros::Time now = ros::Time::now();
+        occ_2d_mapper_.requestMap(now);
+        ndt_2d_mapper_.requestMap(now);
+        ndt_3d_mapper_.requestMap(now);
+        r.sleep();
+        ros::spinOnce();
     }
 }
 

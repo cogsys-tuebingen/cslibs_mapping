@@ -94,11 +94,13 @@ void NDTGridMapper3d::mapRequest()
         if (!marker_map_)
             marker_map_.reset(new visualization_msgs::MarkerArray());
         if (!distributions_)
-            distributions_.reset(new Distributions3d());
+            distributions_.reset(new Distribution3dArray());
 
         marker_map_->markers.clear();
         static_map_.stamp() = latest_time_;
         distributions_->data.clear();
+        distributions_->header.frame_id = frame_id_;
+        distributions_->header.stamp = ros::Time::now();
 
         auto sample = [](const dynamic_map_t::distribution_t * d,
                          const point_t &p) {
@@ -123,20 +125,20 @@ void NDTGridMapper3d::mapRequest()
             dur += (cslibs_time::Time::now() - start_retrieve);
             if(b) {
                 dynamic_map_t::distribution_t::distribution_t d;
-                for (int i = 0; i < 8; ++ i)
+                for (std::size_t i = 0; i < 8; ++ i)
                     d += b->at(i)->getHandle()->data();
 
                 point_t p(d.getMean());
                 pcl::PointXYZI prob;
-                prob.x = p(0);
-                prob.y = p(1);
-                prob.z = p(2);
+                prob.x = static_cast<float>(p(0));
+                prob.y = static_cast<float>(p(1));
+                prob.z = static_cast<float>(p(2));
 
                 cslibs_time::Time start_sampling = cslibs_time::Time::now();
                 prob.intensity = static_cast<float>(sample_bundle(b, p));
                 dur_sampling += (cslibs_time::Time::now() - start_sampling);
                 if (static_cast<int>(static_map_.data()->size()) <= b->id())
-                    static_map_.data()->resize(b->id() + 1);
+                    static_map_.data()->resize(b->id() + 1ul);
                 static_map_.data()->points[b->id()] = prob;
 
                 Distribution3d distr;
@@ -149,6 +151,7 @@ void NDTGridMapper3d::mapRequest()
                     distr.eigen_vectors[i].data = d.getEigenVectors()(i);
                     distr.covariance[i].data    = d.getCovariance()(i);
                 }
+                distr.prob.data = d.sampleNonNormalizedMean();
                 distributions_->data.emplace_back(distr);
 
                 drawMarker(b->id(), d, prob.intensity);

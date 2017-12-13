@@ -106,7 +106,7 @@ private:
                 ros::NodeHandle & nh)
         {
             pub_marker_        = nh.advertise<visualization_msgs::MarkerArray>("/map/ndt_3d_marker", 1);
-            pub_distributions_ = nh.advertise<Distributions3d>("/map/ndt_3d_distributions", 1);
+            pub_distributions_ = nh.advertise<Distribution3dArray>("/map/ndt_3d_distributions", 1);
         }
 
         template <typename t = msg_t>
@@ -156,13 +156,9 @@ private:
         template <typename t = msg_t>
         typename std::enable_if<std::is_same<t, msg_3d_t>::value, void>::type
         publish(
-                const Distributions3d::Ptr & msg)
+                const Distribution3dArray::Ptr & msg)
         {
             if (msg) {
-                for (auto & distr : msg->data) {
-                    distr.header.stamp    = pub_last_time_;
-                    distr.header.frame_id = map_frame_;
-                }
                 pub_distributions_.publish(msg);
             }
         }

@@ -19,6 +19,7 @@
      <param name="occ_map_pub_rate" value="10.0" />
      <param name="ndt_sampling_resolution" value="0.25" />
      <param name="ndt_grid_resolution" value="2.0" />
+     <param name="rate" value="60.0" />
     </group>
 
     <node name="cslibs_mapping_node_3d" pkg="cslibs_mapping" type="cslibs_mapping_node_3d" output="screen" />

@@ -55,9 +55,9 @@ bool MapperNode2d::setup()
 
     cslibs_gridmaps::utility::InverseModel inverse_model(occ_map_prob_prior, occ_map_prob_free, occ_map_prob_occ);
     occ_mapper_.reset(new OccupancyGridMapper2d(inverse_model,
-                                              occ_grid_resolution,
-                                              occ_grid_chunk_resolution,
-                                              map_frame_));
+                                                occ_grid_resolution,
+                                                occ_grid_chunk_resolution,
+                                                map_frame_));
     occ_mapper_->setCallback(OccupancyGridMapper2d::callback_t::from<MapperNode2d, &MapperNode2d::publishOcc>(this));
 
     ndt_mapper_.reset(new NDTGridMapper2d(ndt_grid_resolution, ndt_sampling_resolution, map_frame_));
@@ -86,35 +86,21 @@ bool MapperNode2d::setup()
 
 void MapperNode2d::run()
 {
-    if(node_rate_ == 0.0) {
-        while(ros::ok()) {
-            const ros::Time now = ros::Time::now();
-            if(pub_occ_interval_.isZero() || (pub_occ_last_time_ + pub_occ_interval_ < now)) {
-                occ_mapper_->requestMap();
-            }
-            if(pub_ndt_interval_.isZero() || (pub_ndt_last_time_ + pub_ndt_interval_ < now)) {
-                ndt_mapper_->requestMap();
-            }
-            ros::spinOnce();
-        }
-    } else {
-        ros::Rate r(node_rate_);
-        while(ros::ok()) {
-            const ros::Time now = ros::Time::now();
-            if(pub_occ_last_time_.isZero())
-                pub_occ_last_time_ = now;
+    ros::Rate r(node_rate_);
+    while(ros::ok()) {
+        const ros::Time now = ros::Time::now();
+        if(pub_occ_last_time_.isZero())
+            pub_occ_last_time_ = now;
 
-            if(pub_occ_interval_.isZero() || pub_occ_last_time_ + pub_occ_interval_ < now) {
-                occ_mapper_->requestMap();
-            }
-            if(pub_ndt_interval_.isZero() || (pub_ndt_last_time_ + pub_ndt_interval_ < now)) {
-                ndt_mapper_->requestMap();
-            }
-            r.sleep();
-            ros::spinOnce();
+        if(pub_occ_interval_.isZero() || pub_occ_last_time_ + pub_occ_interval_ < now) {
+            occ_mapper_->requestMap();
         }
+        if(pub_ndt_interval_.isZero() || (pub_ndt_last_time_ + pub_ndt_interval_ < now)) {
+            ndt_mapper_->requestMap();
+        }
+        r.sleep();
+        ros::spinOnce();
     }
-
 }
 
 void MapperNode2d::laserscan(const sensor_msgs::LaserScanConstPtr &msg)

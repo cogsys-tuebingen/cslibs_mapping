@@ -24,7 +24,9 @@
   <depend>pcl_ros</depend>
   <exec_depend>message_runtime</exec_depend>
   <build_depend>message_generation</build_depend>
+  <depend>rviz</depend>
 
-<export>
+  <export>
+    <rviz plugin="${prefix}/plugin_description.xml"/>
   </export>
 </package>
