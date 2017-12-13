@@ -19,19 +19,15 @@ NDTVisual3D::NDTVisual3D(Ogre::SceneManager *scene_manager,
     frame_node_(parent_node->createChildSceneNode()),
     shape_(new rviz::Shape(rviz::Shape::Sphere, scene_manager_, frame_node_))
 {
-
-
     Ogre::MaterialPtr mat = shape_->getMaterial();
     Ogre::Entity     *ent = shape_->getEntity();
 
     mat->setShadingMode(Ogre::ShadeOptions::SO_FLAT);
     mat->setTextureAnisotropy(0);
     mat->setTextureFiltering(Ogre::TextureFilterOptions::TFO_NONE);
+    mat->setTransparencyCastsShadows(false);
+    mat->getTechnique(0)->getPass(0)->setPolygonMode(Ogre::PolygonMode::PM_SOLID);
     ent->setCastShadows(false);
-
-
-    //    mat->setCullingMode(Ogre::CULL_NONE ); //or CULL_CLOCKWISE or CULL_ANTICLOCKWISE as you wish
-//    mat->setSceneBlending(Ogre::SBT_ADD); // to put some pseudo transparency
 
 }
 
