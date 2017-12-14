@@ -7,11 +7,6 @@
     <node pkg="tf" type="static_transform_publisher" name="imu_T" args="-9.0 11.7 19.0 1.57 0.0 0.0 /base_link /imu 100"/>
     <node pkg="tf" type="static_transform_publisher" name="imu_link_T" args="0.0 0.0 0.0 0.0 0.0 0.0 /imu /base_imu_link 100"/>
 
-    <!-- bagfile -->
-    <arg name="bag_root" value="/data/0/bag/maize" />
-    <arg name="bag_file" value="2017-09-11-13-42-55.bag" />
-    <node pkg="rosbag" type="play" name="player" output="screen" args="--pause --clock --rate 2.0 -d 5 $(arg bag_root)/$(arg bag_file)" required="true" />
-
      <group ns="cslibs_mapping_node_3d">
      <rosparam param="lasers2d">
      </rosparam>
@@ -24,8 +19,9 @@
      <param name="map_frame" value="/odom" />
      <param name="ndt_map_pub_rate" value="10.0" />
      <param name="occ_map_pub_rate" value="10.0" />
-     <param name="ndt_sampling_resolution" value="0.25" /> 
-     <param name="ndt_grid_resolution" value="2.0" />
+     <param name="ndt_sampling_resolution" value="0.25" />
+     <param name="ndt_grid_resolution" value="1.0" />
+     <param name="rate" value="60.0" />
     </group>
 
     <node name="cslibs_mapping_node_3d" pkg="cslibs_mapping" type="cslibs_mapping_node_3d" output="screen" />
