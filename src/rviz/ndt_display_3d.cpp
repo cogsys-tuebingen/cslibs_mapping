@@ -135,7 +135,7 @@ void NDTDisplay3D::processMessage(const cslibs_mapping::Distribution3dArray::Con
             v->setFramePosition(p);
             v->setFrameOrientation(q);
             v->setScale(s);
-            v->setColorScale(static_cast<float>(d.prob.data));
+            v->setColorScale(static_cast<float>(1.0 - d.prob.data));
             v->setColor(color_);
         }
     }

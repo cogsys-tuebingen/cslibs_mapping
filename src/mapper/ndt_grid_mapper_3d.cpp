@@ -151,7 +151,7 @@ void NDTGridMapper3d::mapRequest()
                     distr.eigen_vectors[i].data = d.getEigenVectors()(i);
                     distr.covariance[i].data    = d.getCovariance()(i);
                 }
-                distr.prob.data = d.sampleNonNormalizedMean();
+                distr.prob.data = static_cast<double>(sample_bundle(b, p));
                 distributions_->data.emplace_back(distr);
 
                 drawMarker(b->id(), d, prob.intensity);
