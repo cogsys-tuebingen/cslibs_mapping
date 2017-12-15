@@ -127,7 +127,7 @@ void NDTDisplay3D::processMessage(const cslibs_mapping::Distribution3dArray::Con
         const Ogre::Quaternion q = getRotation(d);
         const Ogre::Vector3 s    = getScale(d);
 
-        if(valid(p,q,s) || std::isnormal(d.prob.data)) {
+        if(valid(p,q,s) && std::isnormal(d.prob.data)) {
             NDTVisual3D::Ptr &v = visuals_[d.id.data];
             if(!v) {
                 v.reset(new NDTVisual3D( context_->getSceneManager(), scene_node_));
