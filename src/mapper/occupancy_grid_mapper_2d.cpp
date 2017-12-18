@@ -48,6 +48,7 @@ void OccupancyGridMapper2d::get(static_map_stamped_t &map)
 void OccupancyGridMapper2d::requestMap()
 {
     request_map_ = true;
+    notify_event_.notify_one();
 }
 
 void OccupancyGridMapper2d::setCallback(const callback_t &cb)

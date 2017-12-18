@@ -3,7 +3,9 @@
 
 #include <ros/ros.h>
 #include <sensor_msgs/LaserScan.h>
+#include <nav_msgs/Path.h>
 
+#include <cslibs_mapping/SaveMap.h>
 #include <cslibs_mapping/mapper/occupancy_grid_mapper_2d.h>
 #include <cslibs_mapping/mapper/ndt_grid_mapper_2d.h>
 
@@ -32,9 +34,14 @@ private:
     NDTGridMapper2d::Ptr                    ndt_mapper_;
     std::string                             map_frame_;
 
+    ros::Publisher                          pub_path_;
+    nav_msgs::Path                          path_;
+
     ros::Publisher                          pub_occ_map_;
     ros::Duration                           pub_occ_interval_;
     ros::Time                               pub_occ_last_time_;
+    double                                  occ_free_threshold_;
+    double                                  occ_occupied_threshold_;
 
     ros::Publisher                          pub_ndt_map_;
     ros::Duration                           pub_ndt_interval_;
@@ -56,7 +63,9 @@ private:
 
     void publishOcc(const OccupancyGridMapper2d::static_map_stamped_t &map);
 
+    bool saveMap(const cslibs_mapping::SaveMap::Request &req, cslibs_mapping::SaveMap::Response &);
 
+    bool saveMap(const std::string &path);
 
 
 };

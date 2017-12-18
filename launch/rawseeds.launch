@@ -12,10 +12,10 @@
     <include file="$(find rawseeds_ros)/launch/transforms.launch" />
 
     <group ns="cslibs_mapping_node_2d">
-        <rosparam param="lasers">
+        <rosparam param="laser_topics">
             ["/sick/front", "/sick/rear"]
         </rosparam>
-        <rosparam param="queue_sizes">
+        <rosparam param="laser_queue_sizes">
             [10, 10]
         </rosparam>
  

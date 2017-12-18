@@ -4,9 +4,16 @@
 
 #include <cslibs_math_2d/linear/polar_pointcloud.hpp>
 #include <cslibs_math_ros/sensor_msgs/conversion_2d.hpp>
+#include <cslibs_math_ros/geometry_msgs/conversion_2d.hpp>
 
 #include <nav_msgs/OccupancyGrid.h>
 #include <visualization_msgs/MarkerArray.h>
+
+/// OUTPUT
+#include <boost/filesystem.hpp>
+#include <yaml-cpp/yaml.h>
+#include <fstream>
+#include <Board.h>
 
 namespace cslibs_mapping {
 MapperNode2d::MapperNode2d() :
@@ -17,7 +24,7 @@ MapperNode2d::MapperNode2d() :
 bool MapperNode2d::setup()
 {
     ROS_INFO_STREAM("Setting up subscribers");
-    const int           subscriber_queue_size       = nh_.param<int>        ("subscriber_queue_size", 1);
+    const std::string   path_topic                  = nh_.param<std::string>("path_topic", "/map/path");
     const double        occ_grid_resolution         = nh_.param<double>     ("occ_map_resolution", 0.05);
     const double        occ_grid_chunk_resolution   = nh_.param<double>     ("occ_map_chunk_resolution", 5.0);
     const std::string   occ_map_topic               = nh_.param<std::string>("occ_map_topic", "/map/occ");
@@ -31,9 +38,18 @@ bool MapperNode2d::setup()
     const double        ndt_grid_resolution         = nh_.param<double>     ("ndt_grid_resolution", 1.0);
     const double        ndt_sampling_resolution     = nh_.param<double>     ("ndt_sampling_resolution", 0.05);
 
-    std::vector<std::string> lasers;
-    if(!nh_.getParam("lasers", lasers)) {
-        ROS_ERROR_STREAM("Did not find any laser inputs!");
+    std::vector<std::string> laser_topics;
+    if(!nh_.getParam("laser_topics", laser_topics)) {
+        ROS_ERROR_STREAM("Did not find any laser topics.");
+        return false;
+    }
+    std::vector<int> laser_queue_sizes;
+    if(!nh_.getParam("laser_queue_sizes", laser_queue_sizes)) {
+        ROS_ERROR_STREAM("Did not find any laser queue sizes.");
+        return false;
+    }
+    if(laser_topics.size() != laser_queue_sizes.size()) {
+        ROS_ERROR_STREAM("Laser topics count and queue sizes have to match.");
         return false;
     }
 
@@ -61,20 +77,29 @@ bool MapperNode2d::setup()
     ndt_mapper_.reset(new NDTGridMapper2d(ndt_grid_resolution, ndt_sampling_resolution, map_frame_));
     ndt_mapper_->setCallback(OccupancyGridMapper2d::callback_t::from<MapperNode2d, &MapperNode2d::publishNDT>(this));
 
-    for(const auto &l : lasers) {
+    for(std::size_t i = 0 ; i < laser_topics.size() ; ++i) {
+        const auto &l = laser_topics[i];
+        const std::size_t s = static_cast<unsigned int>(laser_queue_sizes[i]);
         ROS_INFO_STREAM("Subscribing to laser '" << l << "'");
         sub_lasers_.emplace_back(nh_.subscribe(l,
-                                               static_cast<unsigned int>(subscriber_queue_size),
+                                               s,
                                                &MapperNode2d::laserscan,
                                                this));
     }
+
+    pub_path_               = nh_.advertise<nav_msgs::Path>(path_topic, 1);
+
     pub_occ_map_            = nh_.advertise<nav_msgs::OccupancyGrid>(occ_map_topic, 1);
     pub_occ_interval_       = ros::Duration(occ_map_pub_rate > 0.0 ? 1.0 / occ_map_pub_rate : 0.0);
     pub_occ_last_time_      = ros::Time::now();
+    occ_free_threshold_     = nh_.param<double>("occ_free_threshold", 0.196);   // values retrieved from ros map_server documentation
+    occ_occupied_threshold_ = nh_.param<double>("occ_occupied_treshold", 0.65); // values retrieved from ros map_server documentation
 
     pub_ndt_map_            = nh_.advertise<nav_msgs::OccupancyGrid>(ndt_map_topic, 1);
     pub_ndt_interval_       = ros::Duration(occ_map_pub_rate > 0.0 ? 1.0 / ndt_map_pub_rate : 0.0);
     pub_ndt_last_time_      = ros::Time::now();
+
+    path_.header.frame_id   = map_frame_;
 
     tf_.reset(new cslibs_math_ros::tf::TFListener2d);
 
@@ -96,6 +121,9 @@ void MapperNode2d::run()
         if(pub_ndt_interval_.isZero() || (pub_ndt_last_time_ + pub_ndt_interval_ < now)) {
             ndt_mapper_->requestMap();
         }
+
+        pub_path_.publish(path_);
+
         r.sleep();
         ros::spinOnce();
     }
@@ -123,6 +151,13 @@ void MapperNode2d::laserscan(const sensor_msgs::LaserScanConstPtr &msg)
                             o_T_l,
                             tf_timeout_)) {
 
+        {
+            path_.header.stamp = msg->header.stamp;
+            geometry_msgs::PoseStamped p;
+            p.pose = cslibs_math_ros::geometry_msgs::conversion_2d::from(o_T_l);
+            p.header = path_.header;
+            path_.poses.emplace_back(p);
+        }
         cslibs_math_2d::Pointcloud2d::Ptr points(new cslibs_math_2d::Pointcloud2d);
         measurement_t  m(points, o_T_l, time_frame.end);
         for(auto it = laserscan->begin() ; it != laserscan->end() ; ++it) {
@@ -156,6 +191,113 @@ void MapperNode2d::publishOcc(const OccupancyGridMapper2d::static_map_stamped_t 
         pub_occ_map_.publish(msg);
         pub_occ_last_time_ = ros::Time::now();
     }
+}
+
+bool MapperNode2d::saveMap(const cslibs_mapping::SaveMap::Request &req,
+                           cslibs_mapping::SaveMap::Response &)
+{
+    return saveMap(req.path.data);
+}
+
+bool MapperNode2d::saveMap(const std::string &path)
+{
+    boost::filesystem::path p(path);
+
+    if(!boost::filesystem::is_directory(p)) {
+        ROS_ERROR_STREAM("'" << path << "' is not a directory.");
+        return false;
+    }
+
+    OccupancyGridMapper2d::static_map_stamped_t occ_map;
+    occ_mapper_->get(occ_map);
+    const std::size_t occ_height = occ_map.data()->getHeight();
+    const std::size_t occ_width  = occ_map.data()->getWidth();
+
+
+    std::string occ_path_yaml = (p / boost::filesystem::path("occ.map.yaml")).string();
+    std::string occ_path_ppm  = (p / boost::filesystem::path("occ.map.ppm")).string();
+    std::string occ_path_raw_ppm = (p / boost::filesystem::path("occ.map.raw.ppm")).string();
+    {
+        std::ofstream occ_out_yaml(occ_path_yaml);
+        if(!occ_out_yaml.is_open()) {
+            ROS_ERROR_STREAM("Could not open file '" << occ_path_yaml << "'.");
+            return false;
+        }
+        /// write occupancy map meta data
+        YAML::Emitter occ_yaml(occ_out_yaml);
+        occ_yaml << YAML::BeginMap;
+        occ_yaml << "image" << occ_path_ppm;
+        occ_yaml << "resolution" << occ_map.data()->getResolution();
+        occ_yaml << "origin" << YAML::BeginSeq;
+        const transform_t origin = occ_map.data()->getOrigin();
+        occ_yaml << origin.tx() << origin.ty() << origin.yaw();
+        occ_yaml << YAML::EndSeq;
+        occ_yaml << "oocupied_threshold" << occ_occupied_threshold_;
+        occ_yaml << "free_thresh" << occ_free_threshold_;
+        occ_yaml << "negate" << 0;
+        occ_yaml << YAML::EndMap;
+    }
+    {
+        std::ofstream occ_out_ppm(occ_path_ppm);
+        std::ofstream occ_out_raw_ppm(occ_path_raw_ppm);
+        if(!occ_out_ppm.is_open()) {
+            ROS_ERROR_STREAM("Could not open file '" << occ_path_ppm << "'.");
+            return false;
+        }
+        if(!occ_out_raw_ppm.is_open()) {
+            ROS_ERROR_STREAM("Could not open file '" << occ_path_raw_ppm << "'.");
+            return false;
+        }
+
+        const auto &occ_data = occ_map.data()->getData();
+        const double *occ_data_ptr = occ_data.data();
+        const std::size_t occ_max_idx = occ_width - 1ul;
+
+        /// write ppm headers
+        occ_out_ppm << "P5 \n";
+        occ_out_ppm << "# CREATOR: cslibs_mapping_node_2d " << occ_map.data()->getResolution() << "m/pix \n";
+        occ_out_ppm << occ_width << " " << occ_height << "\n";
+        occ_out_ppm << 255 << "\n";
+        occ_out_raw_ppm << "P5 \n";
+        occ_out_raw_ppm << "# CREATOR: cslibs_mapping_node_2d " << occ_map.data()->getResolution() << "m/pix \n";
+        occ_out_raw_ppm << occ_width << " " << occ_height << "\n";
+        occ_out_raw_ppm << 255 << "\n";
+
+        auto convert_ros = [this](const double p) {
+            if(cslibs_math::common::le(p, occ_free_threshold_))
+                return 254;
+            if(cslibs_math::common::le(p,occ_occupied_threshold_))
+                return 0;
+            return 205;
+        };
+        auto convert_raw = [](const double p) {
+            return static_cast<int>((1.0 - p) * 255);
+        };
+        for(std::size_t i = 0 ; i < occ_height ; ++i) {
+            for(std::size_t j = 0 ; j < occ_max_idx; ++j) {
+                occ_out_ppm << convert_ros(*occ_data_ptr) << " ";
+                occ_out_raw_ppm << convert_raw(*occ_data_ptr) << " ";
+                ++occ_data_ptr;
+            }
+            occ_out_ppm << convert_ros(*occ_data_ptr) << "\n";
+            occ_out_raw_ppm << convert_raw(*occ_data_ptr) << "\n";
+            ++occ_data_ptr;
+        }
+
+        occ_out_ppm.close();
+        occ_out_raw_ppm.close();
+    }
+    /// save map stuff here
+#if CSLIBS_MAPPING_LIBBOARD
+    {
+        //        std::string occ_path_eps = (p / boost::filesystem::path("occ.map.eps")).string();
+        //        LibBoard::Board occ_board;
+        //        LibBoard::Image occ_board_img(occ_path_raw_ppm.c_str(), 0, 0, occ_width, occ_height);
+
+
+    }
+#endif
+    return true;
 }
 
 }
