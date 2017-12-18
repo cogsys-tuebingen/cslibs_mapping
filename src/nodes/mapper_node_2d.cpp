@@ -25,6 +25,8 @@ bool MapperNode2d::setup()
 {
     ROS_INFO_STREAM("Setting up subscribers");
     const std::string   path_topic                  = nh_.param<std::string>("path_topic", "/map/path");
+    const double        path_pub_rate               = nh_.param<double>     ("path_pub_rate", 10.0);
+    const double        path_update_rate            = nh_.param<double>     ("path_update_rate", 10.0);
     const double        occ_grid_resolution         = nh_.param<double>     ("occ_map_resolution", 0.05);
     const double        occ_grid_chunk_resolution   = nh_.param<double>     ("occ_map_chunk_resolution", 5.0);
     const std::string   occ_map_topic               = nh_.param<std::string>("occ_map_topic", "/map/occ");
@@ -55,8 +57,8 @@ bool MapperNode2d::setup()
 
     map_frame_                = nh_.param<std::string>                      ("map_frame", "/odom");
 
-    node_rate_                = nh_.param<double>                           ("rate", 70.0);
-    undistortion_             = nh_.param<bool>                             ("undistortion", true);
+    node_rate_                = nh_.param<double>                           ("rate", 0.0);
+    undistortion_             = nh_.param<bool>                             ("undistortion", false);
     undistortion_fixed_frame_ = nh_.param<std::string>                      ("undistortion_fixed_frame", "/odom");
 
     tf_timeout_               = ros::Duration(nh_.param("tf_timeout", 0.1));
@@ -79,7 +81,7 @@ bool MapperNode2d::setup()
 
     for(std::size_t i = 0 ; i < laser_topics.size() ; ++i) {
         const auto &l = laser_topics[i];
-        const std::size_t s = static_cast<unsigned int>(laser_queue_sizes[i]);
+        const unsigned int s = static_cast<unsigned int>(laser_queue_sizes[i]);
         ROS_INFO_STREAM("Subscribing to laser '" << l << "'");
         sub_lasers_.emplace_back(nh_.subscribe(l,
                                                s,
@@ -88,6 +90,11 @@ bool MapperNode2d::setup()
     }
 
     pub_path_               = nh_.advertise<nav_msgs::Path>(path_topic, 1);
+    pub_path_interval_      = ros::Duration(path_pub_rate > 0.0 ? 1.0 / path_pub_rate : 0.0);
+    pub_path_last_time_     = ros::Time::now();
+    path_.header.frame_id   = map_frame_;
+    path_.header.stamp      = ros::Time::now();
+    path_update_interval_   = ros::Duration(path_update_rate > 0.0 ? 1.0 / path_update_rate : 0.0);
 
     pub_occ_map_            = nh_.advertise<nav_msgs::OccupancyGrid>(occ_map_topic, 1);
     pub_occ_interval_       = ros::Duration(occ_map_pub_rate > 0.0 ? 1.0 / occ_map_pub_rate : 0.0);
@@ -99,7 +106,6 @@ bool MapperNode2d::setup()
     pub_ndt_interval_       = ros::Duration(occ_map_pub_rate > 0.0 ? 1.0 / ndt_map_pub_rate : 0.0);
     pub_ndt_last_time_      = ros::Time::now();
 
-    path_.header.frame_id   = map_frame_;
 
     tf_.reset(new cslibs_math_ros::tf::TFListener2d);
 
@@ -109,23 +115,14 @@ bool MapperNode2d::setup()
 
 void MapperNode2d::run()
 {
-    ros::Rate r(node_rate_);
-    while(ros::ok()) {
-        const ros::Time now = ros::Time::now();
-        if(pub_occ_last_time_.isZero())
-            pub_occ_last_time_ = now;
-
-        if(pub_occ_interval_.isZero() || pub_occ_last_time_ + pub_occ_interval_ < now) {
-            occ_mapper_->requestMap();
+    if(node_rate_ == 0.0) {
+        ros::spin();
+    } else {
+        ros::Rate r(node_rate_);
+        while(ros::ok()) {
+            r.sleep();
+            ros::spinOnce();
         }
-        if(pub_ndt_interval_.isZero() || (pub_ndt_last_time_ + pub_ndt_interval_ < now)) {
-            ndt_mapper_->requestMap();
-        }
-
-        pub_path_.publish(path_);
-
-        r.sleep();
-        ros::spinOnce();
     }
 }
 
@@ -152,11 +149,14 @@ void MapperNode2d::laserscan(const sensor_msgs::LaserScanConstPtr &msg)
                             tf_timeout_)) {
 
         {
-            path_.header.stamp = msg->header.stamp;
-            geometry_msgs::PoseStamped p;
-            p.pose = cslibs_math_ros::geometry_msgs::conversion_2d::from(o_T_l);
-            p.header = path_.header;
-            path_.poses.emplace_back(p);
+            if(path_update_interval_.isZero() || (path_.header.stamp + path_update_interval_ < msg->header.stamp)) {
+                path_.header.stamp = msg->header.stamp;
+                geometry_msgs::PoseStamped p;
+                p.pose = cslibs_math_ros::geometry_msgs::conversion_2d::from(o_T_l);
+                p.header = path_.header;
+                path_.poses.emplace_back(p);
+            }
+
         }
         cslibs_math_2d::Pointcloud2d::Ptr points(new cslibs_math_2d::Pointcloud2d);
         measurement_t  m(points, o_T_l, time_frame.end);
@@ -167,6 +167,27 @@ void MapperNode2d::laserscan(const sensor_msgs::LaserScanConstPtr &msg)
         occ_mapper_->insert(m);
         ndt_mapper_->insert(m);
     }
+
+    publish();
+}
+
+void MapperNode2d::publish()
+{
+    const ros::Time now = ros::Time::now();
+    if(pub_occ_last_time_.isZero())
+        pub_occ_last_time_ = now;
+
+    if(pub_occ_interval_.isZero() || (pub_occ_last_time_ + pub_occ_interval_ < now)) {
+        occ_mapper_->requestMap();
+    }
+    if(pub_ndt_interval_.isZero() || (pub_ndt_last_time_ + pub_ndt_interval_ < now)) {
+        ndt_mapper_->requestMap();
+    }
+    if(pub_path_interval_.isZero() || (pub_path_last_time_ + pub_path_interval_ < now)) {
+        pub_path_.publish(path_);
+        pub_path_last_time_ = now;
+    }
+
 }
 
 void MapperNode2d::publishNDT(const OccupancyGridMapper2d::static_map_stamped_t &map)
@@ -290,16 +311,29 @@ bool MapperNode2d::saveMap(const std::string &path)
     /// save map stuff here
 #if CSLIBS_MAPPING_LIBBOARD
     {
-        //        std::string occ_path_eps = (p / boost::filesystem::path("occ.map.eps")).string();
-        //        LibBoard::Board occ_board;
-        //        LibBoard::Image occ_board_img(occ_path_raw_ppm.c_str(), 0, 0, occ_width, occ_height);
+        std::string occ_path_eps = (p / boost::filesystem::path("occ.map.eps")).string();
+        LibBoard::Board occ_board;
+        LibBoard::Image occ_board_img(occ_path_raw_ppm.c_str(), 0, 0, occ_width, occ_height);
+        occ_board.insert(occ_board_img, 0);
+        occ_board.setLineWidth(0.1);
+        occ_board.setPenColorRGBi( 0, 255, 0 );
+        occ_board.setLineCap(LibBoard::Shape::RoundCap);
+        const double occ_inv_resolution = 1.0 / occ_map.data()->getResolution();
 
-
+        const cslibs_math_2d::Transform2d m_t_w = occ_map.data()->getOrigin().inverse();
+        for(std::size_t i = 1 ; i < path_.poses.size(); ++i) {
+            const cslibs_math_2d::Transform2d t0 = m_t_w * cslibs_math_ros::geometry_msgs::conversion_2d::from(path_.poses[i-1].pose);
+            const cslibs_math_2d::Transform2d t1 = m_t_w * cslibs_math_ros::geometry_msgs::conversion_2d::from(path_.poses[i].pose);
+            occ_board.drawLine(t0.tx() * occ_inv_resolution, t0.ty() * occ_inv_resolution,
+                               t1.tx() * occ_inv_resolution, t1.ty() * occ_inv_resolution,
+                               1);
+            occ_board.drawCircle(t0.tx() * occ_inv_resolution, t0.ty() * occ_inv_resolution, 0.5, 2);
+        }
+        occ_board.saveEPS(occ_path_eps.c_str());
     }
 #endif
     return true;
 }
-
 }
 
 int main(int argc, char *argv[])

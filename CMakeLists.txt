@@ -92,6 +92,7 @@ add_executable(${PROJECT_NAME}_node_2d
 target_link_libraries(${PROJECT_NAME}_node_2d
     ${PROJECT_NAME}_2d
     ${catkin_LIBRARIES}
+    ${LibBoard_LIBRARIES}
     yaml-cpp
     )
 add_dependencies(${PROJECT_NAME}_node_2d ${${PROJECT_NAME}_EXPORTED_TARGETS})

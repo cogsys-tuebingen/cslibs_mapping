@@ -35,6 +35,9 @@ private:
     std::string                             map_frame_;
 
     ros::Publisher                          pub_path_;
+    ros::Duration                           pub_path_interval_;
+    ros::Time                               pub_path_last_time_;
+    ros::Duration                           path_update_interval_;
     nav_msgs::Path                          path_;
 
     ros::Publisher                          pub_occ_map_;
@@ -58,6 +61,8 @@ private:
 
 
     void laserscan(const sensor_msgs::LaserScanConstPtr &msg);
+
+    void publish();
 
     void publishNDT(const OccupancyGridMapper2d::static_map_stamped_t &map);
 
