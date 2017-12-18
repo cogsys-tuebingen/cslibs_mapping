@@ -11,36 +11,27 @@
     <node pkg="rosbag" type="play" name="player" output="screen" args="--clock --rate 2.0 -d 5 $(arg bag_root)/$(arg bag_file)" required="true" />
     <include file="$(find rawseeds_ros)/launch/transforms.launch" />
 
-    <group ns="muse_mcl_2d_mapping_node_2d">
+    <group ns="cslibs_mapping_node_2d">
         <rosparam param="lasers">
-            ["/sick/front"]
+            ["/sick/front", "/sick/rear"]
         </rosparam>
-        <param name="subscriber_queue_size" value="10" />
-        <param name="rate" value="0.0" />
-        <param name="resolution" value="0.05" />
-        <param name="map_topic" value="/map/simple"  />
+        <rosparam param="queue_sizes">
+            [10, 10]
+        </rosparam>
+ 
+        <param name="rate" value="70.0" />
         <param name="map_frame" value="/odom" />
-        <param name="ndt_map_pub_rate" value="10.0" />
-        <param name="occ_map_pub_rate" value="10.0" />
-        <param name="ndt_sampling_resolution" value="0.025" /> 
-        <param name="ndt_grid_resolution" value="1.0" />
+
+        <param name="occ_map_topic"         value="/map/occ"  />
+        <param name="occ_map_pub_rate"      value="10.0" />
+        <param name="occ_map_resolution"    value="0.05" />
+
+        <param name="ndt_map_topic"             value="/map/ndt" />
+        <param name="ndt_map_pub_rate"          value="10.0" />
+        <param name="ndt_sampling_resolution"   value="0.025" /> 
+        <param name="ndt_grid_resolution"       value="1.0" />
     </group>
-    <!-- ,"/sick/rear" -->
-
-    <node name="muse_mcl_2d_mapping_node_2d" pkg="muse_mcl_2d_mapping" type="muse_mcl_2d_mapping_node_2d" output="screen" />
+    <node name="cslibs_mapping_node_2d" pkg="cslibs_mapping" type="cslibs_mapping_node_2d" output="screen" />
     <node name="rviz" pkg="rviz" type="rviz" />
-    <!--    <rosparam param="lasers">
-            ["/sick/front","/sick/rear"]
-        </rosparam>
-        <param name="subscriber_queue_size" value="10" />
-        <param name="rate" value="0.0" />
-        <param name="resolution" value="0.05" />
-        <param name="map_topic" value="/map/simple"  />
-        <param name="map_frame" value="/odom" />
-        <param name="map_pub_rate" value="10.0" />
-        <param name="optimizitation" value="false" /> 
-    </node>-->
-
-    <!--<include file="$(find muse_mcl_2d_mapping)/launch/cartographer.launch" />-->
 
 </launch>

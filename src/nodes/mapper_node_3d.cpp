@@ -44,10 +44,10 @@ bool MapperNode3d::setup()
     undistortion_fixed_frame_ = nh_.param<std::string>("undistortion_fixed_frame", "/odom");
     tf_timeout_               = ros::Duration(nh_.param("tf_timeout", 0.1));
 
-    linear_interval_[0]       = nh_.param<double>("range_min", 0.05);
-    linear_interval_[1]       = nh_.param<double>("range_max", 30.0);
-    angular_interval_[0]      = nh_.param<double>("angle_min",-M_PI);
-    angular_interval_[1]      = nh_.param<double>("angle_max", M_PI);
+    linear_interval_[0]       = static_cast<float>(nh_.param<double>("range_min", 0.05));
+    linear_interval_[1]       = static_cast<float>(nh_.param<double>("range_max", 30.0));
+    angular_interval_[0]      = static_cast<float>(nh_.param<double>("angle_min",-M_PI));
+    angular_interval_[1]      = static_cast<float>(nh_.param<double>("angle_max", M_PI));
 
 
     cslibs_gridmaps::utility::InverseModel inverse_model(occ_map_prob_prior, occ_map_prob_free, occ_map_prob_occ);

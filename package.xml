@@ -22,6 +22,7 @@
   <depend>geometry_msgs</depend>
   <depend>std_msgs</depend>
   <depend>pcl_ros</depend>
+  <depend>rosbag</depend>
   <exec_depend>message_runtime</exec_depend>
   <build_depend>message_generation</build_depend>
   <depend>rviz</depend>

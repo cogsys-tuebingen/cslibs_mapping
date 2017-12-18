@@ -17,19 +17,19 @@ MapperNode2d::MapperNode2d() :
 bool MapperNode2d::setup()
 {
     ROS_INFO_STREAM("Setting up subscribers");
-    const int           subscriber_queue_size       = nh_.param<int>("subscriber_queue_size", 1);
-    const double        occ_grid_resolution         = nh_.param<double>("occ_grid_resolution", 0.05);
-    const double        occ_grid_chunk_resolution   = nh_.param<double>("occ_chunk_resolution", 5.0);
+    const int           subscriber_queue_size       = nh_.param<int>        ("subscriber_queue_size", 1);
+    const double        occ_grid_resolution         = nh_.param<double>     ("occ_map_resolution", 0.05);
+    const double        occ_grid_chunk_resolution   = nh_.param<double>     ("occ_map_chunk_resolution", 5.0);
     const std::string   occ_map_topic               = nh_.param<std::string>("occ_map_topic", "/map/occ");
-    const double        occ_map_pub_rate            = nh_.param<double>("occ_map_pub_rate",  10.0);
-    const double        occ_map_prob_free           = nh_.param<double>("occ_map_prob_free", 0.45);
-    const double        occ_map_prob_occ            = nh_.param<double>("occ_map_prob_occ",  0.55);
-    const double        occ_map_prob_prior          = nh_.param<double>("occ_map_prob_prior", 0.5);
+    const double        occ_map_pub_rate            = nh_.param<double>     ("occ_map_pub_rate",  10.0);
+    const double        occ_map_prob_free           = nh_.param<double>     ("occ_map_prob_free", 0.45);
+    const double        occ_map_prob_occ            = nh_.param<double>     ("occ_map_prob_occ",  0.55);
+    const double        occ_map_prob_prior          = nh_.param<double>     ("occ_map_prob_prior", 0.5);
 
     const std::string   ndt_map_topic               = nh_.param<std::string>("ndt_map_topic", "/map/ndt");
-    const double        ndt_map_pub_rate            = nh_.param<double>("ndt_map_pub_rate", 10.0);
-    const double        ndt_grid_resolution         = nh_.param<double>("ndt_grid_resolution", 1.0);
-    const double        ndt_sampling_resolution     = nh_.param<double>("ndt_sampling_resolution", 0.05);
+    const double        ndt_map_pub_rate            = nh_.param<double>     ("ndt_map_pub_rate", 10.0);
+    const double        ndt_grid_resolution         = nh_.param<double>     ("ndt_grid_resolution", 1.0);
+    const double        ndt_sampling_resolution     = nh_.param<double>     ("ndt_sampling_resolution", 0.05);
 
     std::vector<std::string> lasers;
     if(!nh_.getParam("lasers", lasers)) {
@@ -37,20 +37,18 @@ bool MapperNode2d::setup()
         return false;
     }
 
-    map_frame_                = nh_.param<std::string>("map_frame", "/odom");
+    map_frame_                = nh_.param<std::string>                      ("map_frame", "/odom");
 
-    node_rate_                = nh_.param<double>("rate", 0.0);
-    undistortion_             = nh_.param<bool>("undistortion", true);
-    undistortion_fixed_frame_ = nh_.param<std::string>("undistortion_fixed_frame", "/odom");
+    node_rate_                = nh_.param<double>                           ("rate", 70.0);
+    undistortion_             = nh_.param<bool>                             ("undistortion", true);
+    undistortion_fixed_frame_ = nh_.param<std::string>                      ("undistortion_fixed_frame", "/odom");
 
-    undistortion_             = nh_.param<bool>("undistortion", true);
-    undistortion_fixed_frame_ = nh_.param<std::string>("undistortion_fixed_frame", "/odom");
     tf_timeout_               = ros::Duration(nh_.param("tf_timeout", 0.1));
 
-    linear_interval_[0]       = nh_.param<double>("range_min", 0.05);
-    linear_interval_[1]       = nh_.param<double>("range_max", 30.0);
-    angular_interval_[0]      = nh_.param<double>("angle_min",-M_PI);
-    angular_interval_[1]      = nh_.param<double>("angle_max", M_PI);
+    laser_linear_interval_[0]  = static_cast<float>(nh_.param<double>("range_min", 0.05));
+    laser_linear_interval_[1]  = static_cast<float>(nh_.param<double>("range_max", 30.0));
+    laser_angular_interval_[0] = static_cast<float>(nh_.param<double>("angle_min",-M_PI));
+    laser_angular_interval_[1] = static_cast<float>(nh_.param<double>("angle_max", M_PI));
 
 
     cslibs_gridmaps::utility::InverseModel inverse_model(occ_map_prob_prior, occ_map_prob_free, occ_map_prob_occ);
@@ -108,12 +106,12 @@ void MapperNode2d::laserscan(const sensor_msgs::LaserScanConstPtr &msg)
     cslibs_math_2d::PolarPointlcoud2d::Ptr laserscan;
     if(undistortion_) {
         cslibs_math_ros::sensor_msgs::conversion_2d::from(msg,
-                                                          linear_interval_, angular_interval_,
+                                                          laser_linear_interval_, laser_angular_interval_,
                                                           undistortion_fixed_frame_, tf_timeout_, *tf_,
                                                           laserscan);
     }
     if(!laserscan) {
-        cslibs_math_ros::sensor_msgs::conversion_2d::from(msg, linear_interval_, angular_interval_, laserscan);
+        cslibs_math_ros::sensor_msgs::conversion_2d::from(msg, laser_linear_interval_, laser_angular_interval_, laserscan);
     }
     if(!laserscan)
         return;

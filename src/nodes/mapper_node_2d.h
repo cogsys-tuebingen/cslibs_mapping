@@ -46,8 +46,8 @@ private:
     std::string                             undistortion_fixed_frame_;  /// the fixed frame necessary for the undistortion
     ros::Duration                           tf_timeout_;                /// time out for the tf listener
 
-    interval_t                              linear_interval_;           /// linear field of view
-    interval_t                              angular_interval_;          /// angular field of view
+    interval_t                              laser_linear_interval_;           /// linear field of view
+    interval_t                              laser_angular_interval_;          /// angular field of view
 
 
     void laserscan(const sensor_msgs::LaserScanConstPtr &msg);
