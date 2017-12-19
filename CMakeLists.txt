@@ -26,12 +26,6 @@ find_package(catkin REQUIRED COMPONENTS
     rviz
 )
 
-find_package(LibBoard QUIET)
-if(${LibBoard_FOUND})
-    message("[${PROJECT_NAME}]: Found LibBoard, enabling service to save the map as eps.")
-    add_definitions("-DCSLIBS_MAPPING_LIBBOARD")
-endif()
-
 find_package(PCL REQUIRED COMPONENTS common filters segmentation io)
 find_package(Boost REQUIRED COMPONENTS filesystem)
 
@@ -62,7 +56,6 @@ include_directories(
     ${catkin_INCLUDE_DIRS}
     ${PCL_INCLUDE_DIRS}
     ${pcl_ros_INCLUDE_DIRS}
-    ${LibBoard_INCLUDED_DIRS}
     ${Boost_INCLUDE_DIRS}
 )
 
@@ -93,8 +86,7 @@ add_executable(${PROJECT_NAME}_node_2d
 target_link_libraries(${PROJECT_NAME}_node_2d
     ${PROJECT_NAME}_2d
     ${catkin_LIBRARIES}
-    ${LibBoard_LIBRARIES}
-    yaml-cpp
+     yaml-cpp
     )
 add_dependencies(${PROJECT_NAME}_node_2d ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
@@ -115,7 +107,6 @@ add_executable(${PROJECT_NAME}_offfline_node_2d
 target_link_libraries(${PROJECT_NAME}_offfline_node_2d
     ${PROJECT_NAME}_2d
     ${Boost_LIBRARIES}
-    ${LibBoard_LIBRARIES}
     ${catkin_LIBRARIES}
     )
 add_dependencies(${PROJECT_NAME}_node_2d ${${PROJECT_NAME}_EXPORTED_TARGETS})
@@ -131,8 +122,9 @@ target_link_libraries(${PROJECT_NAME}_offline_node_3d
     )
 add_dependencies(${PROJECT_NAME}_node_3d ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
-set(CMAKE_AUTOMOC ON)
 
+
+set(CMAKE_AUTOMOC ON)
 include_directories(${rviz_INCLUDE_DIRS})
 
 if(rviz_QT_VERSION VERSION_LESS "5")
