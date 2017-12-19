@@ -3,6 +3,7 @@
 #include <cslibs_gridmaps/static_maps/conversion/convert_probability_gridmap.hpp>
 
 #include <cslibs_math_2d/linear/polar_pointcloud.hpp>
+#include <cslibs_math_2d/serialization/transform.hpp>
 #include <cslibs_math_ros/sensor_msgs/conversion_2d.hpp>
 #include <cslibs_math_ros/geometry_msgs/conversion_2d.hpp>
 
@@ -13,7 +14,6 @@
 #include <boost/filesystem.hpp>
 #include <yaml-cpp/yaml.h>
 #include <fstream>
-#include <Board.h>
 
 namespace cslibs_mapping {
 MapperNode2d::MapperNode2d() :
@@ -239,6 +239,7 @@ bool MapperNode2d::saveMap(const std::string &path)
     std::string occ_path_yaml = (p / boost::filesystem::path("occ.map.yaml")).string();
     std::string occ_path_pgm  = (p / boost::filesystem::path("occ.map.pgm")).string();
     std::string occ_path_raw_pgm = (p / boost::filesystem::path("occ.map.raw.pgm")).string();
+    std::string poses_path_yaml = (p / boost::filesystem::path("poses.yaml")).string();
     {
         std::ofstream occ_out_yaml(occ_path_yaml);
         if(!occ_out_yaml.is_open()) {
@@ -309,31 +310,16 @@ bool MapperNode2d::saveMap(const std::string &path)
         occ_out_pgm.close();
         occ_out_raw_pgm.close();
     }
-    /// save map stuff here
-#if CSLIBS_MAPPING_LIBBOARD
     {
-        std::string occ_path_eps = (p / boost::filesystem::path("occ.map.eps")).string();
-        LibBoard::Board occ_board;
-        LibBoard::Image occ_board_img(occ_path_raw_ppm.c_str(), 0, 0, occ_width, occ_height);
-        occ_board.insert(occ_board_img, 0);
-        occ_board.setLineWidth(0.1);
-        occ_board.setPenColorRGBi( 0, 255, 0 );
-        occ_board.setLineCap(LibBoard::Shape::RoundCap);
-        const double occ_inv_resolution = 1.0 / occ_map.data()->getResolution();
-
-        const double occ_inv_resolution = 1.0 / occ_map.data()->getResolution();
-        const cslibs_math_2d::Transform2d m_t_w = occ_map.data()->getOrigin().inverse();
-        for(std::size_t i = 1 ; i < path_.poses.size(); ++i) {
-            const cslibs_math_2d::Transform2d t0 = m_t_w * cslibs_math_ros::geometry_msgs::conversion_2d::from(path_.poses[i-1].pose);
-            const cslibs_math_2d::Transform2d t1 = m_t_w * cslibs_math_ros::geometry_msgs::conversion_2d::from(path_.poses[i].pose);
-            occ_board.drawLine(t0.tx() * occ_inv_resolution, t0.ty() * occ_inv_resolution,
-                               t1.tx() * occ_inv_resolution, t1.ty() * occ_inv_resolution,
-                               1);
-            occ_board.drawCircle(t0.tx() * occ_inv_resolution, t0.ty() * occ_inv_resolution, 0.5, 2);
+        std::ofstream poses_out_yaml(poses_path_yaml);
+        YAML::Emitter poses_yaml(poses_out_yaml);
+        poses_yaml << YAML::BeginSeq;
+        for(const auto &p : path_.poses) {
+            poses_yaml << YAML::convert<cslibs_math_2d::Transform2d>::encode(cslibs_math_ros::geometry_msgs::conversion_2d::from(p.pose));
         }
-        occ_board.saveEPS(occ_path_eps.c_str());
+        poses_yaml << YAML::EndSeq;
+        poses_out_yaml.close();
     }
-#endif
     return true;
 }
 }
