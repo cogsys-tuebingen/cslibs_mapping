@@ -58,7 +58,7 @@ bool MapperNode2d::setup()
     map_frame_                = nh_.param<std::string>                      ("map_frame", "/odom");
 
     node_rate_                = nh_.param<double>                           ("rate", 0.0);
-    undistortion_             = nh_.param<bool>                             ("undistortion", false);
+    undistortion_             = nh_.param<bool>                             ("undistortion", true);
     undistortion_fixed_frame_ = nh_.param<std::string>                      ("undistortion_fixed_frame", "/odom");
 
     tf_timeout_               = ros::Duration(nh_.param("tf_timeout", 0.1));
@@ -106,6 +106,7 @@ bool MapperNode2d::setup()
     pub_ndt_interval_       = ros::Duration(occ_map_pub_rate > 0.0 ? 1.0 / ndt_map_pub_rate : 0.0);
     pub_ndt_last_time_      = ros::Time::now();
 
+    service_save_map_       = nh_.advertiseService(nh_.getNamespace() + "/save_map", &MapperNode2d::saveMap, this);
 
     tf_.reset(new cslibs_math_ros::tf::TFListener2d);
 
@@ -214,7 +215,7 @@ void MapperNode2d::publishOcc(const OccupancyGridMapper2d::static_map_stamped_t 
     }
 }
 
-bool MapperNode2d::saveMap(const cslibs_mapping::SaveMap::Request &req,
+bool MapperNode2d::saveMap(cslibs_mapping::SaveMap::Request &req,
                            cslibs_mapping::SaveMap::Response &)
 {
     return saveMap(req.path.data);
@@ -236,8 +237,8 @@ bool MapperNode2d::saveMap(const std::string &path)
 
 
     std::string occ_path_yaml = (p / boost::filesystem::path("occ.map.yaml")).string();
-    std::string occ_path_ppm  = (p / boost::filesystem::path("occ.map.ppm")).string();
-    std::string occ_path_raw_ppm = (p / boost::filesystem::path("occ.map.raw.ppm")).string();
+    std::string occ_path_pgm  = (p / boost::filesystem::path("occ.map.pgm")).string();
+    std::string occ_path_raw_pgm = (p / boost::filesystem::path("occ.map.raw.pgm")).string();
     {
         std::ofstream occ_out_yaml(occ_path_yaml);
         if(!occ_out_yaml.is_open()) {
@@ -247,7 +248,7 @@ bool MapperNode2d::saveMap(const std::string &path)
         /// write occupancy map meta data
         YAML::Emitter occ_yaml(occ_out_yaml);
         occ_yaml << YAML::BeginMap;
-        occ_yaml << "image" << occ_path_ppm;
+        occ_yaml << "image" << occ_path_pgm;
         occ_yaml << "resolution" << occ_map.data()->getResolution();
         occ_yaml << "origin" << YAML::BeginSeq;
         const transform_t origin = occ_map.data()->getOrigin();
@@ -259,14 +260,14 @@ bool MapperNode2d::saveMap(const std::string &path)
         occ_yaml << YAML::EndMap;
     }
     {
-        std::ofstream occ_out_ppm(occ_path_ppm);
-        std::ofstream occ_out_raw_ppm(occ_path_raw_ppm);
-        if(!occ_out_ppm.is_open()) {
-            ROS_ERROR_STREAM("Could not open file '" << occ_path_ppm << "'.");
+        std::ofstream occ_out_pgm(occ_path_pgm);
+        std::ofstream occ_out_raw_pgm(occ_path_raw_pgm);
+        if(!occ_out_pgm.is_open()) {
+            ROS_ERROR_STREAM("Could not open file '" << occ_path_pgm << "'.");
             return false;
         }
-        if(!occ_out_raw_ppm.is_open()) {
-            ROS_ERROR_STREAM("Could not open file '" << occ_path_raw_ppm << "'.");
+        if(!occ_out_raw_pgm.is_open()) {
+            ROS_ERROR_STREAM("Could not open file '" << occ_path_raw_pgm << "'.");
             return false;
         }
 
@@ -274,39 +275,39 @@ bool MapperNode2d::saveMap(const std::string &path)
         const double *occ_data_ptr = occ_data.data();
         const std::size_t occ_max_idx = occ_width - 1ul;
 
-        /// write ppm headers
-        occ_out_ppm << "P5 \n";
-        occ_out_ppm << "# CREATOR: cslibs_mapping_node_2d " << occ_map.data()->getResolution() << "m/pix \n";
-        occ_out_ppm << occ_width << " " << occ_height << "\n";
-        occ_out_ppm << 255 << "\n";
-        occ_out_raw_ppm << "P5 \n";
-        occ_out_raw_ppm << "# CREATOR: cslibs_mapping_node_2d " << occ_map.data()->getResolution() << "m/pix \n";
-        occ_out_raw_ppm << occ_width << " " << occ_height << "\n";
-        occ_out_raw_ppm << 255 << "\n";
+        /// write pgm headers
+        occ_out_pgm << "P5 \n";
+        occ_out_pgm << "# CREATOR: cslibs_mapping_node_2d " << occ_map.data()->getResolution() << "m/pix \n";
+        occ_out_pgm << occ_width << " " << occ_height << "\n";
+        occ_out_pgm << 255 << "\n";
+        occ_out_raw_pgm << "P5 \n";
+        occ_out_raw_pgm << "# CREATOR: cslibs_mapping_node_2d " << occ_map.data()->getResolution() << "m/pix \n";
+        occ_out_raw_pgm << occ_width << " " << occ_height << "\n";
+        occ_out_raw_pgm << 255 << "\n";
 
         auto convert_ros = [this](const double p) {
             if(cslibs_math::common::le(p, occ_free_threshold_))
-                return 254;
+                return static_cast<uint8_t>(254);
             if(cslibs_math::common::le(p,occ_occupied_threshold_))
-                return 0;
-            return 205;
+                return static_cast<uint8_t>(0);
+            return static_cast<uint8_t>(205);
         };
         auto convert_raw = [](const double p) {
-            return static_cast<int>((1.0 - p) * 255);
+            return static_cast<uint8_t>((1.0 - p) * 255);
         };
         for(std::size_t i = 0 ; i < occ_height ; ++i) {
             for(std::size_t j = 0 ; j < occ_max_idx; ++j) {
-                occ_out_ppm << convert_ros(*occ_data_ptr) << " ";
-                occ_out_raw_ppm << convert_raw(*occ_data_ptr) << " ";
+                occ_out_pgm << convert_ros(*occ_data_ptr);
+                occ_out_raw_pgm << convert_raw(*occ_data_ptr);
                 ++occ_data_ptr;
             }
-            occ_out_ppm << convert_ros(*occ_data_ptr) << "\n";
-            occ_out_raw_ppm << convert_raw(*occ_data_ptr) << "\n";
+            occ_out_pgm << convert_ros(*occ_data_ptr);
+            occ_out_raw_pgm << convert_raw(*occ_data_ptr);
             ++occ_data_ptr;
         }
 
-        occ_out_ppm.close();
-        occ_out_raw_ppm.close();
+        occ_out_pgm.close();
+        occ_out_raw_pgm.close();
     }
     /// save map stuff here
 #if CSLIBS_MAPPING_LIBBOARD
@@ -320,6 +321,7 @@ bool MapperNode2d::saveMap(const std::string &path)
         occ_board.setLineCap(LibBoard::Shape::RoundCap);
         const double occ_inv_resolution = 1.0 / occ_map.data()->getResolution();
 
+        const double occ_inv_resolution = 1.0 / occ_map.data()->getResolution();
         const cslibs_math_2d::Transform2d m_t_w = occ_map.data()->getOrigin().inverse();
         for(std::size_t i = 1 ; i < path_.poses.size(); ++i) {
             const cslibs_math_2d::Transform2d t0 = m_t_w * cslibs_math_ros::geometry_msgs::conversion_2d::from(path_.poses[i-1].pose);

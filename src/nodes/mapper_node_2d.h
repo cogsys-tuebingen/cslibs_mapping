@@ -11,6 +11,7 @@
 
 #include <cslibs_math_ros/tf/tf_listener_2d.hpp>
 
+
 namespace cslibs_mapping {
 class MapperNode2d
 {
@@ -25,7 +26,6 @@ private:
     using point_t       = cslibs_math_2d::Point2d;
     using transform_t   = cslibs_math_2d::Transform2d;
     using measurement_t = Measurement<point_t, transform_t>;
-
 
     ros::NodeHandle                         nh_;
     std::vector<ros::Subscriber>            sub_lasers_;
@@ -50,6 +50,8 @@ private:
     ros::Duration                           pub_ndt_interval_;
     ros::Time                               pub_ndt_last_time_;
 
+    ros::ServiceServer                      service_save_map_;
+
     double                                  node_rate_;
 
     bool                                    undistortion_;              /// check if undistortion shall be applied
@@ -68,7 +70,7 @@ private:
 
     void publishOcc(const OccupancyGridMapper2d::static_map_stamped_t &map);
 
-    bool saveMap(const cslibs_mapping::SaveMap::Request &req, cslibs_mapping::SaveMap::Response &);
+    bool saveMap(SaveMap::Request &req, cslibs_mapping::SaveMap::Response &);
 
     bool saveMap(const std::string &path);
 

@@ -7,12 +7,12 @@
 
 find_path(LibBoard_INCLUDE_DIR
           Board.h
-          HINTS /usr/include
+          HINTS /usr/local/include
 )
 
 find_library(LibBoard_LIBRARY
              NAMES board
-             HINTS /usr/lib/
+             HINTS /usr/local/lib
 )
 
 include(FindPackageHandleStandardArgs)

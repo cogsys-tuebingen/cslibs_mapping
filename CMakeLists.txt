@@ -27,10 +27,11 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 find_package(LibBoard QUIET)
-if(LibBoard_FOUND)
+if(${LibBoard_FOUND})
     message("[${PROJECT_NAME}]: Found LibBoard, enabling service to save the map as eps.")
     add_definitions("-DCSLIBS_MAPPING_LIBBOARD")
 endif()
+
 find_package(PCL REQUIRED COMPONENTS common filters segmentation io)
 find_package(Boost REQUIRED COMPONENTS filesystem)
 
