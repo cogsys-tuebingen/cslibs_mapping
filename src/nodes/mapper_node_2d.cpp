@@ -55,11 +55,12 @@ bool MapperNode2d::setup()
         return false;
     }
 
-    map_frame_                = nh_.param<std::string>                      ("map_frame", "/odom");
+    map_frame_                = nh_.param<std::string>                      ("map_frame", "odom");
+    base_frame_               = nh_.param<std::string>                      ("base_frame", "base_link");
 
     node_rate_                = nh_.param<double>                           ("rate", 0.0);
     undistortion_             = nh_.param<bool>                             ("undistortion", true);
-    undistortion_fixed_frame_ = nh_.param<std::string>                      ("undistortion_fixed_frame", "/odom");
+    undistortion_fixed_frame_ = nh_.param<std::string>                      ("undistortion_fixed_frame", "odom");
 
     tf_timeout_               = ros::Duration(nh_.param("tf_timeout", 0.1));
 
@@ -144,21 +145,12 @@ void MapperNode2d::laserscan(const sensor_msgs::LaserScanConstPtr &msg)
 
     cslibs_math_2d::Transform2d o_T_l;
     cslibs_time::TimeFrame time_frame = cslibs_math_ros::sensor_msgs::conversion_2d::from(msg);
+    ros::Time time = ros::Time(time_frame.end.seconds());
     if(tf_->lookupTransform(map_frame_, msg->header.frame_id,
-                            ros::Time(time_frame.end.seconds()),
+                            time,
                             o_T_l,
                             tf_timeout_)) {
 
-        {
-            if(path_update_interval_.isZero() || (path_.header.stamp + path_update_interval_ < msg->header.stamp)) {
-                path_.header.stamp = msg->header.stamp;
-                geometry_msgs::PoseStamped p;
-                p.pose = cslibs_math_ros::geometry_msgs::conversion_2d::from(o_T_l);
-                p.header = path_.header;
-                path_.poses.emplace_back(p);
-            }
-
-        }
         cslibs_math_2d::Pointcloud2d::Ptr points(new cslibs_math_2d::Pointcloud2d);
         measurement_t  m(points, o_T_l, time_frame.end);
         for(auto it = laserscan->begin() ; it != laserscan->end() ; ++it) {
@@ -167,6 +159,22 @@ void MapperNode2d::laserscan(const sensor_msgs::LaserScanConstPtr &msg)
         }
         occ_mapper_->insert(m);
         ndt_mapper_->insert(m);
+
+
+        if(path_update_interval_.isZero() || (path_.header.stamp + path_update_interval_ < msg->header.stamp)) {
+            cslibs_math_2d::Transform2d o_T_b;
+            if(tf_->lookupTransform(map_frame_, base_frame_,
+                                 time,
+                                 o_T_b,
+                                 tf_timeout_)) {
+                path_.header.stamp = msg->header.stamp;
+                geometry_msgs::PoseStamped p;
+                p.pose = cslibs_math_ros::geometry_msgs::conversion_2d::from(o_T_b);
+                p.header = path_.header;
+                path_.poses.emplace_back(p);
+            }
+         }
+
     }
 
     publish();
@@ -234,7 +242,8 @@ bool MapperNode2d::saveMap(const std::string &path)
     occ_mapper_->get(occ_map);
     const std::size_t occ_height = occ_map.data()->getHeight();
     const std::size_t occ_width  = occ_map.data()->getWidth();
-
+    const transform_t occ_origin = occ_map.data()->getOrigin();
+    const double occ_resolution  = occ_map.data()->getResolution();
 
     std::string occ_path_yaml = (p / boost::filesystem::path("occ.map.yaml")).string();
     std::string occ_path_pgm  = (p / boost::filesystem::path("occ.map.pgm")).string();
@@ -249,15 +258,23 @@ bool MapperNode2d::saveMap(const std::string &path)
         /// write occupancy map meta data
         YAML::Emitter occ_yaml(occ_out_yaml);
         occ_yaml << YAML::BeginMap;
-        occ_yaml << "image" << occ_path_pgm;
-        occ_yaml << "resolution" << occ_map.data()->getResolution();
-        occ_yaml << "origin" << YAML::BeginSeq;
-        const transform_t origin = occ_map.data()->getOrigin();
-        occ_yaml << origin.tx() << origin.ty() << origin.yaw();
+        occ_yaml << YAML::Key   << "image";
+        occ_yaml << YAML::Value << occ_path_pgm;
+        occ_yaml << YAML::Key   << "resolution";
+        occ_yaml << YAML::Value << occ_resolution;
+        occ_yaml << YAML::Key   << "origin";
+        occ_yaml << YAML::BeginSeq;
+        occ_yaml << YAML::Flow;
+        occ_yaml << occ_origin.tx();
+        occ_yaml << occ_origin.ty();
+        occ_yaml << occ_origin.yaw();
         occ_yaml << YAML::EndSeq;
-        occ_yaml << "oocupied_threshold" << occ_occupied_threshold_;
-        occ_yaml << "free_thresh" << occ_free_threshold_;
-        occ_yaml << "negate" << 0;
+        occ_yaml << YAML::Key   << "occupied_threshold";
+        occ_yaml << YAML::Value << occ_occupied_threshold_;
+        occ_yaml << YAML::Key   << "free_threshold";
+        occ_yaml << YAML::Value << occ_free_threshold_;
+        occ_yaml << YAML::Key   << "negate";
+        occ_yaml << YAML::Value << 0;
         occ_yaml << YAML::EndMap;
     }
     {
@@ -311,21 +328,30 @@ bool MapperNode2d::saveMap(const std::string &path)
         occ_out_raw_pgm.close();
     }
     {
+        const double occ_inv_resolution = 1.0 / occ_resolution;
+        const cslibs_math_2d::Transform2d m_t_w = occ_origin.inverse();
+
         std::ofstream poses_out_yaml(poses_path_yaml);
         YAML::Emitter poses_yaml(poses_out_yaml);
         poses_yaml << YAML::BeginSeq;
-        for(const auto &p : path_.poses) {
-            poses_yaml << YAML::convert<cslibs_math_2d::Transform2d>::encode(cslibs_math_ros::geometry_msgs::conversion_2d::from(p.pose));
+        for(const auto &p_w : path_.poses) {
+            const cslibs_math_2d::Transform2d p_m = m_t_w * cslibs_math_ros::geometry_msgs::conversion_2d::from(p_w.pose);
+            poses_yaml << YAML::BeginSeq << YAML::Flow <<  p_m.tx() * occ_inv_resolution << p_m.ty() * occ_inv_resolution << YAML::EndSeq;
         }
         poses_yaml << YAML::EndSeq;
         poses_out_yaml.close();
     }
+
     return true;
 }
 }
 
 int main(int argc, char *argv[])
 {
+    cslibs_math_2d::Transform2d p_m;
+    std::cout << p_m << std::endl;
+
+
     ros::init(argc, argv, "muse_mcl_2d_mapping_ocm_node");
     cslibs_mapping::MapperNode2d instance;
     instance.setup();

@@ -33,6 +33,7 @@ private:
     OccupancyGridMapper2d::Ptr              occ_mapper_;
     NDTGridMapper2d::Ptr                    ndt_mapper_;
     std::string                             map_frame_;
+    std::string                             base_frame_;
 
     ros::Publisher                          pub_path_;
     ros::Duration                           pub_path_interval_;
