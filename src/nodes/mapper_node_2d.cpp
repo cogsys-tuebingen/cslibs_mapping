@@ -21,6 +21,13 @@ MapperNode2d::MapperNode2d() :
 {
 }
 
+MapperNode2d::~MapperNode2d()
+{
+    if(output_path_ != "") {
+        saveMap(output_path_);
+    }
+}
+
 bool MapperNode2d::setup()
 {
     ROS_INFO_STREAM("Setting up subscribers");
@@ -61,6 +68,8 @@ bool MapperNode2d::setup()
     node_rate_                = nh_.param<double>                           ("rate", 0.0);
     undistortion_             = nh_.param<bool>                             ("undistortion", true);
     undistortion_fixed_frame_ = nh_.param<std::string>                      ("undistortion_fixed_frame", "odom");
+
+    output_path_              = nh_.param<std::string>                      ("output_path", "");
 
     tf_timeout_               = ros::Duration(nh_.param("tf_timeout", 0.1));
 
@@ -245,10 +254,10 @@ bool MapperNode2d::saveMap(const std::string &path)
     const transform_t occ_origin = occ_map.data()->getOrigin();
     const double occ_resolution  = occ_map.data()->getResolution();
 
-    std::string occ_path_yaml = (p / boost::filesystem::path("occ.map.yaml")).string();
-    std::string occ_path_pgm  = (p / boost::filesystem::path("occ.map.pgm")).string();
+    std::string occ_path_yaml    = (p / boost::filesystem::path("occ.map.yaml")).string();
+    std::string occ_path_pgm     = (p / boost::filesystem::path("occ.map.pgm")).string();
     std::string occ_path_raw_pgm = (p / boost::filesystem::path("occ.map.raw.pgm")).string();
-    std::string poses_path_yaml = (p / boost::filesystem::path("poses.yaml")).string();
+    std::string poses_path_yaml  = (p / boost::filesystem::path("poses.yaml")).string();
     {
         std::ofstream occ_out_yaml(occ_path_yaml);
         if(!occ_out_yaml.is_open()) {

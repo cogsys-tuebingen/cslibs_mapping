@@ -17,6 +17,7 @@ class MapperNode2d
 {
 public:
     MapperNode2d();
+    virtual ~MapperNode2d();
 
     bool setup();
     void run();
@@ -62,6 +63,7 @@ private:
     interval_t                              laser_linear_interval_;           /// linear field of view
     interval_t                              laser_angular_interval_;          /// angular field of view
 
+    std::string                             output_path_;
 
     void laserscan(const sensor_msgs::LaserScanConstPtr &msg);
 

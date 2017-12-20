@@ -3,6 +3,7 @@ import sys
 import yaml
 import matplotlib.pyplot as plt
 
+
 def main(argv):
     parser = argparse.ArgumentParser(description='Render an occupancy map with the trajectory it was recorded with.')
     parser.add_argument('--map', help='Saved occupancy grid map in compatible image format.', type=str)
@@ -22,7 +23,7 @@ def main(argv):
     if args.output is None:
         print("Parameter '--output' is not set.")
         error = True
-    if error:
+    if error:   
         return
 
     print('[map ]:       ' + args.map)
@@ -42,11 +43,15 @@ def main(argv):
     img = plt.imread(args.map)
     fig, ax = plt.subplots()
 
-
-    ax.plot(xs, ys, '--', linewidth=5, color='firebrick')
+    ax.plot(xs, ys, '-', linewidth=1, color='blue')
+    # plt.scatter(xs, ys, s=2, facecolors='none', edgecolors='blue')
 
     ax.imshow(img, cmap='gray', origin='lower')
+
+    fig = plt.gcf()
+    fig.savefig(args.output, dpi=300)
     plt.show()
+
 
     return
 

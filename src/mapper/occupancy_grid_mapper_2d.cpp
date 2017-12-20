@@ -80,10 +80,11 @@ void OccupancyGridMapper2d::mapRequest()
 {
     if(request_map_ && dynamic_map_) {
         cslibs_math_2d::Transform2d origin = dynamic_map_->getOrigin();
-        static_map_.data().reset(new static_map_t(origin,
-                                                  dynamic_map_->getResolution(),
-                                                  dynamic_map_->getHeight(),
-                                                  dynamic_map_->getWidth()));
+        static_map_.data().reset(new static_map_t   (origin,
+                                                     dynamic_map_->getResolution(),
+                                                     dynamic_map_->getHeight(),
+                                                     dynamic_map_->getWidth(),
+                                                     cslibs_math::common::LogOdds::to(0.5)));
 
         static_map_.stamp() = latest_time_;
 
