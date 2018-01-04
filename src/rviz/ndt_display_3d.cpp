@@ -1,6 +1,8 @@
 #include "ndt_display_3d.h"
-#include "ndt_visual_3d.h"
 
+#include "ndt_ellipsoid_3d.h"
+#include "ndt_circles_3d.h"
+#include "ndt_cylinders_3d.h"
 
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>
@@ -121,7 +123,7 @@ void NDTDisplay3D::processMessage(const cslibs_mapping::Distribution3dArray::Con
     if(!accumulate_)
         visuals_.clear();
 
-    cslibs_time::Time start = cslibs_time::Time::now();
+//    cslibs_time::Time start = cslibs_time::Time::now();
     for(const auto &d : msg->data) {
         const Ogre::Vector3 p    = getTranslation(d);
         const Ogre::Quaternion q = getRotation(d);
@@ -130,7 +132,7 @@ void NDTDisplay3D::processMessage(const cslibs_mapping::Distribution3dArray::Con
         if(valid(p,q,s) && std::isnormal(d.prob.data)) {
             NDTVisual3D::Ptr &v = visuals_[d.id.data];
             if(!v) {
-                v.reset(new NDTVisual3D( context_->getSceneManager(), scene_node_));
+                v.reset(new NDTEllipsoid3D (context_->getSceneManager(), scene_node_));
             }
             v->setFramePosition(p);
             v->setFrameOrientation(q);
@@ -139,7 +141,7 @@ void NDTDisplay3D::processMessage(const cslibs_mapping::Distribution3dArray::Con
             v->setColor(color_);
         }
     }
-    std::cerr << (cslibs_time::Time::now() - start).milliseconds() << "ms" << std::endl;
+//    std::cerr << (cslibs_time::Time::now() - start).milliseconds() << "ms" << std::endl;
 }
 }
 

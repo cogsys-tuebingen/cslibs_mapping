@@ -142,6 +142,8 @@ endif()
 add_library(${PROJECT_NAME}_rviz
     src/rviz/ndt_visual_3d.cpp
     src/rviz/ndt_display_3d.cpp
+    src/rviz/ndt_ellipsoid_3d.cpp
+    src/rviz/ndt_circles_3d.cpp
     )
 target_link_libraries(${PROJECT_NAME}_rviz
     ${PROJECT_NAME}_2d

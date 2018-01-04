@@ -33,8 +33,8 @@ public:
     using measurement_t             = Measurement<point_t, transform_t>;
 
     NDTGridMapper2d(const double resolution,
-                  const double sampling_resolution,
-                  const std::string &frame_id);
+                    const double sampling_resolution,
+                    const std::string &frame_id);
 
     virtual ~NDTGridMapper2d();
 

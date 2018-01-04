@@ -1,14 +1,14 @@
 #ifndef CSLIBS_MAPPING_NDT_VISUAL_3D_H
 #define CSLIBS_MAPPING_NDT_VISUAL_3D_H
 
+#include <memory>
+
 namespace Ogre {
 class Vector3;
 class Quaternion;
 class SceneManager;
 class SceneNode;
 }
-
-#include <memory>
 
 namespace rviz {
 class Shape;
@@ -23,17 +23,16 @@ public:
     NDTVisual3D(Ogre::SceneManager * scene_manager, Ogre::SceneNode *parent_node);
     virtual ~NDTVisual3D();
 
-    void setScale(const Ogre::Vector3 &scale);
-    void setFramePosition(const Ogre::Vector3 &pos);
-    void setFrameOrientation(const Ogre::Quaternion &quaternion);
-    void setColor(const std::array<float,4> &color);
-    void setColorScale(const float s);
+    virtual void setScale(const Ogre::Vector3 &scale) = 0;
+    virtual void setFramePosition(const Ogre::Vector3 &pos) = 0;
+    virtual void setFrameOrientation(const Ogre::Quaternion &quaternion) = 0;
+    virtual void setColor(const std::array<float,4> &color) = 0;
+    virtual void setColorScale(const float s) = 0;
 
-private:
+protected:
     float                         color_scale_;
     Ogre::SceneManager           *scene_manager_;
     Ogre::SceneNode              *frame_node_;
-    std::shared_ptr<rviz::Shape>  shape_;
 
 };
 }
