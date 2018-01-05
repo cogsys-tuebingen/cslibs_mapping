@@ -8,6 +8,7 @@ Panels:
         - /Status1
         - /NDT3D1
         - /RobotModel1
+        - /RobotModel1/Links1
       Splitter Ratio: 0.612698436
     Tree Height: 867
   - Class: rviz/Selection
@@ -28,7 +29,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 2
-    SyncSource: ""
+    SyncSource: PointCloud2
 Visualization Manager:
   Class: ""
   Displays:
@@ -51,7 +52,7 @@ Visualization Manager:
       Reference Frame: <Fixed Frame>
       Value: true
     - Class: rviz/TF
-      Enabled: true
+      Enabled: false
       Frame Timeout: 15
       Frames:
         All Enabled: true
@@ -63,7 +64,7 @@ Visualization Manager:
       Tree:
         {}
       Update Interval: 0
-      Value: true
+      Value: false
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
@@ -133,68 +134,12 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-        front_laser_base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        front_laser_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
         front_left_wheel:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        front_ptz_camera_base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        front_ptz_camera_frame_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        front_ptz_camera_optical_frame_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        front_ptz_camera_pan_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        front_ptz_camera_tilt_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        front_rgbd_camera_depth_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        front_rgbd_camera_depth_optical_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        front_rgbd_camera_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        front_rgbd_camera_rgb_base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        front_rgbd_camera_rgb_optical_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
         front_right_wheel:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        gps_base_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -243,14 +188,14 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 1.56979632
+      Pitch: 0.459798008
       Position:
-        X: -4.82792854
-        Y: 26.3742466
-        Z: 62.2997742
+        X: -1.31587684
+        Y: 0.399347514
+        Z: 1.04375029
       Target Frame: base_link
       Value: FPS (rviz)
-      Yaw: 4.67782068
+      Yaw: 5.96785355
     Saved: ~
 Window Geometry:
   Displays:

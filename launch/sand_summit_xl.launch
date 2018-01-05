@@ -24,7 +24,7 @@
 
     <node name="cslibs_mapping_node_3d" pkg="cslibs_mapping" type="cslibs_mapping_node_3d" output="screen" />
     
-    <indclude file="$(find cslibs_robot_descriptions)/launch/summit_xl.launch" />
+    <include file="$(find cslibs_robot_descriptions)/launch/summit_xl_velodyne.launch" />
 
     <node name="rviz" pkg="rviz" type="rviz" args="-d $(find cslibs_mapping)/config/sand_robot_model.rviz" />
 </launch>
