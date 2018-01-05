@@ -26,12 +26,12 @@ NDTEllipsoid3D::NDTEllipsoid3D(Ogre::SceneManager *scene_manager,
     mat->setTransparencyCastsShadows(false);
     mat->getTechnique(0)->getPass(0)->setPolygonMode(Ogre::PolygonMode::PM_SOLID);
     ent->setCastShadows(false);
+    ent->setMeshLodBias(0.05, 50);
 
 }
 
 NDTEllipsoid3D::~NDTEllipsoid3D()
 {
-    scene_manager_->destroySceneNode( frame_node_ );
 }
 
 void NDTEllipsoid3D::setScale(const Ogre::Vector3 &scale)

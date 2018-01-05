@@ -143,7 +143,7 @@ add_library(${PROJECT_NAME}_rviz
     src/rviz/ndt_visual_3d.cpp
     src/rviz/ndt_display_3d.cpp
     src/rviz/ndt_ellipsoid_3d.cpp
-    src/rviz/ndt_circles_3d.cpp
+    src/rviz/ndt_mesh_3d.cpp
     )
 target_link_libraries(${PROJECT_NAME}_rviz
     ${PROJECT_NAME}_2d
@@ -160,6 +160,10 @@ install(TARGETS ${PROJECT_NAME}_rviz
     )
 install(FILES plugin_description.xml
     DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+
+install(DIRECTORY ogre_media
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
 
 install(DIRECTORY icons/
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/icons)

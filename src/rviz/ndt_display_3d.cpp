@@ -1,8 +1,7 @@
 #include "ndt_display_3d.h"
 
 #include "ndt_ellipsoid_3d.h"
-#include "ndt_circles_3d.h"
-#include "ndt_cylinders_3d.h"
+#include "ndt_mesh_3d.h"
 
 #include <OGRE/OgreSceneNode.h>
 #include <OGRE/OgreSceneManager.h>

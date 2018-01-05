@@ -1,4 +1,4 @@
-#include "ndt_circles_3d.h"
+#include "ndt_mesh_3d.h"
 
 #include <OGRE/OgreVector3.h>
 #include <OGRE/OgreSceneNode.h>
@@ -12,11 +12,14 @@
 #include <OgreEntity.h>
 
 namespace cslibs_mapping {
-NDTCircles3D::NDTCircles3D(Ogre::SceneManager *scene_manager,
+NDTMeash3D::NDTMeash3D(Ogre::SceneManager *scene_manager,
                          Ogre::SceneNode *parent_node) :
     NDTVisual3D(scene_manager, parent_node),
     shape_(new rviz::Shape(rviz::Shape::Sphere, scene_manager_, frame_node_))
 {
+
+
+
     Ogre::MaterialPtr mat = shape_->getMaterial();
     Ogre::Entity     *ent = shape_->getEntity();
 
@@ -27,30 +30,30 @@ NDTCircles3D::NDTCircles3D(Ogre::SceneManager *scene_manager,
     mat->getTechnique(0)->getPass(0)->setPolygonMode(Ogre::PolygonMode::PM_SOLID);
     ent->setCastShadows(false);
 
+
 }
 
-NDTCircles3D::~NDTCircles3D()
+NDTMeash3D::~NDTMeash3D()
 {
-    scene_manager_->destroySceneNode( frame_node_ );
 }
 
-void NDTCircles3D::setScale(const Ogre::Vector3 &scale)
+void NDTMeash3D::setScale(const Ogre::Vector3 &scale)
 {
     shape_->setScale(scale);
 
 }
 
-void NDTCircles3D::setFramePosition(const Ogre::Vector3 &pos)
+void NDTMeash3D::setFramePosition(const Ogre::Vector3 &pos)
 {
     shape_->setPosition(pos);
 }
 
-void NDTCircles3D::setFrameOrientation(const Ogre::Quaternion &quaternion)
+void NDTMeash3D::setFrameOrientation(const Ogre::Quaternion &quaternion)
 {
     shape_->setOrientation(quaternion);
 }
 
-void NDTCircles3D::setColor(const std::array<float, 4> &color)
+void NDTMeash3D::setColor(const std::array<float, 4> &color)
 {
     shape_->setColor(color_scale_ * color[1],
             color_scale_ * color[2],
@@ -58,7 +61,7 @@ void NDTCircles3D::setColor(const std::array<float, 4> &color)
             color[0]);
 }
 
-void NDTCircles3D::setColorScale(const float s)
+void NDTMeash3D::setColorScale(const float s)
 {
     color_scale_ = s;
 }
