@@ -37,6 +37,6 @@
         <param name="ndt_grid_resolution"       value="1.0" />
     </group>
     <node name="cslibs_mapping_node_2d" pkg="cslibs_mapping" type="cslibs_mapping_node_2d" output="screen" />
-    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find cartographer_ros)/config/rawseeds.rviz" />
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find cslis_mapping)/config/rawseeds.rviz" />
 
 </launch>
