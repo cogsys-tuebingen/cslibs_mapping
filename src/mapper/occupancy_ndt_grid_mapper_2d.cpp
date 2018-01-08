@@ -1,21 +1,24 @@
-#include <cslibs_mapping/mapper/ndt_grid_mapper_2d.h>
+#include <cslibs_mapping/mapper/occupancy_ndt_grid_mapper_2d.h>
+#include <cslibs_math/common/log_odds.hpp>
 
 namespace cslibs_mapping {
-NDTGridMapper2d::NDTGridMapper2d(const double resolution,
-                             const double sampling_resolution,
-                             const std::string &frame_id) :
+OccupancyNDTGridMapper2d::OccupancyNDTGridMapper2d(
+        const cslibs_gridmaps::utility::InverseModel &inverse_model,
+        const double                                  resolution,
+        const double                                  sampling_resolution,
+        const std::string                            &frame_id) :
     stop_(false),
     request_map_(false),
     callback_([](const static_map_t::Ptr &){}),
+    inverse_model_(inverse_model),
     resolution_(resolution),
     sampling_resolution_(sampling_resolution),
     frame_id_(frame_id)
-
 {
     thread_ = std::thread([this](){loop();});
 }
 
-NDTGridMapper2d::~NDTGridMapper2d()
+OccupancyNDTGridMapper2d::~OccupancyNDTGridMapper2d()
 {
     stop_ = true;
     notify_event_.notify_one();
@@ -24,13 +27,13 @@ NDTGridMapper2d::~NDTGridMapper2d()
 }
 
 
-void NDTGridMapper2d::insert(const measurement_t &measurement)
+void OccupancyNDTGridMapper2d::insert(const measurement_t &measurement)
 {
     q_.emplace(measurement);
     notify_event_.notify_one();
 }
 
-void NDTGridMapper2d::get(static_map_stamped_t &map)
+void OccupancyNDTGridMapper2d::get(static_map_stamped_t &map)
 {
     request_map_ = true;
     lock_t static_map_lock(static_map_mutex_);
@@ -39,19 +42,19 @@ void NDTGridMapper2d::get(static_map_stamped_t &map)
     map = static_map_;
 }
 
-void NDTGridMapper2d::requestMap()
+void OccupancyNDTGridMapper2d::requestMap()
 {
     request_map_ = true;
 }
 
-void NDTGridMapper2d::setCallback(const callback_t &cb)
+void OccupancyNDTGridMapper2d::setCallback(const callback_t &cb)
 {
     if(!request_map_) {
         callback_ = cb;
     }
 }
 
-void NDTGridMapper2d::loop()
+void OccupancyNDTGridMapper2d::loop()
 {
     lock_t notify_event_mutex_lock(notify_event_mutex_);
     while(!stop_) {
@@ -69,7 +72,7 @@ void NDTGridMapper2d::loop()
     }
 }
 
-void NDTGridMapper2d::mapRequest()
+void OccupancyNDTGridMapper2d::mapRequest()
 {
     if(request_map_ && dynamic_map_) {
         cslibs_math_2d::Transform2d origin = dynamic_map_->getOrigin();
@@ -87,9 +90,16 @@ void NDTGridMapper2d::mapRequest()
         const dynamic_map_t::index_t min_distribution_index = dynamic_map_->getMinDistributionIndex();
         const dynamic_map_t::index_t max_distribution_index = dynamic_map_->getMaxDistributionIndex();
 
-        auto sample = [](const dynamic_map_t::distribution_t *d,
-                         const cslibs_math_2d::Point2d &p) {
-            return d ? d->data().sampleNonNormalized(p) : 0.0;
+        auto occupancy = [this] (const std::size_t& n_free, const std::size_t& n_occ)
+        {
+            return cslibs_math::common::LogOdds::from(
+                        n_free * inverse_model_.getLogOddsFree() +
+                        n_occ * inverse_model_.getLogOddsOccupied());
+        };
+        auto sample = [&occupancy] (const dynamic_map_t::distribution_t *d,
+                                    const cslibs_math_2d::Point2d &p) {
+            return (d && d->data()) ?
+                        (d->data()->sampleNonNormalized(p) * occupancy(d->numFree(), d->numOccupied())) : 0.0;
         };
         auto sample_bundle = [&sample] (const dynamic_map_t::distribution_bundle_t* b,
                                         const cslibs_math_2d::Point2d &p)
@@ -102,7 +112,8 @@ void NDTGridMapper2d::mapRequest()
 
         for(int i = min_distribution_index[1] ; i <= max_distribution_index[1] ; ++i) {
             for(int j = min_distribution_index[0] ; j <= max_distribution_index[0] ; ++j) {
-                dynamic_map_t::distribution_bundle_t* bundle = dynamic_map_->getDistributionBundle({{j,i}});
+                const dynamic_map_t::index_t bi = {{j,i}};
+                dynamic_map_t::distribution_bundle_t* bundle   = dynamic_map_->getDistributionBundle(bi);
                 if(bundle) {
                     const int cx = (j - min_distribution_index[0]) * static_cast<int>(chunk_step);
                     const int cy = (i - min_distribution_index[1]) * static_cast<int>(chunk_step);
@@ -124,7 +135,7 @@ void NDTGridMapper2d::mapRequest()
     notify_static_map_.notify_one();
 }
 
-void NDTGridMapper2d::process(const measurement_t &m)
+void OccupancyNDTGridMapper2d::process(const measurement_t &m)
 {
     if(!dynamic_map_) {
         dynamic_map_.reset(new dynamic_map_t(cslibs_math_2d::Transform2d::identity(),
@@ -139,8 +150,8 @@ void NDTGridMapper2d::process(const measurement_t &m)
     cslibs_time::Time start = cslibs_time::Time::now();
     for(const auto &p : *(m.points)) {
         const cslibs_math_2d::Point2d pm = m.origin * p;
-        dynamic_map_->add(pm);
+        dynamic_map_->add(m.origin.translation(), pm);
     }
-    std::cout << "[NDTGridMapper2d]: Insertion took " << (cslibs_time::Time::now() - start).milliseconds() << "ms \n";
+    std::cout << "[OccupancyNDTGridMapper2d]: Insertion took " << (cslibs_time::Time::now() - start).milliseconds() << "ms \n";
 }
 }

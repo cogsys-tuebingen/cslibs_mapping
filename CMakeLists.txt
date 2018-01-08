@@ -66,6 +66,7 @@ link_directories(${PCL_LIBRARY_DIRS})
 add_library(${PROJECT_NAME}_2d
     src/mapper/occupancy_grid_mapper_2d.cpp
     src/mapper/ndt_grid_mapper_2d.cpp
+    src/mapper/occupancy_ndt_grid_mapper_2d.cpp
     )
 target_link_libraries(${PROJECT_NAME}_2d
     ${catkin_LIBRARIES}

@@ -8,6 +8,7 @@
 #include <cslibs_mapping/SaveMap.h>
 #include <cslibs_mapping/mapper/occupancy_grid_mapper_2d.h>
 #include <cslibs_mapping/mapper/ndt_grid_mapper_2d.h>
+#include <cslibs_mapping/mapper/occupancy_ndt_grid_mapper_2d.h>
 
 #include <cslibs_math_ros/tf/tf_listener_2d.hpp>
 
@@ -33,6 +34,7 @@ private:
     cslibs_math_ros::tf::TFListener2d::Ptr  tf_;
     OccupancyGridMapper2d::Ptr              occ_mapper_;
     NDTGridMapper2d::Ptr                    ndt_mapper_;
+    OccupancyNDTGridMapper2d::Ptr           occ_ndt_mapper_;
     std::string                             map_frame_;
     std::string                             base_frame_;
 
@@ -50,7 +52,11 @@ private:
 
     ros::Publisher                          pub_ndt_map_;
     ros::Duration                           pub_ndt_interval_;
-    ros::Time                               pub_ndt_last_time_;
+    ros::Time                               pub_ndt_last_time_;    
+
+    ros::Publisher                          pub_occ_ndt_map_;
+    ros::Duration                           pub_occ_ndt_interval_;
+    ros::Time                               pub_occ_ndt_last_time_;
 
     ros::ServiceServer                      service_save_map_;
 
@@ -72,6 +78,8 @@ private:
     void publishNDT(const OccupancyGridMapper2d::static_map_stamped_t &map);
 
     void publishOcc(const OccupancyGridMapper2d::static_map_stamped_t &map);
+
+    void publishOccNDT(const OccupancyNDTGridMapper2d::static_map_stamped_t &map);
 
     bool saveMap(SaveMap::Request &req, cslibs_mapping::SaveMap::Response &);
 

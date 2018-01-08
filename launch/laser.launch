@@ -18,8 +18,11 @@
      <param name="map_frame" value="/odom" />
      <param name="ndt_map_pub_rate" value="10.0" />
      <param name="occ_map_pub_rate" value="10.0" />
-     <param name="ndt_sampling_resolution" value="0.025" />
+     <param name="occ_ndt_map_pub_rate" value="10.0" />
      <param name="ndt_grid_resolution" value="0.5" />
+     <param name="ndt_sampling_resolution" value="0.025" />
+     <param name="occ_ndt_grid_resolution" value="0.5" />
+     <param name="occ_ndt_sampling_resolution" value="0.025" />
      <param name="rate" value="60.0" />
     </group>
 

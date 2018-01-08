@@ -47,6 +47,11 @@ bool MapperNode2d::setup()
     const double        ndt_grid_resolution         = nh_.param<double>     ("ndt_grid_resolution", 1.0);
     const double        ndt_sampling_resolution     = nh_.param<double>     ("ndt_sampling_resolution", 0.05);
 
+    const std::string   occ_ndt_map_topic           = nh_.param<std::string>("occ_ndt_map_topic", "/map/occ_ndt");
+    const double        occ_ndt_map_pub_rate        = nh_.param<double>     ("occ_ndt_map_pub_rate", 10.0);
+    const double        occ_ndt_grid_resolution     = nh_.param<double>     ("occ_ndt_grid_resolution", 1.0);
+    const double        occ_ndt_sampling_resolution = nh_.param<double>     ("occ_ndt_sampling_resolution", 0.05);
+
     std::vector<std::string> laser_topics;
     if(!nh_.getParam("laser_topics", laser_topics)) {
         ROS_ERROR_STREAM("Did not find any laser topics.");
@@ -89,6 +94,12 @@ bool MapperNode2d::setup()
     ndt_mapper_.reset(new NDTGridMapper2d(ndt_grid_resolution, ndt_sampling_resolution, map_frame_));
     ndt_mapper_->setCallback(OccupancyGridMapper2d::callback_t::from<MapperNode2d, &MapperNode2d::publishNDT>(this));
 
+    occ_ndt_mapper_.reset(new OccupancyNDTGridMapper2d(inverse_model,
+                                                       occ_ndt_grid_resolution,
+                                                       occ_ndt_sampling_resolution,
+                                                       map_frame_));
+    occ_ndt_mapper_->setCallback(OccupancyNDTGridMapper2d::callback_t::from<MapperNode2d, &MapperNode2d::publishOccNDT>(this));
+
     for(std::size_t i = 0 ; i < laser_topics.size() ; ++i) {
         const auto &l = laser_topics[i];
         const unsigned int s = static_cast<unsigned int>(laser_queue_sizes[i]);
@@ -115,6 +126,10 @@ bool MapperNode2d::setup()
     pub_ndt_map_            = nh_.advertise<nav_msgs::OccupancyGrid>(ndt_map_topic, 1);
     pub_ndt_interval_       = ros::Duration(occ_map_pub_rate > 0.0 ? 1.0 / ndt_map_pub_rate : 0.0);
     pub_ndt_last_time_      = ros::Time::now();
+
+    pub_occ_ndt_map_        = nh_.advertise<nav_msgs::OccupancyGrid>(occ_ndt_map_topic, 1);
+    pub_occ_ndt_interval_   = ros::Duration(occ_ndt_map_pub_rate > 0.0 ? 1.0 / occ_ndt_map_pub_rate : 0.0);
+    pub_occ_ndt_last_time_  = ros::Time::now();
 
     service_save_map_       = nh_.advertiseService(nh_.getNamespace() + "/save_map", &MapperNode2d::saveMap, this);
 
@@ -168,7 +183,7 @@ void MapperNode2d::laserscan(const sensor_msgs::LaserScanConstPtr &msg)
         }
         occ_mapper_->insert(m);
         ndt_mapper_->insert(m);
-
+        occ_ndt_mapper_->insert(m);
 
         if(path_update_interval_.isZero() || (path_.header.stamp + path_update_interval_ < msg->header.stamp)) {
             cslibs_math_2d::Transform2d o_T_b;
@@ -201,11 +216,13 @@ void MapperNode2d::publish()
     if(pub_ndt_interval_.isZero() || (pub_ndt_last_time_ + pub_ndt_interval_ < now)) {
         ndt_mapper_->requestMap();
     }
+    if(pub_occ_ndt_interval_.isZero() || (pub_occ_ndt_last_time_ + pub_occ_ndt_interval_ < now)) {
+        occ_ndt_mapper_->requestMap();
+    }
     if(pub_path_interval_.isZero() || (pub_path_last_time_ + pub_path_interval_ < now)) {
         pub_path_.publish(path_);
         pub_path_last_time_ = now;
     }
-
 }
 
 void MapperNode2d::publishNDT(const OccupancyGridMapper2d::static_map_stamped_t &map)
@@ -229,6 +246,18 @@ void MapperNode2d::publishOcc(const OccupancyGridMapper2d::static_map_stamped_t 
         msg->header.frame_id = map_frame_;
         pub_occ_map_.publish(msg);
         pub_occ_last_time_ = ros::Time::now();
+    }
+}
+
+void MapperNode2d::publishOccNDT(const OccupancyNDTGridMapper2d::static_map_stamped_t &map)
+{
+    if(map.data()) {
+        nav_msgs::OccupancyGrid::Ptr msg;
+        cslibs_gridmaps::static_maps::conversion::from(map.data(), msg);
+        msg->header.stamp.fromNSec(static_cast<uint64_t>(map.stamp().nanoseconds()));
+        msg->header.frame_id = map_frame_;
+        pub_occ_ndt_map_.publish(msg);
+        pub_occ_ndt_last_time_ = ros::Time::now();
     }
 }
 
