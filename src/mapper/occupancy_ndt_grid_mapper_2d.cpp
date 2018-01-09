@@ -90,16 +90,15 @@ void OccupancyNDTGridMapper2d::mapRequest()
         const dynamic_map_t::index_t min_distribution_index = dynamic_map_->getMinDistributionIndex();
         const dynamic_map_t::index_t max_distribution_index = dynamic_map_->getMaxDistributionIndex();
 
-        auto occupancy = [this] (const std::size_t& n_free, const std::size_t& n_occ)
-        {
+        auto occupancy = [this] (const std::size_t& n_free, const std::size_t& n_occ) {
             return cslibs_math::common::LogOdds::from(
                         n_free * inverse_model_.getLogOddsFree() +
                         n_occ * inverse_model_.getLogOddsOccupied());
         };
         auto sample = [&occupancy] (const dynamic_map_t::distribution_t *d,
                                     const cslibs_math_2d::Point2d &p) {
-            return (d && d->data()) ?
-                        (d->data()->sampleNonNormalized(p) * occupancy(d->numFree(), d->numOccupied())) : 0.0;
+            return (d && d->getDistribution()) ?
+                        (d->getDistribution()->sampleNonNormalized(p) * occupancy(d->numFree(), d->numOccupied())) : 0.0;
         };
         auto sample_bundle = [&sample] (const dynamic_map_t::distribution_bundle_t* b,
                                         const cslibs_math_2d::Point2d &p)

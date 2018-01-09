@@ -10,6 +10,8 @@
 #include <cslibs_mapping/mapper/ndt_grid_mapper_2d.h>
 #include <cslibs_mapping/mapper/ndt_grid_mapper_3d.h>
 #include <cslibs_mapping/mapper/occupancy_grid_mapper_2d.h>
+#include <cslibs_mapping/mapper/occupancy_ndt_grid_mapper_2d.h>
+#include <cslibs_mapping/mapper/occupancy_ndt_grid_mapper_3d.h>
 
 #include <cslibs_gridmaps/static_maps/conversion/convert_probability_gridmap.hpp>
 #include <cslibs_math_ros/tf/tf_listener_2d.hpp>
@@ -24,7 +26,9 @@ private:
     using interval_t        = std::array<float, 2>;
     using occ_map_2d_t      = OccupancyGridMapper2d;
     using ndt_map_2d_t      = NDTGridMapper2d;
+    using occ_ndt_map_2d_t  = OccupancyNDTGridMapper2d;
     using ndt_map_3d_t      = NDTGridMapper3d;
+    using occ_ndt_map_3d_t  = OccupancyNDTGridMapper3d;
     using msg_2d_t          = nav_msgs::OccupancyGrid;
     using msg_3d_t          = sensor_msgs::PointCloud2;
     using point_2d_t        = cslibs_math_2d::Point2d;
@@ -81,7 +85,7 @@ private:
             pub_interval_  = ros::Duration(rate > 0.0 ? 1.0 / rate : 0.0);
             pub_last_time_ = now;            
 
-            setupAdditionalPublisher(nh);
+            setupAdditionalPublisher(nh, topic);
         }
 
         void requestMap(
@@ -97,16 +101,18 @@ private:
         template <typename t = msg_t>
         typename std::enable_if<std::is_same<t, msg_2d_t>::value, void>::type
         setupAdditionalPublisher(
-                ros::NodeHandle & nh)
+                ros::NodeHandle & nh,
+                const std::string & topic)
         { }
 
         template <typename t = msg_t>
         typename std::enable_if<std::is_same<t, msg_3d_t>::value, void>::type
         setupAdditionalPublisher(
-                ros::NodeHandle & nh)
+                ros::NodeHandle   & nh,
+                const std::string & topic)
         {
-            pub_marker_        = nh.advertise<visualization_msgs::MarkerArray>("/map/ndt_3d_marker", 1);
-            pub_distributions_ = nh.advertise<Distribution3dArray>("/map/ndt_3d_distributions", 1);
+            pub_marker_        = nh.advertise<visualization_msgs::MarkerArray>(topic + "/marker", 1);
+            pub_distributions_ = nh.advertise<Distribution3dArray>(topic + "/distributions", 1);
         }
 
         template <typename t = msg_t>
@@ -158,9 +164,8 @@ private:
         publish(
                 const Distribution3dArray::Ptr & msg)
         {
-            if (msg) {
+            if (msg)
                 pub_distributions_.publish(msg);
-            }
         }
     };
 
@@ -174,9 +179,11 @@ private:
     std::vector<ros::Subscriber>            sub_lasers_;
 
     // possible maps
-    MapperWorker<occ_map_2d_t, msg_2d_t>    occ_2d_mapper_;
-    MapperWorker<ndt_map_2d_t, msg_2d_t>    ndt_2d_mapper_;
-    MapperWorker<ndt_map_3d_t, msg_3d_t>    ndt_3d_mapper_;
+    MapperWorker<occ_map_2d_t, msg_2d_t>     occ_2d_mapper_;
+    MapperWorker<ndt_map_2d_t, msg_2d_t>     ndt_2d_mapper_;
+    MapperWorker<occ_ndt_map_2d_t, msg_2d_t> occ_ndt_2d_mapper_;
+    MapperWorker<ndt_map_3d_t, msg_3d_t>     ndt_3d_mapper_;
+    MapperWorker<occ_ndt_map_3d_t, msg_3d_t> occ_ndt_3d_mapper_;
 
     cslibs_math_ros::tf::TFListener2d::Ptr  tf_;
     double                                  node_rate_;
@@ -240,7 +247,6 @@ private:
                                origin,
                                cslibs_time::Time(nanoseconds));
 
-            cslibs_time::Time now = cslibs_time::Time::now();
             for(auto it = laserscan->begin() ; it != laserscan->end() ; ++ it) {
                 typename map_t::dynamic_map_t::point_t::arr_t arr =  {static_cast<double>(it->x),
                                                                       static_cast<double>(it->y),
@@ -249,7 +255,6 @@ private:
                     points->insert(typename map_t::dynamic_map_t::point_t(arr));
             }
             mapper.mapper_->insert(m);
-            std::cout << "Insertion on storage took " << (cslibs_time::Time::now() - now).milliseconds() << "ms \n";
         }
     }
 };

@@ -6,22 +6,24 @@
     <node pkg="tf" type="static_transform_publisher" name="odom_T" args="0.0 0.0 0.05 0.0 0.0 0.0 1.0 /base_footprint /base_link 100"/>
 
      <group ns="cslibs_mapping_node_3d">
-     <rosparam param="lasers2d">
+     <rosparam param="lasers_2d">
      </rosparam>
-     <rosparam param="lasers3d">
-         ["/velodyne_points"]
+     <rosparam param="lasers_3d">
+            ["/velodyne_points"]
      </rosparam>
      <param name="subscriber_queue_size" value="10" />
-     <param name="rate" value="0.0" />
-     <param name="resolution" value="0.05" />
      <param name="map_frame" value="/odom" />
-     <param name="ndt_map_pub_rate" value="10.0" />
-     <param name="occ_map_pub_rate" value="10.0" />
-     <param name="ndt_sampling_resolution" value="0.25" />
-     <param name="ndt_grid_resolution" value="2.0" />
      <param name="rate" value="60.0" />
+
+     <param name="occ_ndt_3d_grid_resolution" value="2.0" />
+     <param name="occ_ndt_3d_sampling_resolution" value="0.25" />
+     <param name="occ_ndt_3d_map_pub_rate" value="10.0" />
+
+     <param name="ndt_3d_grid_resolution" value="2.0" />
+     <param name="ndt_3d_sampling_resolution" value="0.25" />
+     <param name="ndt_3d_map_pub_rate" value="10.0" />
     </group>
 
-    <node name="cslibs_mapping_node_3d" pkg="cslibs_mapping" type="cslibs_mapping_node_3d" output="screen" />
-    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find cslibs_mapping)/config/sand.rviz" />
+    <node name="cslibs_mapping_node_3d" pkg="cslibs_mapping" type="cslibs_mapping_node_3d" output="screen" clear_params="true" />
+    <!--<node name="rviz" pkg="rviz" type="rviz" args="-d $(find cslibs_mapping)/config/sand.rviz" />-->
 </launch>

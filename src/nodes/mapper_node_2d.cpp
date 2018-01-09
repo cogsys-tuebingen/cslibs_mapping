@@ -390,7 +390,7 @@ int main(int argc, char *argv[])
     std::cout << p_m << std::endl;
 
 
-    ros::init(argc, argv, "muse_mcl_2d_mapping_ocm_node");
+    ros::init(argc, argv, "cslibs_mapping_node_2d");
     cslibs_mapping::MapperNode2d instance;
     instance.setup();
     instance.run();

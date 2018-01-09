@@ -1,0 +1,22 @@
+<?xml version="1.0" ?>
+<launch>
+    <param name="/use_sim_time" value="true" />
+
+    <!-- using only one map, the world and map frame can be collapsed -->
+    <node pkg="tf" type="static_transform_publisher" name="map_T_w" args="0 0 0 0 0 0 map world 10"/>
+    <include file="$(find rawseeds_ros)/launch/transforms.launch" />
+
+    <group ns="cslibs_mapping_node_3d">
+        <rosparam param="lasers_2d">
+            ["/sick/front", "/sick/rear"]
+        </rosparam>
+        <rosparam param="lasers_3d">
+            
+        </rosparam>
+
+        <param name="subscriber_queue_size" value="10" />
+        <param name="rate" value="70.0" />
+    </group>
+
+    <node name="cslibs_mapping_node_3d" pkg="cslibs_mapping" type="cslibs_mapping_node_3d" output="screen" />
+</launch>

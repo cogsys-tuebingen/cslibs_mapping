@@ -34,10 +34,11 @@ public:
     using measurement_t                 = Measurement<point_t, transform_t>;
 
 
-    OccupancyGridMapper2d(const cslibs_gridmaps::utility::InverseModel &inverse_model,
-                          const double resolution,
-                          const double chunk_resolution,
-                          const std::string &frame_id);
+    OccupancyGridMapper2d(
+            const cslibs_gridmaps::utility::InverseModel &inverse_model,
+            const double resolution,
+            const double chunk_resolution,
+            const std::string &frame_id);
 
     virtual ~OccupancyGridMapper2d();
 

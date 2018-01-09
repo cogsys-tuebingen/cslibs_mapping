@@ -1,5 +1,5 @@
-#ifndef NDT_GRID_MAPPER_3D_H
-#define NDT_GRID_MAPPER_3D_H
+#ifndef OCCUPANCY_NDT_GRID_MAPPER_3D_H
+#define OCCUPANCY_NDT_GRID_MAPPER_3D_H
 
 #include <atomic>
 #include <thread>
@@ -13,8 +13,9 @@
 
 #include <cslibs_gridmaps/static_maps/algorithms/normalize.hpp>
 #include <cslibs_gridmaps/static_maps/probability_gridmap.h>
+#include <cslibs_gridmaps/utility/inverse_model.hpp>
 #include <cslibs_gridmaps/utility/delegate.hpp>
-#include <cslibs_ndt_3d/dynamic_maps/gridmap.hpp>
+#include <cslibs_ndt_3d/dynamic_maps/occupancy_gridmap.hpp>
 #include <cslibs_time/stamped.hpp>
 #include <cslibs_math_3d/linear/pointcloud.hpp>
 #include <cslibs_math_3d/linear/box.hpp>
@@ -27,12 +28,12 @@
 #include <set>
 
 namespace cslibs_mapping {
-class NDTGridMapper3d
+class OccupancyNDTGridMapper3d
 {
 public:
-    using Ptr                       = std::shared_ptr<NDTGridMapper3d>;
+    using Ptr                       = std::shared_ptr<OccupancyNDTGridMapper3d>;
     using lock_t                    = std::unique_lock<std::mutex>;
-    using dynamic_map_t             = cslibs_ndt_3d::dynamic_maps::Gridmap;
+    using dynamic_map_t             = cslibs_ndt_3d::dynamic_maps::OccupancyGridmap;
     using static_map_t              = pcl::PointCloud<pcl::PointXYZI>;
     using static_map_stamped_t      = cslibs_time::Stamped<static_map_t::Ptr>;
     using callback_t                = delegate<void(const static_map_stamped_t &)>;
@@ -44,12 +45,13 @@ public:
 
 
 public:
-    NDTGridMapper3d(
-            const double        resolution,
-            const double        sampling_resolution,
-            const std::string & frame_id);
+    OccupancyNDTGridMapper3d(
+            const cslibs_gridmaps::utility::InverseModel &inverse_model,
+            const double                                  resolution,
+            const double                                  sampling_resolution,
+            const std::string                            &frame_id);
 
-    virtual ~NDTGridMapper3d();
+    virtual ~OccupancyNDTGridMapper3d();
 
     void insert(
             const measurement_t & measurement);
@@ -90,6 +92,7 @@ protected:
 
     cslibs_time::Time                                   latest_time_;
     dynamic_map_t::Ptr                                  dynamic_map_;
+    cslibs_gridmaps::utility::InverseModel              inverse_model_;
     double                                              resolution_;
     double                                              sampling_resolution_;
     std::string                                         frame_id_;
@@ -108,4 +111,4 @@ protected:
 };
 }
 
-#endif // NDT_GRID_MAPPER_3D_H
+#endif // OCCUPANCY_NDT_GRID_MAPPER_3D_H

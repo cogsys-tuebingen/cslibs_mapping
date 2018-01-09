@@ -4,10 +4,11 @@
 #include <cslibs_math/common/array.hpp>
 
 namespace cslibs_mapping {
-OccupancyGridMapper2d::OccupancyGridMapper2d(const cslibs_gridmaps::utility::InverseModel &inverse_model,
-                                         const double                                  resolution,
-                                         const double                                  chunk_resolution,
-                                         const std::string                            &frame_id) :
+OccupancyGridMapper2d::OccupancyGridMapper2d(
+        const cslibs_gridmaps::utility::InverseModel &inverse_model,
+        const double                                  resolution,
+        const double                                  chunk_resolution,
+        const std::string                            &frame_id) :
     stop_(false),
     request_map_(false),
     callback_([](const static_map_t::Ptr &){}),

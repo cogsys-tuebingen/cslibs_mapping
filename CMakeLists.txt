@@ -74,6 +74,7 @@ target_link_libraries(${PROJECT_NAME}_2d
 
 add_library(${PROJECT_NAME}_3d
     src/mapper/ndt_grid_mapper_3d.cpp
+    src/mapper/occupancy_ndt_grid_mapper_3d.cpp
     )
 target_link_libraries(${PROJECT_NAME}_3d
     ${catkin_LIBRARIES}
