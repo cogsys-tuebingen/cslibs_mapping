@@ -127,6 +127,8 @@ void NDTGridMapper3d::mapRequest()
                 dynamic_map_t::distribution_t::distribution_t d;
                 for (std::size_t i = 0; i < 8; ++ i)
                     d += b->at(i)->getHandle()->data();
+                if (d.getN() == 0)
+                    continue;
 
                 point_t p(d.getMean());
                 pcl::PointXYZI prob;
@@ -163,9 +165,9 @@ void NDTGridMapper3d::mapRequest()
         marker_callback_(marker_map_);
         distributions_callback_(distributions_);
 
-        std::cout << "Visualization [all]:      " << (cslibs_time::Time::now() - now).milliseconds() << "ms\n";
-        std::cout << "Visualization [retrieve]: " << dur.milliseconds() << "ms \n";
-        std::cout << "Visualization [sampling]: " << dur_sampling.milliseconds() << "ms \n";
+        std::cout << "Visualization NDT 3D [all]:      " << (cslibs_time::Time::now() - now).milliseconds() << "ms\n";
+        std::cout << "Visualization NDT 3D [retrieve]: " << dur.milliseconds() << "ms \n";
+        std::cout << "Visualization NDT 3D [sampling]: " << dur_sampling.milliseconds() << "ms \n";
      }
     request_map_ = false;
     notify_static_map_.notify_one();
@@ -225,7 +227,7 @@ void NDTGridMapper3d::process(const measurement_t &m)
     if (m.stamp > latest_time_)
         latest_time_ = m.stamp;
 
-
+    cslibs_time::Time now = cslibs_time::Time::now();
     for (const auto & p : *(m.points)) {
         const dynamic_map_t::point_t pm = m.origin * p;
         if (pm.isNormal()) {
@@ -234,5 +236,6 @@ void NDTGridMapper3d::process(const measurement_t &m)
             updated_indices_.insert(bi);
         }
     }
+    std::cout << "Insertion NDT 3D:                " << (cslibs_time::Time::now() - now).milliseconds() << "ms\n";
 }
 }
