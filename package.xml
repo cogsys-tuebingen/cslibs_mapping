@@ -26,6 +26,7 @@
   <exec_depend>message_runtime</exec_depend>
   <build_depend>message_generation</build_depend>
   <depend>rviz</depend>
+  <depend>yaml-cpp</depend>
 
   <export>
     <rviz plugin="${prefix}/plugin_description.xml"/>

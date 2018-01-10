@@ -1,4 +1,6 @@
 #include <cslibs_mapping/mapper/ndt_grid_mapper_3d.h>
+#include <cslibs_ndt_3d/serialization/dynamic_maps/gridmap.hpp>
+#include <cslibs_mapping/mapper/save_map.hpp>
 
 namespace cslibs_mapping {
 NDTGridMapper3d::NDTGridMapper3d(
@@ -237,5 +239,21 @@ void NDTGridMapper3d::process(const measurement_t &m)
         }
     }
     std::cout << "Insertion NDT 3D:                " << (cslibs_time::Time::now() - now).milliseconds() << "ms\n";
+}
+
+bool NDTGridMapper3d::saveMap(
+    const std::string    & path,
+    const nav_msgs::Path & poses_path)
+{
+    boost::filesystem::path p(path);
+
+    if(!boost::filesystem::is_directory(p))
+        boost::filesystem::create_directories(p);
+    if(!boost::filesystem::is_directory(p)) {
+        std::cout << "[NDTGridMapper3d]: '" << path << "' is not a directory." << std::endl;
+        return false;
+    }
+
+    return true;
 }
 }

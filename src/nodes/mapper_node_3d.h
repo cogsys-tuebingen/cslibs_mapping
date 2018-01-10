@@ -1,9 +1,11 @@
-#pragma once
+#ifndef MAPPER_NODE_3D_H
+#define MAPPER_NODE_3D_H
 
 #include <ros/ros.h>
 #include <sensor_msgs/LaserScan.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <nav_msgs/OccupancyGrid.h>
+#include <nav_msgs/Path.h>
 #include <visualization_msgs/MarkerArray.h>
 #include <pcl_conversions/pcl_conversions.h>
 
@@ -12,6 +14,7 @@
 #include <cslibs_mapping/mapper/occupancy_grid_mapper_2d.h>
 #include <cslibs_mapping/mapper/occupancy_ndt_grid_mapper_2d.h>
 #include <cslibs_mapping/mapper/occupancy_ndt_grid_mapper_3d.h>
+#include <cslibs_mapping/SaveMap.h>
 
 #include <cslibs_gridmaps/static_maps/conversion/convert_probability_gridmap.hpp>
 #include <cslibs_math_ros/tf/tf_listener_2d.hpp>
@@ -171,12 +174,16 @@ private:
 
 public:
     MapperNode3d();
+    ~MapperNode3d();
     bool setup();
     void run();
 
 private:
-    ros::NodeHandle                         nh_;
-    std::vector<ros::Subscriber>            sub_lasers_;
+    ros::NodeHandle                          nh_;
+    std::vector<ros::Subscriber>             sub_lasers_;
+
+    cslibs_math_ros::tf::TFListener2d::Ptr   tf_;
+    double                                   node_rate_;
 
     // possible maps
     MapperWorker<occ_map_2d_t, msg_2d_t>     occ_2d_mapper_;
@@ -185,15 +192,22 @@ private:
     MapperWorker<ndt_map_3d_t, msg_3d_t>     ndt_3d_mapper_;
     MapperWorker<occ_ndt_map_3d_t, msg_3d_t> occ_ndt_3d_mapper_;
 
-    cslibs_math_ros::tf::TFListener2d::Ptr  tf_;
-    double                                  node_rate_;
+    bool                                     undistortion_;              /// check if undistortion shall be applied
+    std::string                              undistortion_fixed_frame_;  /// the fixed frame necessary for the undistortion
+    ros::Duration                            tf_timeout_;                /// time out for the tf listener
 
-    bool                                    undistortion_;              /// check if undistortion shall be applied
-    std::string                             undistortion_fixed_frame_;  /// the fixed frame necessary for the undistortion
-    ros::Duration                           tf_timeout_;                /// time out for the tf listener
+    interval_t                               linear_interval_;           /// linear field of view
+    interval_t                               angular_interval_;          /// angular field of view
 
-    interval_t                              linear_interval_;           /// linear field of view
-    interval_t                              angular_interval_;          /// angular field of view
+    // map saving
+    ros::ServiceServer                       service_save_map_;
+    std::string                              output_path_;
+
+    // path
+    std::string                              base_frame_;
+    nav_msgs::Path                           path_;
+    ros::Publisher                           pub_path_;
+    ros::Duration                            path_update_interval_;
 
     // 2d and 3d laser callbacks
     void laserscan2d(
@@ -223,6 +237,7 @@ private:
                     points->insert(it->getCartesian());
 
             mapper.mapper_->insert(m);
+            updatePath(time);
         }
     }
 
@@ -237,7 +252,7 @@ private:
         uint64_t nanoseconds = laserscan->header.stamp * 1e3;
         if (tf_->lookupTransform(mapper.map_frame_,
                                  frame,
-                                 ros::Time().fromNSec(time.toNSec()),
+                                 time,
                                  o_T_l,
                                  tf_timeout_)) {
 
@@ -255,7 +270,21 @@ private:
                     points->insert(typename map_t::dynamic_map_t::point_t(arr));
             }
             mapper.mapper_->insert(m);
+            updatePath(time);
         }
     }
+
+    // map saving
+    bool saveMap(
+        SaveMap::Request                  & req,
+        cslibs_mapping::SaveMap::Response &);
+
+    bool saveMap(
+        const std::string & path);
+
+    void updatePath(
+        const ros::Time & time);
 };
 }
+
+#endif // MAPPER_NODE_3D_H

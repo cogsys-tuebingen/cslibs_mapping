@@ -1,6 +1,9 @@
 #include <cslibs_mapping/mapper/occupancy_ndt_grid_mapper_2d.h>
 #include <cslibs_math/common/log_odds.hpp>
 
+#include <cslibs_ndt_2d/serialization/dynamic_maps/occupancy_gridmap.hpp>
+#include <cslibs_mapping/mapper/save_map.hpp>
+
 namespace cslibs_mapping {
 OccupancyNDTGridMapper2d::OccupancyNDTGridMapper2d(
         const cslibs_gridmaps::utility::InverseModel &inverse_model,
@@ -152,5 +155,48 @@ void OccupancyNDTGridMapper2d::process(const measurement_t &m)
         dynamic_map_->add(m.origin.translation(), pm);
     }
     std::cout << "[OccupancyNDTGridMapper2d]: Insertion took " << (cslibs_time::Time::now() - start).milliseconds() << "ms \n";
+}
+
+bool OccupancyNDTGridMapper2d::saveMap(
+    const std::string    & path,
+    const nav_msgs::Path & poses_path)
+  {
+    if (!dynamic_map_)
+        return false;
+
+    boost::filesystem::path p(path);
+
+    if(!boost::filesystem::is_directory(p))
+        boost::filesystem::create_directories(p);
+    if(!boost::filesystem::is_directory(p)) {
+        std::cout << "[OccupancyNDTGridMapper2d]: '" << path << "' is not a directory." << std::endl;
+        return false;
+    }
+
+    // save dynamic map (YAML::Node)
+    std::string map_path_yaml    = (p / boost::filesystem::path("map.yaml")).string();
+    {
+        std::ofstream map_out_yaml(map_path_yaml);
+        if(!map_out_yaml.is_open()) {
+          std::cout << "[OccupancyNDTGridMapper2d]: Could not open file '" << map_path_yaml << "'." << std::endl;
+          return false;
+        }
+        map_out_yaml << YAML::Node(dynamic_map_);
+        map_out_yaml.close();
+    }
+
+    if (!static_map_.data())
+        return false;
+
+    // save static map (occ.map.yaml, occ.map.pgm, occ.map.raw.pgm, poses.yaml)
+    std::string occ_path_yaml    = (p / boost::filesystem::path("occ.map.yaml")).   string();
+    std::string occ_path_pgm     = (p / boost::filesystem::path("occ.map.pgm")).    string();
+    std::string occ_path_raw_pgm = (p / boost::filesystem::path("occ.map.raw.pgm")).string();
+    std::string poses_path_yaml  = (p / boost::filesystem::path("poses.yaml")).     string();
+
+    return cslibs_mapping::saveMap(occ_path_yaml, occ_path_pgm, occ_path_raw_pgm, poses_path_yaml, poses_path,
+                                   static_map_.data()->getData(), static_map_.data()->getHeight(),
+                                   static_map_.data()->getWidth(), static_map_.data()->getOrigin(),
+                                   static_map_.data()->getResolution());
 }
 }

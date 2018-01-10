@@ -24,6 +24,7 @@
 #include <pcl/point_cloud.h>
 #include <visualization_msgs/MarkerArray.h>
 
+#include <nav_msgs/Path.h>
 #include <set>
 
 namespace cslibs_mapping {
@@ -105,6 +106,11 @@ protected:
 
     void process(
             const measurement_t & points);
+
+public:
+    bool saveMap(
+        const std::string    & path,
+        const nav_msgs::Path & poses_path);
 };
 }
 

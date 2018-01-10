@@ -3,11 +3,22 @@
 #include <pcl/filters/filter.h>
 #include <cslibs_time/time.hpp>
 #include <cslibs_math_ros/sensor_msgs/conversion_2d.hpp>
+#include <cslibs_math_ros/geometry_msgs/conversion_2d.hpp>
 
 namespace cslibs_mapping {
 MapperNode3d::MapperNode3d() :
     nh_("~")
 { }
+
+MapperNode3d::~MapperNode3d()
+{
+    if (output_path_ != "") {
+        std::cout << "Saving Maps..." << std::endl;
+        const bool success = saveMap(output_path_);
+        std::cout << "Saving Maps was " << (success ? "successful :-)." : "unsuccessful :-(.") << std::endl;
+    } else
+      std::cout << "Closing without Saving Maps..." << std::endl;
+}
 
 bool MapperNode3d::setup()
 {
@@ -42,6 +53,10 @@ bool MapperNode3d::setup()
     const std::string   occ_ndt_3d_map_topic           = nh_.param<std::string>("occ_ndt_3d_map_topic", "/map/3d/occ_ndt");
     const double        occ_ndt_3d_map_pub_rate        = nh_.param<double>("occ_ndt_3d_map_pub_rate", 10.0);
 
+    const std::string   path_topic                     = nh_.param<std::string>("path_topic", "/map/path");
+    const double        path_update_rate               = nh_.param<double>("path_update_rate", 10.0);
+
+
     std::vector<std::string> lasers2d, lasers3d;
     if(!nh_.getParam("lasers_2d", lasers2d) && !nh_.getParam("lasers_3d", lasers3d)) {
         ROS_ERROR_STREAM("Did not find any laser inputs!");
@@ -49,6 +64,8 @@ bool MapperNode3d::setup()
     }
 
     std::string map_frame     = nh_.param<std::string>("map_frame", "/odom");
+    base_frame_               = nh_.param<std::string>("base_frame", "/base_link");
+    output_path_              = nh_.param<std::string>("output_path", "");
 
     node_rate_                = nh_.param<double>("rate", 0.0);
     undistortion_             = nh_.param<bool>("undistortion", true);
@@ -126,6 +143,14 @@ bool MapperNode3d::setup()
     ndt_3d_mapper_.     setup(nh_, ndt_3d_map_topic,     ndt_3d_map_pub_rate,     now);
     occ_ndt_3d_mapper_. setup(nh_, occ_ndt_3d_map_topic, occ_ndt_3d_map_pub_rate, now);
 
+    path_update_interval_  = ros::Duration(path_update_rate > 0.0 ? 1.0 / path_update_rate : 0.0);
+    path_.header.stamp     = now;
+    path_.header.frame_id  = map_frame;
+    path_.header.stamp     = now;
+
+    pub_path_         = nh_.advertise<nav_msgs::Path>(path_topic, 1);
+    service_save_map_ = nh_.advertiseService(nh_.getNamespace() + "/save_map", &MapperNode3d::saveMap, this);
+
     tf_.reset(new cslibs_math_ros::tf::TFListener2d);
 
     ROS_INFO_STREAM("Setup succesful!");
@@ -142,6 +167,7 @@ void MapperNode3d::run()
         occ_ndt_2d_mapper_.requestMap(now);
         ndt_3d_mapper_.    requestMap(now);
         occ_ndt_3d_mapper_.requestMap(now);
+        pub_path_.publish(path_);
         r.sleep();
         ros::spinOnce();
     }
@@ -180,6 +206,51 @@ void MapperNode3d::laserscan3d(
                 ndt_3d_mapper_,     msg->header.frame_id, msg->header.stamp,  laserscan.makeShared());
     insert<occ_ndt_map_3d_t, pcl::PointXYZI>(
                 occ_ndt_3d_mapper_, msg->header.frame_id, msg->header.stamp,  laserscan.makeShared());
+}
+
+bool MapperNode3d::saveMap(
+    SaveMap::Request                  & req,
+    cslibs_mapping::SaveMap::Response &)
+{
+    return saveMap(req.path.data);
+}
+
+bool MapperNode3d::saveMap(
+    const std::string & path)
+{
+    boost::filesystem::path p(path);
+
+    if(!boost::filesystem::is_directory(p))
+      boost::filesystem::create_directories(p);
+    if(!boost::filesystem::is_directory(p)) {
+        std::cout << "[MapperNode3d]: '" << path << "' is not a directory." << std::endl;
+        return false;
+    }
+
+    const bool res1 = occ_2d_mapper_.    mapper_->saveMap(path + occ_2d_mapper_.    pub_map_.getTopic() + "/", path_);
+    const bool res2 = ndt_2d_mapper_.    mapper_->saveMap(path + ndt_2d_mapper_.    pub_map_.getTopic() + "/", path_);
+    const bool res3 = occ_ndt_2d_mapper_.mapper_->saveMap(path + occ_ndt_2d_mapper_.pub_map_.getTopic() + "/", path_);
+    const bool res4 = ndt_3d_mapper_.    mapper_->saveMap(path + ndt_3d_mapper_.    pub_map_.getTopic() + "/", path_);
+    const bool res5 = occ_ndt_3d_mapper_.mapper_->saveMap(path + occ_ndt_3d_mapper_.pub_map_.getTopic() + "/", path_);
+    return res1 && res2 && res3 && res4 && res5;
+}
+
+void MapperNode3d::updatePath(
+    const ros::Time & time)
+{
+    if(path_update_interval_.isZero() || (path_.header.stamp + path_update_interval_ < time)) {
+        cslibs_math_2d::Transform2d o_T_b;
+        if(tf_->lookupTransform(path_.header.frame_id, base_frame_,
+                                time,
+                                o_T_b,
+                                tf_timeout_)) {
+            path_.header.stamp = time;
+            geometry_msgs::PoseStamped p;
+            p.pose = cslibs_math_ros::geometry_msgs::conversion_2d::from(o_T_b);
+            p.header = path_.header;
+            path_.poses.emplace_back(p);
+        }
+    }
 }
 }
 

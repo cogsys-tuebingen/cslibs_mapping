@@ -19,6 +19,7 @@
 #include <cslibs_math_2d/linear/pointcloud.hpp>
 #include <cslibs_math_2d/linear/box.hpp>
 
+#include <nav_msgs/Path.h>
 
 namespace cslibs_mapping {
 class OccupancyNDTGridMapper2d
@@ -74,6 +75,10 @@ protected:
     void loop();
     void mapRequest();
     void process(const measurement_t &points);
+
+public:
+    bool saveMap(const std::string    & path,
+                 const nav_msgs::Path & poses_path);
 };
 }
 

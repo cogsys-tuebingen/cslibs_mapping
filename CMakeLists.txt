@@ -70,6 +70,7 @@ add_library(${PROJECT_NAME}_2d
     )
 target_link_libraries(${PROJECT_NAME}_2d
     ${catkin_LIBRARIES}
+    yaml-cpp
     )
 
 add_library(${PROJECT_NAME}_3d
@@ -78,6 +79,7 @@ add_library(${PROJECT_NAME}_3d
     )
 target_link_libraries(${PROJECT_NAME}_3d
     ${catkin_LIBRARIES}
+    yaml-cpp
     )
 add_dependencies(${PROJECT_NAME}_3d ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
@@ -100,13 +102,14 @@ target_link_libraries(${PROJECT_NAME}_node_3d
     ${PROJECT_NAME}_3d
     ${catkin_LIBRARIES}
     ${PCL_LIBRARIES}
+    yaml-cpp
     )
 add_dependencies(${PROJECT_NAME}_node_3d ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
-add_executable(${PROJECT_NAME}_offfline_node_2d
+add_executable(${PROJECT_NAME}_offline_node_2d
     src/nodes/offline_mapper_node_2d.cpp
     )
-target_link_libraries(${PROJECT_NAME}_offfline_node_2d
+target_link_libraries(${PROJECT_NAME}_offline_node_2d
     ${PROJECT_NAME}_2d
     ${Boost_LIBRARIES}
     ${catkin_LIBRARIES}
