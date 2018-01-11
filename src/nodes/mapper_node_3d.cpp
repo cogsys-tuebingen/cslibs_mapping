@@ -43,6 +43,10 @@ bool MapperNode3d::setup()
     const std::string   occ_ndt_2d_map_topic           = nh_.param<std::string>("occ_ndt_2d_map_topic", "/map/2d/occ_ndt");
     const double        occ_ndt_2d_map_pub_rate        = nh_.param<double>("occ_ndt_2d_map_pub_rate", 10.0);
 
+    const double        occ_3d_grid_resolution         = nh_.param<double>("occ_3d_grid_resolution", 1.0);
+    const std::string   occ_3d_map_topic               = nh_.param<std::string>("occ_3d_map_topic", "/map/3d/occ");
+    const double        occ_3d_map_pub_rate            = nh_.param<double>("occ_3d_map_pub_rate", 10.0);
+
     const double        ndt_3d_grid_resolution         = nh_.param<double>("ndt_3d_grid_resolution", 2.0);
     const double        ndt_3d_sampling_resolution     = nh_.param<double>("ndt_3d_sampling_resolution", 0.25);
     const std::string   ndt_3d_map_topic               = nh_.param<std::string>("ndt_3d_map_topic", "/map/3d/ndt");
@@ -105,6 +109,13 @@ bool MapperNode3d::setup()
                                      occ_ndt_2d_mapper_.map_frame_));
     occ_ndt_2d_mapper_.setCallback();
 
+    occ_3d_mapper_.map_frame_ = map_frame;
+    occ_3d_mapper_.mapper_.reset(
+                new occ_map_3d_t(inverse_model,
+                                 occ_3d_grid_resolution,
+                                 occ_3d_mapper_.map_frame_));
+    occ_3d_mapper_.setCallback();
+
     ndt_3d_mapper_.map_frame_ = map_frame;
     ndt_3d_mapper_.mapper_.reset(
                 new ndt_map_3d_t(ndt_3d_grid_resolution,
@@ -140,6 +151,7 @@ bool MapperNode3d::setup()
     occ_2d_mapper_.     setup(nh_, occ_2d_map_topic,     occ_2d_map_pub_rate,     now);
     ndt_2d_mapper_.     setup(nh_, ndt_2d_map_topic,     ndt_2d_map_pub_rate,     now);
     occ_ndt_2d_mapper_. setup(nh_, occ_ndt_2d_map_topic, occ_ndt_2d_map_pub_rate, now);
+    occ_3d_mapper_.     setup(nh_, occ_3d_map_topic,     occ_3d_map_pub_rate,     now);
     ndt_3d_mapper_.     setup(nh_, ndt_3d_map_topic,     ndt_3d_map_pub_rate,     now);
     occ_ndt_3d_mapper_. setup(nh_, occ_ndt_3d_map_topic, occ_ndt_3d_map_pub_rate, now);
 
@@ -165,6 +177,7 @@ void MapperNode3d::run()
         occ_2d_mapper_.    requestMap(now);
         ndt_2d_mapper_.    requestMap(now);
         occ_ndt_2d_mapper_.requestMap(now);
+        occ_3d_mapper_.    requestMap(now);
         ndt_3d_mapper_.    requestMap(now);
         occ_ndt_3d_mapper_.requestMap(now);
         pub_path_.publish(path_);
@@ -202,10 +215,12 @@ void MapperNode3d::laserscan3d(
     pcl::fromROSMsg(*msg, laserscan);
     pcl::removeNaNFromPointCloud(laserscan, laserscan, indices);
 
-    insert<ndt_map_3d_t,     pcl::PointXYZI>(
-                ndt_3d_mapper_,     msg->header.frame_id, msg->header.stamp,  laserscan.makeShared());
-    insert<occ_ndt_map_3d_t, pcl::PointXYZI>(
-                occ_ndt_3d_mapper_, msg->header.frame_id, msg->header.stamp,  laserscan.makeShared());
+    insert<occ_map_3d_t,     octomap_msg_3d_t, pcl::PointXYZI>(
+                occ_3d_mapper_,     msg->header.frame_id, msg->header.stamp, laserscan.makeShared());
+    insert<ndt_map_3d_t,     msg_3d_t,         pcl::PointXYZI>(
+                ndt_3d_mapper_,     msg->header.frame_id, msg->header.stamp, laserscan.makeShared());
+    insert<occ_ndt_map_3d_t, msg_3d_t,         pcl::PointXYZI>(
+                occ_ndt_3d_mapper_, msg->header.frame_id, msg->header.stamp, laserscan.makeShared());
 }
 
 bool MapperNode3d::saveMap(
@@ -230,9 +245,10 @@ bool MapperNode3d::saveMap(
     const bool res1 = occ_2d_mapper_.    mapper_->saveMap(path + occ_2d_mapper_.    pub_map_.getTopic() + "/", path_);
     const bool res2 = ndt_2d_mapper_.    mapper_->saveMap(path + ndt_2d_mapper_.    pub_map_.getTopic() + "/", path_);
     const bool res3 = occ_ndt_2d_mapper_.mapper_->saveMap(path + occ_ndt_2d_mapper_.pub_map_.getTopic() + "/", path_);
-    const bool res4 = ndt_3d_mapper_.    mapper_->saveMap(path + ndt_3d_mapper_.    pub_map_.getTopic() + "/", path_);
-    const bool res5 = occ_ndt_3d_mapper_.mapper_->saveMap(path + occ_ndt_3d_mapper_.pub_map_.getTopic() + "/", path_);
-    return res1 && res2 && res3 && res4 && res5;
+    const bool res4 = occ_3d_mapper_.    mapper_->saveMap(path + occ_3d_mapper_.    pub_map_.getTopic() + "/", path_);
+    const bool res5 = ndt_3d_mapper_.    mapper_->saveMap(path + ndt_3d_mapper_.    pub_map_.getTopic() + "/", path_);
+    const bool res6 = occ_ndt_3d_mapper_.mapper_->saveMap(path + occ_ndt_3d_mapper_.pub_map_.getTopic() + "/", path_);
+    return res1 && res2 && res3 && res4 && res5 && res6;
 }
 
 void MapperNode3d::updatePath(

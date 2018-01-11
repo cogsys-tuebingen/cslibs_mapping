@@ -108,9 +108,11 @@ void OctomapMapper3d::process(const measurement_t &m)
 
     cslibs_time::Time now = cslibs_time::Time::now();
     octomap::Pointcloud octomap_cloud;
-    for (const auto & p : *(m.points))
-        if (p.isNormal())
-            octomap_cloud.push_back(p(0), p(1), p(2));
+    for (const auto & p : *(m.points)) {
+        const auto pm = m.origin * p;
+        if (pm.isNormal())
+            octomap_cloud.push_back(pm(0), pm(1), pm(2));
+    }
     const octomath::Vector3 origin(m.origin.translation()(0),
                                    m.origin.translation()(1),
                                    m.origin.translation()(2));

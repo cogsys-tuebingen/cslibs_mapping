@@ -14,6 +14,7 @@
 #include <cslibs_mapping/mapper/occupancy_grid_mapper_2d.h>
 #include <cslibs_mapping/mapper/occupancy_ndt_grid_mapper_2d.h>
 #include <cslibs_mapping/mapper/occupancy_ndt_grid_mapper_3d.h>
+#include <cslibs_mapping/mapper/octomap_mapper_3d.h>
 #include <cslibs_mapping/SaveMap.h>
 
 #include <cslibs_gridmaps/static_maps/conversion/convert_probability_gridmap.hpp>
@@ -30,10 +31,12 @@ private:
     using occ_map_2d_t      = OccupancyGridMapper2d;
     using ndt_map_2d_t      = NDTGridMapper2d;
     using occ_ndt_map_2d_t  = OccupancyNDTGridMapper2d;
+    using occ_map_3d_t      = OctomapMapper3d;
     using ndt_map_3d_t      = NDTGridMapper3d;
     using occ_ndt_map_3d_t  = OccupancyNDTGridMapper3d;
     using msg_2d_t          = nav_msgs::OccupancyGrid;
     using msg_3d_t          = sensor_msgs::PointCloud2;
+    using octomap_msg_3d_t  = octomap_msgs::Octomap;
     using point_2d_t        = cslibs_math_2d::Point2d;
     using transform_2d_t    = cslibs_math_2d::Transform2d;
     using measurement_2d_t  = Measurement<point_2d_t, transform_2d_t>;
@@ -53,7 +56,7 @@ private:
         ros::Publisher      pub_distributions_;
 
         template <typename t = msg_t>
-        typename std::enable_if<std::is_same<t, msg_2d_t>::value, void>::type
+        typename std::enable_if<!std::is_same<t, msg_3d_t>::value, void>::type
         setCallback()
         {
             mapper_->setCallback(
@@ -102,7 +105,7 @@ private:
         }
 
         template <typename t = msg_t>
-        typename std::enable_if<std::is_same<t, msg_2d_t>::value, void>::type
+        typename std::enable_if<!std::is_same<t, msg_3d_t>::value, void>::type
         setupAdditionalPublisher(
                 ros::NodeHandle & nh,
                 const std::string & topic)
@@ -170,6 +173,15 @@ private:
             if (msg)
                 pub_distributions_.publish(msg);
         }
+
+        template <typename t = msg_t>
+        typename std::enable_if<std::is_same<t, octomap_msg_3d_t>::value, void>::type
+        publish(
+                const typename map_t::static_map_stamped_t & map)
+        {
+            if(map.data())
+                pub_map_.publish(*(map.data()));
+        }
     };
 
 public:
@@ -186,11 +198,12 @@ private:
     double                                   node_rate_;
 
     // possible maps
-    MapperWorker<occ_map_2d_t, msg_2d_t>     occ_2d_mapper_;
-    MapperWorker<ndt_map_2d_t, msg_2d_t>     ndt_2d_mapper_;
-    MapperWorker<occ_ndt_map_2d_t, msg_2d_t> occ_ndt_2d_mapper_;
-    MapperWorker<ndt_map_3d_t, msg_3d_t>     ndt_3d_mapper_;
-    MapperWorker<occ_ndt_map_3d_t, msg_3d_t> occ_ndt_3d_mapper_;
+    MapperWorker<occ_map_2d_t, msg_2d_t>         occ_2d_mapper_;
+    MapperWorker<ndt_map_2d_t, msg_2d_t>         ndt_2d_mapper_;
+    MapperWorker<occ_ndt_map_2d_t, msg_2d_t>     occ_ndt_2d_mapper_;
+    MapperWorker<occ_map_3d_t, octomap_msg_3d_t> occ_3d_mapper_;
+    MapperWorker<ndt_map_3d_t, msg_3d_t>         ndt_3d_mapper_;
+    MapperWorker<occ_ndt_map_3d_t, msg_3d_t>     occ_ndt_3d_mapper_;
 
     bool                                     undistortion_;              /// check if undistortion shall be applied
     std::string                              undistortion_fixed_frame_;  /// the fixed frame necessary for the undistortion
@@ -241,9 +254,10 @@ private:
         }
     }
 
-    template <typename map_t, typename point_t>
-    void insert(
-            MapperWorker<map_t, msg_3d_t>                     & mapper,
+    template <typename map_t, typename msg_t, typename point_t>
+    typename std::enable_if<!std::is_same<msg_t, msg_2d_t>::value, void>::type
+    insert(
+            MapperWorker<map_t, msg_t>                        & mapper,
             const std::string                                 & frame,
             const ros::Time                                   & time,
             const typename pcl::PointCloud<point_t>::ConstPtr & laserscan)
@@ -263,11 +277,11 @@ private:
                                cslibs_time::Time(nanoseconds));
 
             for(auto it = laserscan->begin() ; it != laserscan->end() ; ++ it) {
-                typename map_t::dynamic_map_t::point_t::arr_t arr =  {static_cast<double>(it->x),
-                                                                      static_cast<double>(it->y),
-                                                                      static_cast<double>(it->z)};
+                cslibs_math_3d::Point3d::arr_t arr =  {static_cast<double>(it->x),
+                                                       static_cast<double>(it->y),
+                                                       static_cast<double>(it->z)};
                 if (std::isnormal(arr[0]) && std::isnormal(arr[1]) && std::isnormal(arr[2]))
-                    points->insert(typename map_t::dynamic_map_t::point_t(arr));
+                    points->insert(cslibs_math_3d::Point3d(arr));
             }
             mapper.mapper_->insert(m);
             updatePath(time);
