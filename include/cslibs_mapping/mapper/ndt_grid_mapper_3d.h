@@ -47,7 +47,6 @@ public:
 public:
     NDTGridMapper3d(
             const double        resolution,
-            const double        sampling_resolution,
             const std::string & frame_id);
 
     virtual ~NDTGridMapper3d();
@@ -92,7 +91,6 @@ protected:
     cslibs_time::Time                                   latest_time_;
     dynamic_map_t::Ptr                                  dynamic_map_;
     double                                              resolution_;
-    double                                              sampling_resolution_;
     std::string                                         frame_id_;
 
     void loop();

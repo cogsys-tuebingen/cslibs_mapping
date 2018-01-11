@@ -168,7 +168,7 @@ bool OctomapMapper3d::saveMap(
     std::string poses_path_yaml  = (p / boost::filesystem::path("poses.yaml")).     string();
 
     // convert octomap to probability gridmap
-    const nav_msgs::OccupancyGrid::Ptr grid = toGrid(dynamic_cast<dynamic_map_t*>(octomap_msgs::msgToMap(*(static_map_.data()))));
+    const nav_msgs::OccupancyGrid::Ptr grid = toGrid(&(*dynamic_map_));
     cslibs_gridmaps::static_maps::ProbabilityGridmap::Ptr occ_map;
     cslibs_gridmaps::static_maps::conversion::from(grid, occ_map);
 

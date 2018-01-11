@@ -7,14 +7,12 @@ namespace cslibs_mapping {
 OccupancyNDTGridMapper3d::OccupancyNDTGridMapper3d(
         const cslibs_gridmaps::utility::InverseModel &inverse_model,
         const double                                  resolution,
-        const double                                  sampling_resolution,
         const std::string                            &frame_id) :
         stop_(false),
         request_map_(false),
         callback_([](const static_map_t::Ptr &){}),
         inverse_model_(inverse_model),
         resolution_(resolution),
-        sampling_resolution_(sampling_resolution),
         frame_id_(frame_id)
 
 {

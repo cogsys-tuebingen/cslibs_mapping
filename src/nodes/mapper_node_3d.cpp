@@ -48,12 +48,10 @@ bool MapperNode3d::setup()
     const double        occ_3d_map_pub_rate            = nh_.param<double>("occ_3d_map_pub_rate", 10.0);
 
     const double        ndt_3d_grid_resolution         = nh_.param<double>("ndt_3d_grid_resolution", 2.0);
-    const double        ndt_3d_sampling_resolution     = nh_.param<double>("ndt_3d_sampling_resolution", 0.25);
     const std::string   ndt_3d_map_topic               = nh_.param<std::string>("ndt_3d_map_topic", "/map/3d/ndt");
     const double        ndt_3d_map_pub_rate            = nh_.param<double>("ndt_3d_map_pub_rate", 10.0);
 
     const double        occ_ndt_3d_grid_resolution     = nh_.param<double>("occ_ndt_3d_grid_resolution", 2.0);
-    const double        occ_ndt_3d_sampling_resolution = nh_.param<double>("occ_ndt_3d_sampling_resolution", 0.25);
     const std::string   occ_ndt_3d_map_topic           = nh_.param<std::string>("occ_ndt_3d_map_topic", "/map/3d/occ_ndt");
     const double        occ_ndt_3d_map_pub_rate        = nh_.param<double>("occ_ndt_3d_map_pub_rate", 10.0);
 
@@ -120,7 +118,6 @@ bool MapperNode3d::setup()
     ndt_3d_mapper_.map_frame_ = map_frame;
     ndt_3d_mapper_.mapper_.reset(
                 new ndt_map_3d_t(ndt_3d_grid_resolution,
-                                 ndt_3d_sampling_resolution,
                                  ndt_3d_mapper_.map_frame_));
     ndt_3d_mapper_.setCallback();
 
@@ -128,7 +125,6 @@ bool MapperNode3d::setup()
     occ_ndt_3d_mapper_.mapper_.reset(
                 new occ_ndt_map_3d_t(inverse_model,
                                      occ_ndt_3d_grid_resolution,
-                                     occ_ndt_3d_sampling_resolution,
                                      occ_ndt_3d_mapper_.map_frame_));
     occ_ndt_3d_mapper_.setCallback();
 

@@ -19,11 +19,9 @@
      <param name="occ_3d_map_pub_rate" value="10.0" />
 
      <param name="occ_ndt_3d_grid_resolution" value="2.0" />
-     <param name="occ_ndt_3d_sampling_resolution" value="0.25" />
      <param name="occ_ndt_3d_map_pub_rate" value="10.0" />
 
      <param name="ndt_3d_grid_resolution" value="2.0" />
-     <param name="ndt_3d_sampling_resolution" value="0.25" />
      <param name="ndt_3d_map_pub_rate" value="10.0" />
     </group>
 

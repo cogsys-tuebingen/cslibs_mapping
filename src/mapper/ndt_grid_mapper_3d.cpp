@@ -5,13 +5,11 @@
 namespace cslibs_mapping {
 NDTGridMapper3d::NDTGridMapper3d(
         const double        resolution,
-        const double        sampling_resolution,
         const std::string & frame_id) :
         stop_(false),
         request_map_(false),
         callback_([](const static_map_t::Ptr &){}),
         resolution_(resolution),
-        sampling_resolution_(sampling_resolution),
         frame_id_(frame_id)
 
 {

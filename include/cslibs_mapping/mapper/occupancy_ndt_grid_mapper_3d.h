@@ -49,7 +49,6 @@ public:
     OccupancyNDTGridMapper3d(
             const cslibs_gridmaps::utility::InverseModel &inverse_model,
             const double                                  resolution,
-            const double                                  sampling_resolution,
             const std::string                            &frame_id);
 
     virtual ~OccupancyNDTGridMapper3d();
@@ -95,7 +94,6 @@ protected:
     dynamic_map_t::Ptr                                  dynamic_map_;
     cslibs_gridmaps::utility::InverseModel              inverse_model_;
     double                                              resolution_;
-    double                                              sampling_resolution_;
     std::string                                         frame_id_;
 
     void loop();
