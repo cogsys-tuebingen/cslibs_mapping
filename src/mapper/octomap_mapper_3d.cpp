@@ -1,8 +1,8 @@
 #include <cslibs_mapping/mapper/octomap_mapper_3d.h>
 
-//#include <cslibs_ndt_3d/serialization/dynamic_maps/occupancy_gridmap.hpp>
 #include <cslibs_mapping/mapper/save_map.hpp>
 #include <cslibs_time/conversion/ros.hpp>
+#include <cslibs_gridmaps/static_maps/conversion/convert_probability_gridmap.hpp>
 
 namespace cslibs_mapping {
 OctomapMapper3d::OctomapMapper3d(
@@ -146,7 +146,96 @@ bool OctomapMapper3d::saveMap(
         return false;
     }
 
-    std::cout << "[OctomapMapper3d]: Saved Map successful." << std::endl;
-    return true;
+    // save dynamic map (YAML::Node)
+    std::string map_path_yaml    = (p / boost::filesystem::path("map.ot")).string();
+    {
+        std::ofstream map_out_yaml(map_path_yaml);
+        if(!map_out_yaml.is_open()) {
+          std::cout << "[OctomapMapper3d]: Could not open file '" << map_path_yaml << "'." << std::endl;
+          return false;
+        }
+        dynamic_map_->write(map_out_yaml);
+        map_out_yaml.close();
+    }
+
+    if (!static_map_.data())
+        return false;
+
+    // save static map (occ.map.yaml, occ.map.pgm, occ.map.raw.pgm, poses.yaml)
+    std::string occ_path_yaml    = (p / boost::filesystem::path("occ.map.yaml")).   string();
+    std::string occ_path_pgm     = (p / boost::filesystem::path("occ.map.pgm")).    string();
+    std::string occ_path_raw_pgm = (p / boost::filesystem::path("occ.map.raw.pgm")).string();
+    std::string poses_path_yaml  = (p / boost::filesystem::path("poses.yaml")).     string();
+
+    // convert octomap to probability gridmap
+    const nav_msgs::OccupancyGrid::Ptr grid = toGrid(dynamic_cast<dynamic_map_t*>(octomap_msgs::msgToMap(*(static_map_.data()))));
+    cslibs_gridmaps::static_maps::ProbabilityGridmap::Ptr occ_map;
+    cslibs_gridmaps::static_maps::conversion::from(grid, occ_map);
+
+    if (cslibs_mapping::saveMap(occ_path_yaml, occ_path_pgm, occ_path_raw_pgm, poses_path_yaml, poses_path,
+                                occ_map->getData(), occ_map->getHeight(),
+                                occ_map->getWidth(), occ_map->getOrigin(),
+                                occ_map->getResolution())) {
+
+        std::cout << "[OctomapMapper3d]: Saved Map successful." << std::endl;
+        return true;
+    }
+    return false;
+}
+
+nav_msgs::OccupancyGrid::Ptr OctomapMapper3d::toGrid(const dynamic_map_t* octomap)
+{
+    double minX, minY, minZ, maxX, maxY, maxZ;
+    octomap->getMetricMin(minX, minY, minZ);
+    octomap->getMetricMax(maxX, maxY, maxZ);
+    octomap::point3d minPt = octomap::point3d(minX, minY, minZ);
+
+    unsigned int tree_depth = octomap->getTreeDepth();
+    octomap::OcTreeKey paddedMinKey = octomap->coordToKey(minPt);
+
+    nav_msgs::OccupancyGrid::Ptr occupancy_map(new nav_msgs::OccupancyGrid);
+
+    unsigned int width, height;
+    double res;
+
+    const std::size_t octree_depth = sizeof(unsigned short) * 8;
+    unsigned int ds_shift = tree_depth - octree_depth;
+
+    occupancy_map->info.resolution        = res = octomap->getNodeSize(octree_depth);
+    occupancy_map->info.width             = width = (maxX-minX) / res + 1;
+    occupancy_map->info.height            = height = (maxY-minY) / res + 1;
+    occupancy_map->info.origin.position.x = minX  - (res / (float)(1 << ds_shift) ) + res;
+    occupancy_map->info.origin.position.y = minY  - (res / (float)(1 << ds_shift) );
+
+    occupancy_map->data.clear();
+    occupancy_map->data.resize(width*height, -1);
+
+    // traverse all leafs in the tree:
+    unsigned int treeDepth = std::min<unsigned int>(octree_depth, octomap->getTreeDepth());
+    for (typename dynamic_map_t::iterator it = octomap->begin(treeDepth), end = octomap->end(); it != end; ++it) {
+        bool occupied = octomap->isNodeOccupied(*it);
+        int intSize = 1 << (octree_depth - it.getDepth());
+
+        octomap::OcTreeKey minKey=it.getIndexKey();
+
+        for (int dx = 0 ; dx < intSize ; ++dx) {
+            for (int dy = 0 ; dy < intSize ; ++dy) {
+                int posX = std::max<int>(0, minKey[0] + dx - paddedMinKey[0]);
+                posX >>= ds_shift;
+
+                int posY = std::max<int>(0, minKey[1] + dy - paddedMinKey[1]);
+                posY >>= ds_shift;
+
+                int idx = width * posY + posX;
+
+                if (occupied)
+                    occupancy_map->data[idx] = 100;
+                else if (occupancy_map->data[idx] == -1)
+                    occupancy_map->data[idx] = 0;
+            }
+        }
+    }
+
+    return occupancy_map;
 }
 }

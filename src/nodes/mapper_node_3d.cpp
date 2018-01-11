@@ -62,10 +62,12 @@ bool MapperNode3d::setup()
 
 
     std::vector<std::string> lasers2d, lasers3d;
-    if(!nh_.getParam("lasers_2d", lasers2d) && !nh_.getParam("lasers_3d", lasers3d)) {
-        ROS_ERROR_STREAM("Did not find any laser inputs!");
+    if (!nh_.getParam("lasers_2d", lasers2d))
+        ROS_ERROR_STREAM("Did not find any 2d laser inputs!");
+    if (!nh_.getParam("lasers_3d", lasers3d))
+        ROS_ERROR_STREAM("Did not find any 3d laser inputs!");
+    if (lasers2d.empty() && lasers3d.empty())
         return false;
-    }
 
     std::string map_frame     = nh_.param<std::string>("map_frame", "/odom");
     base_frame_               = nh_.param<std::string>("base_frame", "/base_link");
@@ -83,7 +85,6 @@ bool MapperNode3d::setup()
     linear_interval_[1]       = static_cast<float>(nh_.param<double>("range_max", 30.0));
     angular_interval_[0]      = static_cast<float>(nh_.param<double>("angle_min",-M_PI));
     angular_interval_[1]      = static_cast<float>(nh_.param<double>("angle_max", M_PI));
-
 
     cslibs_gridmaps::utility::InverseModel inverse_model(occ_map_prob_prior, occ_map_prob_free, occ_map_prob_occ);
     occ_2d_mapper_.map_frame_ = map_frame;
@@ -188,7 +189,7 @@ void MapperNode3d::run()
 
 void MapperNode3d::laserscan2d(
         const sensor_msgs::LaserScanConstPtr & msg)
-{
+{std::cout << "Laser 2D: " << msg->header.frame_id << std::endl;
     cslibs_math_2d::PolarPointlcoud2d::Ptr laserscan;
     if(undistortion_) {
         cslibs_math_ros::sensor_msgs::conversion_2d::from(msg,
@@ -209,7 +210,7 @@ void MapperNode3d::laserscan2d(
 
 void MapperNode3d::laserscan3d(
         const sensor_msgs::PointCloud2ConstPtr & msg)
-{
+{std::cout << "Laser 3D: " << msg->header.frame_id << std::endl;
     pcl::PointCloud<pcl::PointXYZI> laserscan;
     std::vector<int> indices;
     pcl::fromROSMsg(*msg, laserscan);

@@ -21,6 +21,7 @@
 #include <octomap_msgs/conversions.h>
 
 #include <nav_msgs/Path.h>
+#include <nav_msgs/OccupancyGrid.h>
 #include <set>
 
 namespace cslibs_mapping {
@@ -55,6 +56,9 @@ public:
 
     void setCallback(
             const callback_t & cb);
+
+    nav_msgs::OccupancyGrid::Ptr toGrid(
+            const dynamic_map_t* octomap);
 
 protected:
     cslibs_utility::synchronized::queue<measurement_t>  q_;

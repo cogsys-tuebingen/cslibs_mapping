@@ -267,6 +267,22 @@ bool NDTGridMapper3d::saveMap(
         return false;
     }
 
+    // save dynamic map (YAML::Node)
+    std::string map_path_yaml    = (p / boost::filesystem::path("map.yaml")).string();
+    {
+        std::ofstream map_out_yaml(map_path_yaml);
+        if(!map_out_yaml.is_open()) {
+          std::cout << "[NDTGridMapper3d]: Could not open file '" << map_path_yaml << "'." << std::endl;
+          return false;
+        }
+        map_out_yaml << YAML::Node(dynamic_map_);
+        map_out_yaml.close();
+    }
+
+    if (!static_map_.data())
+        return false;
+    // TODO: static map
+
     std::cout << "[NDTGridMapper3d]: Saved Map successful." << std::endl;
     return true;
 }
