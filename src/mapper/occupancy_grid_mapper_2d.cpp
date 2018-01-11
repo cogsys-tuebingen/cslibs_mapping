@@ -71,7 +71,7 @@ void OccupancyGridMapper2d::loop()
             if(stop_)
                 break;
 
-            mapRequest();
+            //mapRequest();
 
             auto m = q_.pop();
             process(m);
@@ -115,7 +115,7 @@ void OccupancyGridMapper2d::mapRequest()
         callback_(static_map_);
     }
     request_map_ = false;
-    notify_static_map_.notify_one();
+    notify_static_map_.notify_all();
 }
 
 void OccupancyGridMapper2d::process(const measurement_t &m)
@@ -155,15 +155,24 @@ bool OccupancyGridMapper2d::saveMap(
     const std::string    & path,
     const nav_msgs::Path & poses_path)
 {
-    if (!dynamic_map_)
-        return false;
+    while (q_.hasElements()) {
+        request_map_ = true;
+        lock_t static_map_lock(static_map_mutex_);
+        notify_event_.notify_one();
+        notify_static_map_.wait(static_map_lock);
+    }
+
+    if (!dynamic_map_) {
+        std::cout << "[OccupancyGridMapper2d]: No Map." << std::endl;
+        return true;
+    }
 
     boost::filesystem::path p(path);
 
     if(!boost::filesystem::is_directory(p))
         boost::filesystem::create_directories(p);
     if(!boost::filesystem::is_directory(p)) {
-        std::cout << "[NDTGridMapper2d]: '" << path << "' is not a directory." << std::endl;
+        std::cout << "[OccupancyGridMapper2d]: '" << path << "' is not a directory." << std::endl;
         return false;
     }
 
@@ -172,7 +181,7 @@ bool OccupancyGridMapper2d::saveMap(
     {
         std::ofstream map_out_yaml(map_path_yaml);
         if(!map_out_yaml.is_open()) {
-          std::cout << "[NDTGridMapper2d]: Could not open file '" << map_path_yaml << "'." << std::endl;
+          std::cout << "[OccupancyGridMapper2d]: Could not open file '" << map_path_yaml << "'." << std::endl;
           return false;
         }
         map_out_yaml << YAML::Node(dynamic_map_);
@@ -188,9 +197,14 @@ bool OccupancyGridMapper2d::saveMap(
     std::string occ_path_raw_pgm = (p / boost::filesystem::path("occ.map.raw.pgm")).string();
     std::string poses_path_yaml  = (p / boost::filesystem::path("poses.yaml")).     string();
 
-    return cslibs_mapping::saveMap(occ_path_yaml, occ_path_pgm, occ_path_raw_pgm, poses_path_yaml, poses_path,
-                                   static_map_.data()->getData(), static_map_.data()->getHeight(),
-                                   static_map_.data()->getWidth(), static_map_.data()->getOrigin(),
-                                   static_map_.data()->getResolution());
+    if (cslibs_mapping::saveMap(occ_path_yaml, occ_path_pgm, occ_path_raw_pgm, poses_path_yaml, poses_path,
+                                static_map_.data()->getData(), static_map_.data()->getHeight(),
+                                static_map_.data()->getWidth(), static_map_.data()->getOrigin(),
+                                static_map_.data()->getResolution())) {
+
+        std::cout << "[OccupancyGridMapper2d]: Saved Map successful." << std::endl;
+        return true;
+    }
+    return false;
 }
 }

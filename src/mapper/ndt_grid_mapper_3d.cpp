@@ -167,12 +167,12 @@ void NDTGridMapper3d::mapRequest()
         marker_callback_(marker_map_);
         distributions_callback_(distributions_);
 
-        std::cout << "Visualization NDT 3D [all]:      " << (cslibs_time::Time::now() - now).milliseconds() << "ms\n";
-        std::cout << "Visualization NDT 3D [retrieve]: " << dur.milliseconds() << "ms \n";
-        std::cout << "Visualization NDT 3D [sampling]: " << dur_sampling.milliseconds() << "ms \n";
-     }
+        std::cout << "[NDTGridMapper3d]: Visualization [all]      took " << (cslibs_time::Time::now() - now).milliseconds() << "ms \n";
+        std::cout << "[NDTGridMapper3d]: Visualization [retrieve] took " << dur.milliseconds() << "ms \n";
+        std::cout << "[NDTGridMapper3d]: Visualization [sampling] took " << dur_sampling.milliseconds() << "ms \n";
+    }
     request_map_ = false;
-    notify_static_map_.notify_one();
+    notify_static_map_.notify_all();
 }
 
 void NDTGridMapper3d::drawMarker(
@@ -238,13 +238,25 @@ void NDTGridMapper3d::process(const measurement_t &m)
             updated_indices_.insert(bi);
         }
     }
-    std::cout << "Insertion NDT 3D:                " << (cslibs_time::Time::now() - now).milliseconds() << "ms\n";
+    std::cout << "[NDTGridMapper3d]: Insertion took " << (cslibs_time::Time::now() - now).milliseconds() << "ms \n";
 }
 
 bool NDTGridMapper3d::saveMap(
     const std::string    & path,
     const nav_msgs::Path & poses_path)
 {
+    while (q_.hasElements()) {
+        request_map_ = true;
+        lock_t static_map_lock(static_map_mutex_);
+        notify_event_.notify_one();
+        notify_static_map_.wait(static_map_lock);
+    }
+
+    if (!dynamic_map_) {
+        std::cout << "[NDTGridMapper3d]: No Map." << std::endl;
+        return true;
+    }
+
     boost::filesystem::path p(path);
 
     if(!boost::filesystem::is_directory(p))
@@ -254,6 +266,7 @@ bool NDTGridMapper3d::saveMap(
         return false;
     }
 
+    std::cout << "[NDTGridMapper3d]: Saved Map successful." << std::endl;
     return true;
 }
 }

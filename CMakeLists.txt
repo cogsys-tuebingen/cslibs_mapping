@@ -28,6 +28,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package(PCL REQUIRED COMPONENTS common filters segmentation io)
 find_package(Boost REQUIRED COMPONENTS filesystem)
+find_package(octomap REQUIRED)
 
 add_message_files(
     FILES
@@ -57,6 +58,7 @@ include_directories(
     ${PCL_INCLUDE_DIRS}
     ${pcl_ros_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS}
+    ${OCTOMAP_INCLUDE_DIRS}
 )
 
 cslibs_mapping_show_headers()
@@ -76,10 +78,12 @@ target_link_libraries(${PROJECT_NAME}_2d
 add_library(${PROJECT_NAME}_3d
     src/mapper/ndt_grid_mapper_3d.cpp
     src/mapper/occupancy_ndt_grid_mapper_3d.cpp
+    src/mapper/octomap_mapper_3d.cpp
     )
 target_link_libraries(${PROJECT_NAME}_3d
     ${catkin_LIBRARIES}
     yaml-cpp
+    ${OCTOMAP_LIBRARIES}
     )
 add_dependencies(${PROJECT_NAME}_3d ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
@@ -103,6 +107,7 @@ target_link_libraries(${PROJECT_NAME}_node_3d
     ${catkin_LIBRARIES}
     ${PCL_LIBRARIES}
     yaml-cpp
+    ${OCTOMAP_LIBRARIES}
     )
 add_dependencies(${PROJECT_NAME}_node_3d ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
