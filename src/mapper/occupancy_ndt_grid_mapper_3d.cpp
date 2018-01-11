@@ -255,6 +255,7 @@ bool OccupancyNDTGridMapper3d::saveMap(
     const std::string    & path,
     const nav_msgs::Path & poses_path)
 {
+    std::cout << "[OccupancyNDTGridMapper3d]: Saving Map..." << std::endl;
     while (q_.hasElements()) {
         request_map_ = true;
         lock_t static_map_lock(static_map_mutex_);

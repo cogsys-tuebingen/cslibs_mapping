@@ -92,6 +92,7 @@ bool saveMap(
         auto convert_raw = [](const double p) {
             return static_cast<uint8_t>((1.0 - p) * 255);
         };
+
         for (std::size_t i = occ_height ; i > 0 ; --i) {
             for (std::size_t j = 0 ; j < occ_width ; ++j) {
                 const double & data = occ_data[(i - 1) * occ_width + j];
