@@ -10,7 +10,7 @@
     <arg name="bag_name" value="Bicocca_2009-02-25a-dynamic-natural-light-ext-groundtruth" />
     <!--<arg name="bag_name" value="Bicocca_2009-02-25a-dynamic-natural-light-groundtruth-cartographer" />-->
     <arg name="bag_file" value="$(arg bag_name).bag" />
-    <node pkg="rosbag" type="play" name="player" output="screen" args="--clock --rate 2.0 -d 5 $(arg bag_root)/$(arg bag_file)" required="true" />
+    <node pkg="rosbag" type="play" name="player" output="screen" args="--clock --rate 5.0 -d 5 $(arg bag_root)/$(arg bag_file)" required="true" />
 
     <include file="$(find rawseeds_ros)/launch/transforms.launch" />
 

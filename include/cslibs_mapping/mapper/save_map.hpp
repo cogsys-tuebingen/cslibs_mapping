@@ -72,9 +72,6 @@ bool saveMap(
             return false;
         }
 
-        const double *occ_data_ptr = occ_data.data();
-        const std::size_t occ_max_idx = occ_width - 1ul;
-
         /// write pgm headers
         occ_out_pgm << "P5 \n";
         occ_out_pgm << "# CREATOR: cslibs_mapping " << occ_resolution << "m/pix \n";
@@ -95,15 +92,12 @@ bool saveMap(
         auto convert_raw = [](const double p) {
             return static_cast<uint8_t>((1.0 - p) * 255);
         };
-        for (std::size_t i = 0 ; i < occ_height ; ++i) {
-            for (std::size_t j = 0 ; j < occ_max_idx; ++j) {
-                occ_out_pgm << convert_ros(*occ_data_ptr);
-                occ_out_raw_pgm << convert_raw(*occ_data_ptr);
-                ++occ_data_ptr;
+        for (std::size_t i = occ_height ; i > 0 ; --i) {
+            for (std::size_t j = 0 ; j < occ_width ; ++j) {
+                const double & data = occ_data[(i - 1) * occ_width + j];
+                occ_out_pgm << convert_ros(data);
+                occ_out_raw_pgm << convert_raw(data);
             }
-            occ_out_pgm << convert_ros(*occ_data_ptr);
-            occ_out_raw_pgm << convert_raw(*occ_data_ptr);
-            ++occ_data_ptr;
         }
 
         occ_out_pgm.close();
