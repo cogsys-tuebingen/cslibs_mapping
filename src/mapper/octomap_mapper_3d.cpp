@@ -158,6 +158,11 @@ bool OctomapMapper3d::saveMap(
         map_out_yaml.close();
     }
 
+    // save 3d path
+    std::string poses_path_3d_yaml  = (p / boost::filesystem::path("poses3d.yaml")).     string();
+    if (!cslibs_mapping::serialization::savePath(poses_path_3d_yaml, poses_path))
+        return false;
+
     if (!static_map_.data())
         return false;
 
@@ -168,14 +173,14 @@ bool OctomapMapper3d::saveMap(
     std::string poses_path_yaml  = (p / boost::filesystem::path("poses.yaml")).     string();
 
     // convert octomap to probability gridmap
-    const nav_msgs::OccupancyGrid::Ptr grid = toGrid(&(*dynamic_map_));
+    const nav_msgs::OccupancyGrid::Ptr grid = toGrid(dynamic_map_);
     cslibs_gridmaps::static_maps::ProbabilityGridmap::Ptr occ_map;
     cslibs_gridmaps::static_maps::conversion::from(grid, occ_map);
 
-    if (cslibs_mapping::saveMap(occ_path_yaml, occ_path_pgm, occ_path_raw_pgm, poses_path_yaml, poses_path,
-                                occ_map->getData(), occ_map->getHeight(),
-                                occ_map->getWidth(), occ_map->getOrigin(),
-                                occ_map->getResolution())) {
+    if (cslibs_mapping::serialization::saveMap(occ_path_yaml, occ_path_pgm, occ_path_raw_pgm, poses_path_yaml, poses_path,
+                                               occ_map->getData(), occ_map->getHeight(),
+                                               occ_map->getWidth(), occ_map->getOrigin(),
+                                               occ_map->getResolution())) {
 
         std::cout << "[OctomapMapper3d]: Saved Map successful." << std::endl;
         return true;
@@ -183,7 +188,7 @@ bool OctomapMapper3d::saveMap(
     return false;
 }
 
-nav_msgs::OccupancyGrid::Ptr OctomapMapper3d::toGrid(const dynamic_map_t* octomap)
+nav_msgs::OccupancyGrid::Ptr OctomapMapper3d::toGrid(const std::shared_ptr<dynamic_map_t> octomap)
 {
     double minX, minY, minZ, maxX, maxY, maxZ;
     octomap->getMetricMin(minX, minY, minZ);

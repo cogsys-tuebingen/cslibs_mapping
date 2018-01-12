@@ -13,8 +13,9 @@
 #include <fstream>
 
 namespace cslibs_mapping {
+namespace serialization {
 template <typename T>
-bool saveMap(
+inline bool saveMap(
     const std::string            & occ_path_yaml,
     const std::string            & occ_path_pgm,
     const std::string            & occ_path_raw_pgm,
@@ -126,6 +127,30 @@ bool saveMap(
     }
 
     return true;
+}
+
+inline bool savePath(
+        const std::string    & poses_path_3d_yaml,
+        const nav_msgs::Path & poses_path)
+{
+    std::ofstream poses_out_3d_yaml(poses_path_3d_yaml);
+    if (!poses_out_3d_yaml.is_open()) {
+        std::cout << "[SaveMap]: Could not open file '" << poses_path_3d_yaml << "'." << std::endl;
+        return false;
+    }
+
+    YAML::Emitter poses_yaml(poses_out_3d_yaml);
+    poses_yaml << YAML::BeginSeq;
+    for (const auto &p_w : poses_path.poses)
+        poses_yaml << YAML::BeginSeq << YAML::Flow
+                   << p_w.pose.position.x << p_w.pose.position.y << p_w.pose.position.z
+                   << p_w.pose.orientation.x << p_w.pose.orientation.y << p_w.pose.orientation.z
+                   << p_w.pose.orientation.w << YAML::EndSeq;
+    poses_yaml << YAML::EndSeq;
+    poses_out_3d_yaml.close();
+
+    return true;
+}
 }
 }
 

@@ -58,7 +58,7 @@ public:
             const callback_t & cb);
 
     nav_msgs::OccupancyGrid::Ptr toGrid(
-            const dynamic_map_t* octomap);
+            const std::shared_ptr<dynamic_map_t> octomap);
 
 protected:
     cslibs_utility::synchronized::queue<measurement_t>  q_;

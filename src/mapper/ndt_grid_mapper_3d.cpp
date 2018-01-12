@@ -277,6 +277,11 @@ bool NDTGridMapper3d::saveMap(
         map_out_yaml.close();
     }
 
+    // save 3d path
+    std::string poses_path_3d_yaml  = (p / boost::filesystem::path("poses3d.yaml")).     string();
+    if (!cslibs_mapping::serialization::savePath(poses_path_3d_yaml, poses_path))
+        return false;
+
     if (!static_map_.data())
         return false;
     // TODO: static map
