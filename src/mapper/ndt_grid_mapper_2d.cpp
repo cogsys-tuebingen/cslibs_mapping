@@ -172,28 +172,22 @@ bool NDTGridMapper2d::saveMap(
         return false;
     }
 
-    // save dynamic map (YAML::Node)
-    std::string map_path_yaml    = (p / boost::filesystem::path("map.yaml")).string();
-    {
-        std::ofstream map_out_yaml(map_path_yaml);
-        if(!map_out_yaml.is_open()) {
-          std::cout << "[NDTGridMapper2d]: Could not open file '" << map_path_yaml << "'." << std::endl;
-          return false;
-        }
-        map_out_yaml << YAML::Node(dynamic_map_);
-        map_out_yaml.close();
-    }
+    // save dynamic map
+    cslibs_ndt_2d::dynamic_maps::save(dynamic_map_, (p / boost::filesystem::path("map")).string());
 
     if (!static_map_.data())
         return false;
 
     // save static map (occ.map.yaml, occ.map.pgm, occ.map.raw.pgm, poses.yaml)
-    std::string occ_path_yaml    = (p / boost::filesystem::path("occ.map.yaml")).   string();
-    std::string occ_path_pgm     = (p / boost::filesystem::path("occ.map.pgm")).    string();
-    std::string occ_path_raw_pgm = (p / boost::filesystem::path("occ.map.raw.pgm")).string();
-    std::string poses_path_yaml  = (p / boost::filesystem::path("poses.yaml")).     string();
+    std::string occ_path_yaml    = (p / boost::filesystem::path("occ.map.yaml")).    string();
+    std::string occ_path_pgm     = (p / boost::filesystem::path("occ.map.pgm")).     string();
+    std::string occ_path_raw_yaml= (p / boost::filesystem::path("occ.map.raw.yaml")).string();
+    std::string occ_path_raw_pgm = (p / boost::filesystem::path("occ.map.raw.pgm")). string();
+    std::string poses_path_yaml  = (p / boost::filesystem::path("poses.yaml")).      string();
 
-    if (cslibs_mapping::serialization::saveMap(occ_path_yaml, occ_path_pgm, occ_path_raw_pgm, poses_path_yaml, poses_path,
+    if (cslibs_mapping::serialization::saveMap(occ_path_yaml, occ_path_pgm, "occ.map.pgm",
+                                               occ_path_raw_yaml, occ_path_raw_pgm, "occ.map.raw.pgm",
+                                               poses_path_yaml, poses_path,
                                                static_map_.data()->getData(), static_map_.data()->getHeight(),
                                                static_map_.data()->getWidth(), static_map_.data()->getOrigin(),
                                                static_map_.data()->getResolution())) {

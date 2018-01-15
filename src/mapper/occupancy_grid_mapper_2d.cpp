@@ -193,12 +193,15 @@ bool OccupancyGridMapper2d::saveMap(
         return false;
 
     // save static map (occ.map.yaml, occ.map.pgm, occ.map.raw.pgm, poses.yaml)
-    std::string occ_path_yaml    = (p / boost::filesystem::path("occ.map.yaml")).   string();
-    std::string occ_path_pgm     = (p / boost::filesystem::path("occ.map.pgm")).    string();
-    std::string occ_path_raw_pgm = (p / boost::filesystem::path("occ.map.raw.pgm")).string();
-    std::string poses_path_yaml  = (p / boost::filesystem::path("poses.yaml")).     string();
+    std::string occ_path_yaml    = (p / boost::filesystem::path("occ.map.yaml")).    string();
+    std::string occ_path_pgm     = (p / boost::filesystem::path("occ.map.pgm")).     string();
+    std::string occ_path_raw_yaml= (p / boost::filesystem::path("occ.map.raw.yaml")).string();
+    std::string occ_path_raw_pgm = (p / boost::filesystem::path("occ.map.raw.pgm")). string();
+    std::string poses_path_yaml  = (p / boost::filesystem::path("poses.yaml")).      string();
 
-    if (cslibs_mapping::serialization::saveMap(occ_path_yaml, occ_path_pgm, occ_path_raw_pgm, poses_path_yaml, poses_path,
+    if (cslibs_mapping::serialization::saveMap(occ_path_yaml, occ_path_pgm, "occ.map.pgm",
+                                               occ_path_raw_yaml, occ_path_raw_pgm, "occ.map.raw.pgm",
+                                               poses_path_yaml, poses_path,
                                                static_map_.data()->getData(), static_map_.data()->getHeight(),
                                                static_map_.data()->getWidth(), static_map_.data()->getOrigin(),
                                                static_map_.data()->getResolution())) {
