@@ -16,18 +16,21 @@ namespace cslibs_mapping {
 namespace serialization {
 template <typename T>
 inline bool saveMap(
-    const std::string            & occ_path_yaml,
-    const std::string            & occ_path_pgm,
-    const std::string            & occ_path_raw_pgm,
-    const std::string            & poses_path_yaml,
-    const nav_msgs::Path         & poses_path,
-    const std::vector<T>         & occ_data,
-    const std::size_t            & occ_height,
-    const std::size_t            & occ_width,
-    const cslibs_math_2d::Pose2d & occ_origin,
-    const double                 & occ_resolution,
-    const double                 & occ_free_threshold     = 0.196,
-    const double                 & occ_occupied_threshold = 0.65)
+        const std::string            & occ_path_yaml,
+        const std::string            & occ_path_pgm,
+        const std::string            & occ_path_pgm_rel,
+        const std::string            & occ_path_raw_yaml,
+        const std::string            & occ_path_raw_pgm,
+        const std::string            & occ_path_raw_pgm_rel,
+        const std::string            & poses_path_yaml,
+        const nav_msgs::Path         & poses_path,
+        const std::vector<T>         & occ_data,
+        const std::size_t            & occ_height,
+        const std::size_t            & occ_width,
+        const cslibs_math_2d::Pose2d & occ_origin,
+        const double                 & occ_resolution,
+        const double                 & occ_free_threshold     = 0.196,
+        const double                 & occ_occupied_threshold = 0.65)
 {
     // map header
     {
@@ -40,24 +43,47 @@ inline bool saveMap(
         YAML::Emitter occ_yaml(occ_out_yaml);
         occ_yaml << YAML::BeginMap;
         occ_yaml << YAML::Key   << "image";
-        occ_yaml << YAML::Value << occ_path_pgm;
+        occ_yaml << YAML::Value << occ_path_pgm_rel;
         occ_yaml << YAML::Key   << "resolution";
         occ_yaml << YAML::Value << occ_resolution;
         occ_yaml << YAML::Key   << "origin";
-        occ_yaml << YAML::BeginSeq;
         occ_yaml << YAML::Flow;
-        occ_yaml << occ_origin.tx();
-        occ_yaml << occ_origin.ty();
-        occ_yaml << occ_origin.yaw();
-        occ_yaml << YAML::EndSeq;
-        occ_yaml << YAML::Key   << "occupied_threshold";
+        occ_yaml << YAML::BeginSeq << occ_origin.tx() << occ_origin.ty() << occ_origin.yaw() << YAML::EndSeq;
+        occ_yaml << YAML::Key   << "occupied_thresh";
         occ_yaml << YAML::Value << occ_occupied_threshold;
-        occ_yaml << YAML::Key   << "free_threshold";
+        occ_yaml << YAML::Key   << "free_thresh";
         occ_yaml << YAML::Value << occ_free_threshold;
         occ_yaml << YAML::Key   << "negate";
         occ_yaml << YAML::Value << 0;
         occ_yaml << YAML::EndMap;
         occ_out_yaml.close();
+    }
+
+    // raw map header
+    {
+        std::ofstream occ_out_yaml_raw(occ_path_raw_yaml);
+        if (!occ_out_yaml_raw.is_open()) {
+            std::cout << "[SaveMap]: Could not open file '" << occ_path_raw_yaml << "'." << std::endl;
+            return false;
+        }
+        /// write occupancy map meta data
+        YAML::Emitter occ_yaml_raw(occ_out_yaml_raw);
+        occ_yaml_raw << YAML::BeginMap;
+        occ_yaml_raw << YAML::Key   << "image";
+        occ_yaml_raw << YAML::Value << occ_path_raw_pgm_rel;
+        occ_yaml_raw << YAML::Key   << "resolution";
+        occ_yaml_raw << YAML::Value << occ_resolution;
+        occ_yaml_raw << YAML::Key   << "origin";
+        occ_yaml_raw << YAML::Flow;
+        occ_yaml_raw << YAML::BeginSeq << occ_origin.tx() << occ_origin.ty() << occ_origin.yaw() << YAML::EndSeq;
+        occ_yaml_raw << YAML::Key   << "occupied_thresh";
+        occ_yaml_raw << YAML::Value << occ_occupied_threshold;
+        occ_yaml_raw << YAML::Key   << "free_thresh";
+        occ_yaml_raw << YAML::Value << occ_free_threshold;
+        occ_yaml_raw << YAML::Key   << "negate";
+        occ_yaml_raw << YAML::Value << 0;
+        occ_yaml_raw << YAML::EndMap;
+        occ_out_yaml_raw.close();
     }
 
     // pgm files
@@ -120,7 +146,7 @@ inline bool saveMap(
         poses_yaml << YAML::BeginSeq;
         for (const auto &p_w : poses_path.poses) {
             const cslibs_math_2d::Transform2d p_m = m_t_w * cslibs_math_ros::geometry_msgs::conversion_2d::from(p_w.pose);
-            poses_yaml << YAML::BeginSeq << YAML::Flow <<  p_m.tx() * occ_inv_resolution << p_m.ty() * occ_inv_resolution << YAML::EndSeq;
+            poses_yaml << YAML::Flow << YAML::BeginSeq << p_m.tx() * occ_inv_resolution << p_m.ty() * occ_inv_resolution << YAML::EndSeq;
         }
         poses_yaml << YAML::EndSeq;
         poses_out_yaml.close();
@@ -142,7 +168,7 @@ inline bool savePath(
     YAML::Emitter poses_yaml(poses_out_3d_yaml);
     poses_yaml << YAML::BeginSeq;
     for (const auto &p_w : poses_path.poses)
-        poses_yaml << YAML::BeginSeq << YAML::Flow
+        poses_yaml << YAML::Flow << YAML::BeginSeq
                    << p_w.pose.position.x << p_w.pose.position.y << p_w.pose.position.z
                    << p_w.pose.orientation.x << p_w.pose.orientation.y << p_w.pose.orientation.z
                    << p_w.pose.orientation.w << YAML::EndSeq;

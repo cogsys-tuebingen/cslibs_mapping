@@ -6,8 +6,8 @@
     <node pkg="tf" type="static_transform_publisher" name="map_T_w" args="0 0 0 0 0 0 map world 10"/>
 
     <!-- bagfile -->
-    <!--<arg name="bag_root" value="/data/0/rawseeds/without_stereo" />-->
-    <!--<arg name="bag_name" value="Bicocca_2009-02-25a-dynamic-natural-light-ext-groundtruth" />-->
+    <arg name="bag_root" value="/data/0/rawseeds/without_stereo" />
+    <arg name="bag_name" value="Bicocca_2009-02-25a-dynamic-natural-light-ext-groundtruth" />
     <!--<arg name="bag_name" value="Bicocca_2009-02-25a-dynamic-natural-light-groundtruth-cartographer" />-->
     <!--<arg name="bag_name" value="Bicocca_2009-02-25b-static-artificial-light-ext-groundtruth" />-->
     <!--<arg name="bag_name" value="Bicocca_2009-02-25b-static-artificial-light-groundtruth-cartographer" />-->
@@ -18,9 +18,10 @@
     <!--<arg name="bag_name" value="Bicocca_2009-02-27a-static-natural-light-ext-groundtruth" />-->
     <!--<arg name="bag_name" value="Bicocca_2009-02-27a-static-natural-light-groundtruth-cartographer" />-->
 
+<!--
     <arg name="bag_root" value="/data/0/rawseeds/with_stereo" />
     <arg name="bag_name" value="Bicocca_2009-02-25a-dynamic-natural-light-groundtruth-cartographer-with-stereo_0" />
-
+-->
     <arg name="bag_file" value="$(arg bag_name).bag" />
 
     <!--<include file="$(find rawseeds_ros)/launch/transforms.launch" />-->
@@ -30,9 +31,9 @@
         <rosparam param="lasers_2d">
             ["/sick/front", "/sick/rear"]
         </rosparam>
-        <rosparam param="lasers_3d">
+        <!--<rosparam param="lasers_3d">
             ["/svs/pointcloud"]
-        </rosparam>
+        </rosparam>-->
 
         <param name="subscriber_queue_size" value="10" />
         <param name="rate" value="70.0" />

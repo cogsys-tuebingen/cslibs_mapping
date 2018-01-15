@@ -167,21 +167,23 @@ bool OctomapMapper3d::saveMap(
         return false;
 
     // save static map (occ.map.yaml, occ.map.pgm, occ.map.raw.pgm, poses.yaml)
-    std::string occ_path_yaml    = (p / boost::filesystem::path("occ.map.yaml")).   string();
-    std::string occ_path_pgm     = (p / boost::filesystem::path("occ.map.pgm")).    string();
-    std::string occ_path_raw_pgm = (p / boost::filesystem::path("occ.map.raw.pgm")).string();
-    std::string poses_path_yaml  = (p / boost::filesystem::path("poses.yaml")).     string();
+    std::string occ_path_yaml    = (p / boost::filesystem::path("occ.map.yaml")).    string();
+    std::string occ_path_pgm     = (p / boost::filesystem::path("occ.map.pgm")).     string();
+    std::string occ_path_raw_yaml= (p / boost::filesystem::path("occ.map.raw.yaml")).string();
+    std::string occ_path_raw_pgm = (p / boost::filesystem::path("occ.map.raw.pgm")). string();
+    std::string poses_path_yaml  = (p / boost::filesystem::path("poses.yaml")).      string();
 
     // convert octomap to probability gridmap
     const nav_msgs::OccupancyGrid::Ptr grid = toGrid(dynamic_map_);
     cslibs_gridmaps::static_maps::ProbabilityGridmap::Ptr occ_map;
     cslibs_gridmaps::static_maps::conversion::from(grid, occ_map);
 
-    if (cslibs_mapping::serialization::saveMap(occ_path_yaml, occ_path_pgm, occ_path_raw_pgm, poses_path_yaml, poses_path,
+    if (cslibs_mapping::serialization::saveMap(occ_path_yaml, occ_path_pgm, "occ.map.pgm",
+                                               occ_path_raw_yaml, occ_path_raw_pgm, "occ.map.raw.pgm",
+                                               poses_path_yaml, poses_path,
                                                occ_map->getData(), occ_map->getHeight(),
                                                occ_map->getWidth(), occ_map->getOrigin(),
                                                occ_map->getResolution())) {
-
         std::cout << "[OctomapMapper3d]: Saved Map successful." << std::endl;
         return true;
     }

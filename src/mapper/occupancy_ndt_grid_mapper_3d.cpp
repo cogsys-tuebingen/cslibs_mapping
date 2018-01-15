@@ -275,17 +275,8 @@ bool OccupancyNDTGridMapper3d::saveMap(
         return false;
     }
 
-    // save dynamic map (YAML::Node)
-    std::string map_path_yaml    = (p / boost::filesystem::path("map.yaml")).string();
-    {
-        std::ofstream map_out_yaml(map_path_yaml);
-        if(!map_out_yaml.is_open()) {
-          std::cout << "[OccupancyNDTGridMapper3d]: Could not open file '" << map_path_yaml << "'." << std::endl;
-          return false;
-        }
-        map_out_yaml << YAML::Node(dynamic_map_);
-        map_out_yaml.close();
-    }
+    // save dynamic map
+    cslibs_ndt_3d::dynamic_maps::save(dynamic_map_, (p / boost::filesystem::path("map")).string());
 
     // save 3d path
     std::string poses_path_3d_yaml  = (p / boost::filesystem::path("poses3d.yaml")).     string();
