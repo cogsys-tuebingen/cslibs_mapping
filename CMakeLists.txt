@@ -23,6 +23,7 @@ find_package(catkin REQUIRED COMPONENTS
     pcl_ros
     rosbag
     message_generation
+    octomap_msgs
     rviz
 )
 

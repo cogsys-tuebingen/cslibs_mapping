@@ -28,6 +28,7 @@
   <depend>rviz</depend>
   <depend>yaml-cpp</depend>
   <depend>octomap</depend>
+  <depend>octomap_msgs</depend>
 
   <export>
     <rviz plugin="${prefix}/plugin_description.xml"/>
