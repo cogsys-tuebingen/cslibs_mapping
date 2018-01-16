@@ -7,8 +7,8 @@
 
     <!-- bagfile -->
     <arg name="bag_root" value="/data/0/rawseeds/without_stereo" />
-    <arg name="bag_name" value="Bicocca_2009-02-25a-dynamic-natural-light-ext-groundtruth" />
-    <!--<arg name="bag_name" value="Bicocca_2009-02-25a-dynamic-natural-light-groundtruth-cartographer" />-->
+    <!--<arg name="bag_name" value="Bicocca_2009-02-25a-dynamic-natural-light-ext-groundtruth" />-->
+    <arg name="bag_name" value="Bicocca_2009-02-25a-dynamic-natural-light-groundtruth-cartographer" />
     <!--<arg name="bag_name" value="Bicocca_2009-02-25b-static-artificial-light-ext-groundtruth" />-->
     <!--<arg name="bag_name" value="Bicocca_2009-02-25b-static-artificial-light-groundtruth-cartographer" />-->
     <!--<arg name="bag_name" value="Bicocca_2009-02-26a-dynamic-natural-light-ext-groundtruth" />-->

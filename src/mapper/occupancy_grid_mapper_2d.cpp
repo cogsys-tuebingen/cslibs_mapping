@@ -110,7 +110,6 @@ void OccupancyGridMapper2d::mapRequest()
             }
         }
 
-
         cslibs_gridmaps::static_maps::conversion::LogOdds::from(static_map_, static_map_);
         callback_(static_map_);
     }
