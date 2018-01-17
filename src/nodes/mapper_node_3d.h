@@ -55,6 +55,8 @@ private:
         ros::Publisher      pub_marker_;
         ros::Publisher      pub_distributions_;
 
+        bool                active_;
+
         template <typename t = msg_t>
         typename std::enable_if<!std::is_same<t, msg_3d_t>::value, void>::type
         setCallback()
@@ -85,13 +87,15 @@ private:
                 ros::NodeHandle   & nh,
                 const std::string & topic,
                 const double      & rate,
-                const ros::Time   & now)
+                const ros::Time   & now,
+                const bool        & active)
         {
             pub_map_       = nh.advertise<msg_t>(topic, 1);
             pub_interval_  = ros::Duration(rate > 0.0 ? 1.0 / rate : 0.0);
             pub_last_time_ = now;            
 
             setupAdditionalPublisher(nh, topic);
+            active_ = active;
         }
 
         void requestMap(
@@ -222,6 +226,9 @@ private:
     ros::Publisher                           pub_path_;
     ros::Duration                            path_update_interval_;
 
+    bool                                     filter_laserscan3d_;
+    double                                   filter_size_;
+
     // 2d and 3d laser callbacks
     void laserscan2d(
             const sensor_msgs::LaserScanConstPtr & msg);
@@ -249,7 +256,8 @@ private:
                 if(it->isNormal())
                     points->insert(it->getCartesian());
 
-            mapper.mapper_->insert(m);
+            if (mapper.active_)
+                mapper.mapper_->insert(m);
             updatePath(time);
         }
     }
@@ -280,10 +288,11 @@ private:
                 cslibs_math_3d::Point3d::arr_t arr =  {static_cast<double>(it->x),
                                                        static_cast<double>(it->y),
                                                        static_cast<double>(it->z)};
-                if (std::isnormal(arr[0]) && std::isnormal(arr[1]) && std::isnormal(arr[2]))
+                if (std::isnormal(arr[0]) && std::isnormal(arr[1]) && std::isnormal(arr[2]) && arr[2] < 10000)
                     points->insert(cslibs_math_3d::Point3d(arr));
             }
-            mapper.mapper_->insert(m);
+            if (mapper.active_)
+                mapper.mapper_->insert(m);
             updatePath(time);
         }
     }

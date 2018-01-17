@@ -1,6 +1,8 @@
 #include "mapper_node_3d.h"
 
 #include <pcl/filters/filter.h>
+#include <pcl/filters/voxel_grid.h>
+
 #include <cslibs_time/time.hpp>
 #include <cslibs_math_ros/sensor_msgs/conversion_2d.hpp>
 #include <cslibs_math_ros/geometry_msgs/conversion_2d.hpp>
@@ -32,32 +34,40 @@ bool MapperNode3d::setup()
     const double        occ_2d_grid_chunk_resolution   = nh_.param<double>("occ_2d_chunk_resolution", 5.0);
     const std::string   occ_2d_map_topic               = nh_.param<std::string>("occ_2d_map_topic", "/map/2d/occ");
     const double        occ_2d_map_pub_rate            = nh_.param<double>("occ_2d_map_pub_rate", 10.0);
+    const bool          occ_2d_map_active              = nh_.param<bool>("occ_2d_map_active", true);
 
     const double        ndt_2d_grid_resolution         = nh_.param<double>("ndt_2d_grid_resolution", 1.0);
     const double        ndt_2d_sampling_resolution     = nh_.param<double>("ndt_2d_sampling_resolution", 0.025);
     const std::string   ndt_2d_map_topic               = nh_.param<std::string>("ndt_2d_map_topic", "/map/2d/ndt");
     const double        ndt_2d_map_pub_rate            = nh_.param<double>("ndt_2d_map_pub_rate", 10.0);
+    const bool          ndt_2d_map_active              = nh_.param<bool>("ndt_2d_map_active", true);
 
     const double        occ_ndt_2d_grid_resolution     = nh_.param<double>("occ_ndt_2d_grid_resolution", 1.0);
     const double        occ_ndt_2d_sampling_resolution = nh_.param<double>("occ_ndt_2d_sampling_resolution", 0.025);
     const std::string   occ_ndt_2d_map_topic           = nh_.param<std::string>("occ_ndt_2d_map_topic", "/map/2d/occ_ndt");
     const double        occ_ndt_2d_map_pub_rate        = nh_.param<double>("occ_ndt_2d_map_pub_rate", 10.0);
+    const bool          occ_ndt_2d_map_active          = nh_.param<bool>("occ_ndt_2d_map_active", true);
 
     const double        occ_3d_grid_resolution         = nh_.param<double>("occ_3d_grid_resolution", 1.0);
     const std::string   occ_3d_map_topic               = nh_.param<std::string>("occ_3d_map_topic", "/map/3d/occ");
     const double        occ_3d_map_pub_rate            = nh_.param<double>("occ_3d_map_pub_rate", 10.0);
+    const bool          occ_3d_map_active              = nh_.param<bool>("occ_3d_map_active", true);
 
     const double        ndt_3d_grid_resolution         = nh_.param<double>("ndt_3d_grid_resolution", 2.0);
     const std::string   ndt_3d_map_topic               = nh_.param<std::string>("ndt_3d_map_topic", "/map/3d/ndt");
     const double        ndt_3d_map_pub_rate            = nh_.param<double>("ndt_3d_map_pub_rate", 10.0);
+    const bool          ndt_3d_map_active              = nh_.param<bool>("ndt_3d_map_active", true);
 
     const double        occ_ndt_3d_grid_resolution     = nh_.param<double>("occ_ndt_3d_grid_resolution", 2.0);
     const std::string   occ_ndt_3d_map_topic           = nh_.param<std::string>("occ_ndt_3d_map_topic", "/map/3d/occ_ndt");
     const double        occ_ndt_3d_map_pub_rate        = nh_.param<double>("occ_ndt_3d_map_pub_rate", 10.0);
+    const bool          occ_ndt_3d_map_active          = nh_.param<bool>("occ_ndt_3d_map_active", true);
 
     const std::string   path_topic                     = nh_.param<std::string>("path_topic", "/map/path");
     const double        path_update_rate               = nh_.param<double>("path_update_rate", 10.0);
 
+    filter_laserscan3d_ = nh_.param<bool>("filter_laserscan3d", "false");
+    filter_size_        = nh_.param<double>("filter_size", 0.05);
 
     std::vector<std::string> lasers2d, lasers3d;
     if (!nh_.getParam("lasers_2d", lasers2d))
@@ -145,12 +155,12 @@ bool MapperNode3d::setup()
     }
 
     ros::Time now = ros::Time::now();
-    occ_2d_mapper_.     setup(nh_, occ_2d_map_topic,     occ_2d_map_pub_rate,     now);
-    ndt_2d_mapper_.     setup(nh_, ndt_2d_map_topic,     ndt_2d_map_pub_rate,     now);
-    occ_ndt_2d_mapper_. setup(nh_, occ_ndt_2d_map_topic, occ_ndt_2d_map_pub_rate, now);
-    occ_3d_mapper_.     setup(nh_, occ_3d_map_topic,     occ_3d_map_pub_rate,     now);
-    ndt_3d_mapper_.     setup(nh_, ndt_3d_map_topic,     ndt_3d_map_pub_rate,     now);
-    occ_ndt_3d_mapper_. setup(nh_, occ_ndt_3d_map_topic, occ_ndt_3d_map_pub_rate, now);
+    occ_2d_mapper_.     setup(nh_, occ_2d_map_topic,     occ_2d_map_pub_rate,     now, occ_2d_map_active);
+    ndt_2d_mapper_.     setup(nh_, ndt_2d_map_topic,     ndt_2d_map_pub_rate,     now, ndt_2d_map_active);
+    occ_ndt_2d_mapper_. setup(nh_, occ_ndt_2d_map_topic, occ_ndt_2d_map_pub_rate, now, occ_ndt_2d_map_active);
+    occ_3d_mapper_.     setup(nh_, occ_3d_map_topic,     occ_3d_map_pub_rate,     now, occ_3d_map_active);
+    ndt_3d_mapper_.     setup(nh_, ndt_3d_map_topic,     ndt_3d_map_pub_rate,     now, ndt_3d_map_active);
+    occ_ndt_3d_mapper_. setup(nh_, occ_ndt_3d_map_topic, occ_ndt_3d_map_pub_rate, now, occ_ndt_3d_map_active);
 
     path_update_interval_  = ros::Duration(path_update_rate > 0.0 ? 1.0 / path_update_rate : 0.0);
     path_.header.stamp     = now;
@@ -211,6 +221,14 @@ void MapperNode3d::laserscan3d(
     std::vector<int> indices;
     pcl::fromROSMsg(*msg, laserscan);
     pcl::removeNaNFromPointCloud(laserscan, laserscan, indices);
+
+    if (filter_laserscan3d_) {
+        pcl::PointCloud<pcl::PointXYZI> laserscan_copy = laserscan;
+        pcl::VoxelGrid<pcl::PointXYZI> filter;
+        filter.setLeafSize(filter_size_, filter_size_, filter_size_);
+        filter.setInputCloud(boost::make_shared<pcl::PointCloud<pcl::PointXYZI>>(laserscan_copy));
+        filter.filter(laserscan);
+    }
 
     insert<occ_map_3d_t,     octomap_msg_3d_t, pcl::PointXYZI>(
                 occ_3d_mapper_,     msg->header.frame_id, msg->header.stamp, laserscan.makeShared());
