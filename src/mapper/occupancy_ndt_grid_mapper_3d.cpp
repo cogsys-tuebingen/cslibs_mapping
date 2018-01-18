@@ -11,7 +11,7 @@ OccupancyNDTGridMapper3d::OccupancyNDTGridMapper3d(
         stop_(false),
         request_map_(false),
         callback_([](const static_map_t::Ptr &){}),
-        inverse_model_(inverse_model),
+        inverse_model_(std::make_shared<cslibs_gridmaps::utility::InverseModel>(inverse_model)),
         resolution_(resolution),
         frame_id_(frame_id)
 
@@ -105,8 +105,8 @@ void OccupancyNDTGridMapper3d::mapRequest()
         distributions_->header.frame_id = frame_id_;
         distributions_->header.stamp = ros::Time::now();
 
-        auto sample = [] (const dynamic_map_t::distribution_t *d,
-                          const cslibs_math_3d::Point3d &p) {
+        auto sample = [this] (const dynamic_map_t::distribution_t *d,
+                              const cslibs_math_3d::Point3d &p) {
             return (d && d->getDistribution()) ?
                         (d->getDistribution()->sampleNonNormalized(p) * d->getOccupancy(inverse_model_)) : 0.0;
         };

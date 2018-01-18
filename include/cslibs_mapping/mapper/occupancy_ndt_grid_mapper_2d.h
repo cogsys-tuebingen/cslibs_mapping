@@ -67,7 +67,7 @@ protected:
 
     cslibs_time::Time                                   latest_time_;
     dynamic_map_t::Ptr                                  dynamic_map_;
-    cslibs_gridmaps::utility::InverseModel              inverse_model_;
+    cslibs_gridmaps::utility::InverseModel::Ptr         inverse_model_;
     double                                              resolution_;
     double                                              sampling_resolution_;
     std::string                                         frame_id_;

@@ -14,7 +14,7 @@ OccupancyNDTGridMapper2d::OccupancyNDTGridMapper2d(
     stop_(false),
     request_map_(false),
     callback_([](const static_map_t::Ptr &){}),
-    inverse_model_(inverse_model),
+    inverse_model_(std::make_shared<cslibs_gridmaps::utility::InverseModel>(inverse_model)),
     resolution_(resolution),
     sampling_resolution_(sampling_resolution),
     frame_id_(frame_id)
@@ -79,8 +79,7 @@ void OccupancyNDTGridMapper2d::loop()
 void OccupancyNDTGridMapper2d::mapRequest()
 {
     if(request_map_ && dynamic_map_) {
-        cslibs_ndt_2d::conversion::from(dynamic_map_, static_map_.data(), sampling_resolution_,
-                                        std::make_shared<cslibs_gridmaps::utility::InverseModel>(inverse_model_));
+        cslibs_ndt_2d::conversion::from(dynamic_map_, static_map_.data(), sampling_resolution_, inverse_model_);
         cslibs_gridmaps::static_maps::algorithms::normalize<double>(*static_map_.data());
         callback_(static_map_);
     }
