@@ -7,6 +7,10 @@
 #include <cslibs_math_ros/sensor_msgs/conversion_2d.hpp>
 #include <cslibs_math_ros/geometry_msgs/conversion_2d.hpp>
 
+#include <ndt_map/NDTMapMsg.h>
+#include <ndt_map/ndt_conversions.h>
+#include <pcl/common/transforms.h>
+
 namespace cslibs_mapping {
 MapperNode3d::MapperNode3d() :
     nh_("~")
@@ -20,6 +24,9 @@ MapperNode3d::~MapperNode3d()
         std::cout << "Saving Maps was " << (success ? "successful :-)." : "unsuccessful :-(.") << std::endl;
     } else
       std::cout << "Closing without Saving Maps..." << std::endl;
+
+    if (ndt_3d_map_oru_)
+        delete ndt_3d_map_oru_;
 }
 
 bool MapperNode3d::setup()
@@ -66,8 +73,9 @@ bool MapperNode3d::setup()
     const std::string   path_topic                     = nh_.param<std::string>("path_topic", "/map/path");
     const double        path_update_rate               = nh_.param<double>("path_update_rate", 10.0);
 
-    filter_laserscan3d_ = nh_.param<bool>("filter_laserscan3d", "false");
-    filter_size_        = nh_.param<double>("filter_size", 0.05);
+    filter_laserscan3d_    = nh_.param<bool>("filter_laserscan3d", false);
+    filter_size_           = nh_.param<double>("filter_size", 0.05);
+    ndt_3d_map_oru_active_ = nh_.param<bool>("ndt_3d_map_oru_active", true);
 
     std::vector<std::string> lasers2d, lasers3d;
     if (!nh_.getParam("lasers_2d", lasers2d))
@@ -162,6 +170,9 @@ bool MapperNode3d::setup()
     ndt_3d_mapper_.     setup(nh_, ndt_3d_map_topic,     ndt_3d_map_pub_rate,     now, ndt_3d_map_active);
     occ_ndt_3d_mapper_. setup(nh_, occ_ndt_3d_map_topic, occ_ndt_3d_map_pub_rate, now, occ_ndt_3d_map_active);
 
+    ndt_3d_map_oru_     = new lslgeneric::NDTMap(new lslgeneric::LazyGrid(occ_ndt_3d_grid_resolution / 2.0));
+    ndt_3d_map_oru_pub_ = nh_.advertise<ndt_map::NDTMapMsg>("map/3d/ndt_oru", 1);
+
     path_update_interval_  = ros::Duration(path_update_rate > 0.0 ? 1.0 / path_update_rate : 0.0);
     path_.header.stamp     = now;
     path_.header.frame_id  = map_frame;
@@ -236,6 +247,38 @@ void MapperNode3d::laserscan3d(
                 ndt_3d_mapper_,     msg->header.frame_id, msg->header.stamp, laserscan.makeShared());
     insert<occ_ndt_map_3d_t, msg_3d_t,         pcl::PointXYZI>(
                 occ_ndt_3d_mapper_, msg->header.frame_id, msg->header.stamp, laserscan.makeShared());
+
+    // Örebro NDT-OM Stuff
+    if (ndt_3d_map_oru_active_) {
+        tf::Transform o_T_l;
+        if (tf_->lookupTransform("/odom",
+                                 msg->header.frame_id,
+                                 msg->header.stamp,
+                                 o_T_l,
+                                 tf_timeout_)) {
+
+            transform_3d_t origin = cslibs_math_ros::tf::conversion_3d::from(o_T_l);
+
+            pcl::PointCloud<pcl::PointXYZ> pc, pcc;
+            pcl::copyPointCloud(laserscan, pc);
+
+            Eigen::Affine3f transform = Eigen::Affine3f::Identity();
+            for (int i = 0 ; i < 3 ; ++ i)
+                for (int j = 0 ; j < 3 ; ++ j)
+                    transform.matrix()(i, j) = o_T_l.getBasis()[i][j];
+            transform.translation() << o_T_l.getOrigin().x(), o_T_l.getOrigin().y(), o_T_l.getOrigin().z();
+            pcl::transformPointCloud(pc, pcc, transform);
+
+            cslibs_time::Time now = cslibs_time::Time::now();
+            ndt_3d_map_oru_->addPointCloud(Eigen::Vector3d(origin.tx(), origin.ty(), origin.tz()), pcc);
+
+            std::cout << "[NDTOru]: Insertion took " << (cslibs_time::Time::now() - now).milliseconds() << "ms \n";
+
+            ndt_map::NDTMapMsg map_msg;
+            lslgeneric::toMessage(ndt_3d_map_oru_, map_msg, "/odom");
+            ndt_3d_map_oru_pub_.publish(map_msg);
+        }
+    }
 }
 
 bool MapperNode3d::saveMap(
