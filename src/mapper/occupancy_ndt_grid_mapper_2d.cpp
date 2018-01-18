@@ -100,10 +100,12 @@ void OccupancyNDTGridMapper2d::process(const measurement_t &m)
     }
 
     cslibs_time::Time start = cslibs_time::Time::now();
+    dynamic_map_->insert(m.origin, m.points);
+/*
     for(const auto &p : *(m.points)) {
         const cslibs_math_2d::Point2d pm = m.origin * p;
         dynamic_map_->add(m.origin.translation(), pm);
-    }
+    }//*/
     std::cout << "[OccupancyNDTGridMapper2d]: Insertion took " << (cslibs_time::Time::now() - start).milliseconds() << "ms \n";
 }
 

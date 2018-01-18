@@ -25,7 +25,7 @@
     <arg name="bag_file" value="$(arg bag_name).bag" />
 
     <!--<include file="$(find rawseeds_ros)/launch/transforms.launch" />-->
-    <!--<include file="$(find rawseeds_ros)/launch/transforms_biccoca.launch" />-->
+    <include file="$(find rawseeds_ros)/launch/transforms_biccoca.launch" />
 
     <group ns="cslibs_mapping_node_3d">
         <rosparam param="lasers_2d">
