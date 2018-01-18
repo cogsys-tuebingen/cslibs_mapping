@@ -271,6 +271,7 @@ void MapperNode3d::laserscan3d(
 
             cslibs_time::Time now = cslibs_time::Time::now();
             ndt_3d_map_oru_->addPointCloud(Eigen::Vector3d(origin.tx(), origin.ty(), origin.tz()), pcc);
+            ndt_3d_map_oru_->computeNDTCells(CELL_UPDATE_MODE_SAMPLE_VARIANCE, 1e5, 255, Eigen::Vector3d(origin.tx(), origin.ty(), origin.tz()), 0.1);
 
             std::cout << "[NDTOru]: Insertion took " << (cslibs_time::Time::now() - now).milliseconds() << "ms \n";
 /*
