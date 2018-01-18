@@ -105,19 +105,13 @@ void OccupancyNDTGridMapper3d::mapRequest()
         distributions_->header.frame_id = frame_id_;
         distributions_->header.stamp = ros::Time::now();
 
-        auto occupancy = [this] (const std::size_t& n_free, const std::size_t& n_occ) {
-            return cslibs_math::common::LogOdds::from(
-                        n_free * inverse_model_.getLogOddsFree() +
-                        n_occ * inverse_model_.getLogOddsOccupied());
-        };
-        auto sample = [&occupancy] (const dynamic_map_t::distribution_t *d,
-                                    const cslibs_math_3d::Point3d &p) {
+        auto sample = [] (const dynamic_map_t::distribution_t *d,
+                          const cslibs_math_3d::Point3d &p) {
             return (d && d->getDistribution()) ?
-                        (d->getDistribution()->sampleNonNormalized(p) * occupancy(d->numFree(), d->numOccupied())) : 0.0;
+                        (d->getDistribution()->sampleNonNormalized(p) * d->getOccupancy(inverse_model_)) : 0.0;
         };
         auto sample_bundle = [&sample] (const dynamic_map_t::distribution_bundle_t * b,
-                                        const point_t &p)
-        {
+                                        const point_t &p) {
             return 0.125 * (sample(b->at(0), p) +
                             sample(b->at(1), p) +
                             sample(b->at(2), p) +
