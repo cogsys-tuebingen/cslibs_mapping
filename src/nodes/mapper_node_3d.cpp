@@ -249,7 +249,7 @@ void MapperNode3d::laserscan3d(
                 occ_ndt_3d_mapper_, msg->header.frame_id, msg->header.stamp, laserscan.makeShared());
 
     // Örebro NDT-OM Stuff
-    if (ndt_3d_map_oru_active_) {
+    if (ndt_3d_map_oru_active_ && ndt_3d_map_oru_) {
         tf::Transform o_T_l;
         if (tf_->lookupTransform("/odom",
                                  msg->header.frame_id,
@@ -273,10 +273,10 @@ void MapperNode3d::laserscan3d(
             ndt_3d_map_oru_->addPointCloud(Eigen::Vector3d(origin.tx(), origin.ty(), origin.tz()), pcc);
 
             std::cout << "[NDTOru]: Insertion took " << (cslibs_time::Time::now() - now).milliseconds() << "ms \n";
-
+/*
             ndt_map::NDTMapMsg map_msg;
             lslgeneric::toMessage(ndt_3d_map_oru_, map_msg, "/odom");
-            ndt_3d_map_oru_pub_.publish(map_msg);
+            ndt_3d_map_oru_pub_.publish(map_msg);*/
         }
     }
 }

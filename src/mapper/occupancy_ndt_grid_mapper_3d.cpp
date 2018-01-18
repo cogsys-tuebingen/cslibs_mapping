@@ -232,6 +232,7 @@ void OccupancyNDTGridMapper3d::process(const measurement_t &m)
         latest_time_ = m.stamp;
 
     cslibs_time::Time now = cslibs_time::Time::now();
+    dynamic_map_->insert(m.origin, m.points);/*
     for (const auto & p : *(m.points)) {
         const dynamic_map_t::point_t pm = m.origin * p;
         if (pm.isNormal()) {
@@ -239,8 +240,12 @@ void OccupancyNDTGridMapper3d::process(const measurement_t &m)
             dynamic_map_->add(m.origin.translation(), pm, bi);
             updated_indices_.insert(bi);
         }
-    }
+    }*/
     std::cout << "[OccupancyNDTGridMapper3d]: Insertion took " << (cslibs_time::Time::now() - now).milliseconds() << "ms \n";
+    std::vector<std::array<int, 3>> updated_indices;
+    dynamic_map_->getBundleIndices(updated_indices);
+    for (auto &bi : updated_indices)
+        updated_indices_.insert(bi);
 }
 
 bool OccupancyNDTGridMapper3d::saveMap(
