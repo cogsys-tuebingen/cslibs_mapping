@@ -25,15 +25,15 @@
     <arg name="bag_file" value="$(arg bag_name).bag" />
 
     <!--<include file="$(find rawseeds_ros)/launch/transforms.launch" />-->
-    <include file="$(find rawseeds_ros)/launch/transforms_biccoca.launch" />
+    <!--<include file="$(find rawseeds_ros)/launch/transforms_biccoca.launch" />-->
 
     <group ns="cslibs_mapping_node_3d">
         <rosparam param="lasers_2d">
             ["/sick/front", "/sick/rear"]
         </rosparam>
-        <!--<rosparam param="lasers_3d">
-            ["/svs_l/points"]
-        </rosparam>-->
+        <rosparam param="lasers_3d">
+            ["/rawseeds_ros_pointcloud_filter_node/svs_l/filtered"]
+        </rosparam>
 
         <param name="subscriber_queue_size" value="10" />
         <param name="rate" value="70.0" />
@@ -45,8 +45,8 @@
 	<param name="filter_laserscan3d" value="false" />
 	<param name="filter_size" value="0.05" />
 
-<!--	<param name="occ_3d_map_active" value="false" />
-	<param name="occ_ndt_3d_map_active" value="false" />
+	<param name="occ_3d_map_active" value="false" />
+	<!--<param name="occ_ndt_3d_map_active" value="false" />
 	<param name="ndt_3d_map_active" value="false" />-->
     </group>
 

@@ -228,24 +228,24 @@ void MapperNode3d::laserscan2d(
 void MapperNode3d::laserscan3d(
         const sensor_msgs::PointCloud2ConstPtr & msg)
 {std::cout << "Laser 3D: " << msg->header.frame_id << std::endl;
-    pcl::PointCloud<pcl::PointXYZI> laserscan;
+    pcl::PointCloud<pcl::PointXYZ> laserscan;
     std::vector<int> indices;
     pcl::fromROSMsg(*msg, laserscan);
     pcl::removeNaNFromPointCloud(laserscan, laserscan, indices);
 
     if (filter_laserscan3d_) {
-        pcl::PointCloud<pcl::PointXYZI> laserscan_copy = laserscan;
-        pcl::VoxelGrid<pcl::PointXYZI> filter;
+        pcl::PointCloud<pcl::PointXYZ> laserscan_copy = laserscan;
+        pcl::VoxelGrid<pcl::PointXYZ> filter;
         filter.setLeafSize(filter_size_, filter_size_, filter_size_);
-        filter.setInputCloud(boost::make_shared<pcl::PointCloud<pcl::PointXYZI>>(laserscan_copy));
+        filter.setInputCloud(boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>(laserscan_copy));
         filter.filter(laserscan);
     }
 
-    insert<occ_map_3d_t,     octomap_msg_3d_t, pcl::PointXYZI>(
+    insert<occ_map_3d_t,     octomap_msg_3d_t, pcl::PointXYZ>(
                 occ_3d_mapper_,     msg->header.frame_id, msg->header.stamp, laserscan.makeShared());
-    insert<ndt_map_3d_t,     msg_3d_t,         pcl::PointXYZI>(
+    insert<ndt_map_3d_t,     msg_3d_t,         pcl::PointXYZ>(
                 ndt_3d_mapper_,     msg->header.frame_id, msg->header.stamp, laserscan.makeShared());
-    insert<occ_ndt_map_3d_t, msg_3d_t,         pcl::PointXYZI>(
+    insert<occ_ndt_map_3d_t, msg_3d_t,         pcl::PointXYZ>(
                 occ_ndt_3d_mapper_, msg->header.frame_id, msg->header.stamp, laserscan.makeShared());
 
     // Örebro NDT-OM Stuff

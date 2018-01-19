@@ -78,7 +78,7 @@ void NDTGridMapper3d::loop()
             auto m = q_.pop();
             process(m);
         }
-        //mapRequest();
+        mapRequest();
     }
 }
 
