@@ -27,8 +27,8 @@
      <param name="filter_laserscan3d" value="false" />
      <param name="occ_3d_map_active" value="false" />
      <!--<param name="occ_ndt_3d_map_active" value="false" />-->
-     <!--<param name="ndt_3d_map_active" value="false" />-->
-     <!--<param name="ndt_3d_map_oru_active" value="false" />-->
+     <param name="ndt_3d_map_active" value="false" />
+     <param name="ndt_3d_map_oru_active" value="false" />
     </group>
 
     <node name="cslibs_mapping_node_3d" pkg="cslibs_mapping" type="cslibs_mapping_node_3d" output="screen" clear_params="true" />

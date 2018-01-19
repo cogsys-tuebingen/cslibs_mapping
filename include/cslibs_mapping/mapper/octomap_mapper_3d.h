@@ -16,6 +16,7 @@
 #include <cslibs_math_3d/linear/pointcloud.hpp>
 #include <cslibs_math_3d/linear/box.hpp>
 #include <cslibs_math/common/array.hpp>
+#include <cslibs_math/statistics/distribution.hpp>
 
 #include <octomap/OcTree.h>
 #include <octomap_msgs/conversions.h>
@@ -80,6 +81,8 @@ protected:
     cslibs_gridmaps::utility::InverseModel              inverse_model_;
     double                                              resolution_;
     std::string                                         frame_id_;
+
+    cslibs_math::statistics::Distribution<1, 3>         stats_;
 
     void loop();
 

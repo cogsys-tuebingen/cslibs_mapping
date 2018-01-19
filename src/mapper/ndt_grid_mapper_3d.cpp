@@ -78,7 +78,7 @@ void NDTGridMapper3d::loop()
             auto m = q_.pop();
             process(m);
         }
-        mapRequest();
+        //mapRequest();
     }
 }
 
@@ -237,11 +237,19 @@ void NDTGridMapper3d::process(const measurement_t &m)
             updated_indices_.insert(bi);
         }
     }*/
-    std::cout << "[NDTGridMapper3d]: Insertion took " << (cslibs_time::Time::now() - now).milliseconds() << "ms \n";
+    const double time_ms = (cslibs_time::Time::now() - now).milliseconds();
+    std::cout << "[NDTGridMapper3d]: Insertion took " << time_ms << "ms \n";
     std::vector<std::array<int, 3>> updated_indices;
     dynamic_map_->getBundleIndices(updated_indices);
     for (auto &bi : updated_indices)
         updated_indices_.insert(bi);
+
+    stats_ += time_ms;
+    static const std::string filename = "/tmp/ndt_stats";
+    std::ofstream out;
+    out.open(filename, std::ofstream::out | std::ofstream::app);
+    out << stats_.getN() << " | " << time_ms << " | " << stats_.getMean() << " | " << stats_.getStandardDeviation() << std::endl;
+    out.close();
 }
 
 bool NDTGridMapper3d::saveMap(

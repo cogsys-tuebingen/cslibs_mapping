@@ -85,7 +85,7 @@ bool MapperNode3d::setup()
     if (lasers2d.empty() && lasers3d.empty())
         return false;
 
-    std::string map_frame     = nh_.param<std::string>("map_frame", "/odom");
+    map_frame_                = nh_.param<std::string>("map_frame", "/odom");
     base_frame_               = nh_.param<std::string>("base_frame", "/base_link");
     output_path_              = nh_.param<std::string>("output_path", "");
 
@@ -103,7 +103,7 @@ bool MapperNode3d::setup()
     angular_interval_[1]      = static_cast<float>(nh_.param<double>("angle_max", M_PI));
 
     cslibs_gridmaps::utility::InverseModel inverse_model(occ_map_prob_prior, occ_map_prob_free, occ_map_prob_occ);
-    occ_2d_mapper_.map_frame_ = map_frame;
+    occ_2d_mapper_.map_frame_ = map_frame_;
     occ_2d_mapper_.mapper_.reset(
                 new occ_map_2d_t(inverse_model,
                                  occ_2d_grid_resolution,
@@ -111,14 +111,14 @@ bool MapperNode3d::setup()
                                  occ_2d_mapper_.map_frame_));
     occ_2d_mapper_.setCallback();
 
-    ndt_2d_mapper_.map_frame_ = map_frame;
+    ndt_2d_mapper_.map_frame_ = map_frame_;
     ndt_2d_mapper_.mapper_.reset(
                 new ndt_map_2d_t(ndt_2d_grid_resolution,
                                  ndt_2d_sampling_resolution,
                                  ndt_2d_mapper_.map_frame_));
     ndt_2d_mapper_.setCallback();
 
-    occ_ndt_2d_mapper_.map_frame_ = map_frame;
+    occ_ndt_2d_mapper_.map_frame_ = map_frame_;
     occ_ndt_2d_mapper_.mapper_.reset(
                 new occ_ndt_map_2d_t(inverse_model,
                                      occ_ndt_2d_grid_resolution,
@@ -126,20 +126,20 @@ bool MapperNode3d::setup()
                                      occ_ndt_2d_mapper_.map_frame_));
     occ_ndt_2d_mapper_.setCallback();
 
-    occ_3d_mapper_.map_frame_ = map_frame;
+    occ_3d_mapper_.map_frame_ = map_frame_;
     occ_3d_mapper_.mapper_.reset(
                 new occ_map_3d_t(inverse_model,
                                  occ_3d_grid_resolution,
                                  occ_3d_mapper_.map_frame_));
     occ_3d_mapper_.setCallback();
 
-    ndt_3d_mapper_.map_frame_ = map_frame;
+    ndt_3d_mapper_.map_frame_ = map_frame_;
     ndt_3d_mapper_.mapper_.reset(
                 new ndt_map_3d_t(ndt_3d_grid_resolution,
                                  ndt_3d_mapper_.map_frame_));
     ndt_3d_mapper_.setCallback();
 
-    occ_ndt_3d_mapper_.map_frame_ = map_frame;
+    occ_ndt_3d_mapper_.map_frame_ = map_frame_;
     occ_ndt_3d_mapper_.mapper_.reset(
                 new occ_ndt_map_3d_t(inverse_model,
                                      occ_ndt_3d_grid_resolution,
@@ -175,7 +175,7 @@ bool MapperNode3d::setup()
 
     path_update_interval_  = ros::Duration(path_update_rate > 0.0 ? 1.0 / path_update_rate : 0.0);
     path_.header.stamp     = now;
-    path_.header.frame_id  = map_frame;
+    path_.header.frame_id  = map_frame_;
     path_.header.stamp     = now;
 
     pub_path_         = nh_.advertise<nav_msgs::Path>(path_topic, 1);
@@ -251,7 +251,7 @@ void MapperNode3d::laserscan3d(
     // Örebro NDT-OM Stuff
     if (ndt_3d_map_oru_active_ && ndt_3d_map_oru_) {
         tf::Transform o_T_l;
-        if (tf_->lookupTransform("/odom",
+        if (tf_->lookupTransform(map_frame_,
                                  msg->header.frame_id,
                                  msg->header.stamp,
                                  o_T_l,
@@ -273,10 +273,18 @@ void MapperNode3d::laserscan3d(
             ndt_3d_map_oru_->addPointCloud(Eigen::Vector3d(origin.tx(), origin.ty(), origin.tz()), pcc);
             ndt_3d_map_oru_->computeNDTCells(CELL_UPDATE_MODE_SAMPLE_VARIANCE, 1e5, 255, Eigen::Vector3d(origin.tx(), origin.ty(), origin.tz()), 0.1);
 
-            std::cout << "[NDTOru]: Insertion took " << (cslibs_time::Time::now() - now).milliseconds() << "ms \n";
+            const double time_ms = (cslibs_time::Time::now() - now).milliseconds();
+            std::cout << "[NDTOru]: Insertion took " << time_ms << "ms \n";
+
+            oru_stats_ += time_ms;
+            static const std::string filename = "/tmp/oru_stats";
+            std::ofstream out;
+            out.open(filename, std::ofstream::out | std::ofstream::app);
+            out << oru_stats_.getN() << " | " << time_ms << " | " << oru_stats_.getMean() << " | " << oru_stats_.getStandardDeviation() << "\n";
+            out.close();
 /*
             ndt_map::NDTMapMsg map_msg;
-            lslgeneric::toMessage(ndt_3d_map_oru_, map_msg, "/odom");
+            lslgeneric::toMessage(ndt_3d_map_oru_, map_msg, map_frame_);
             ndt_3d_map_oru_pub_.publish(map_msg);*/
         }
     }

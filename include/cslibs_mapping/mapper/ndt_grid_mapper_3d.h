@@ -19,6 +19,7 @@
 #include <cslibs_math_3d/linear/pointcloud.hpp>
 #include <cslibs_math_3d/linear/box.hpp>
 #include <cslibs_math/common/array.hpp>
+#include <cslibs_math/statistics/distribution.hpp>
 
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
@@ -92,6 +93,8 @@ protected:
     dynamic_map_t::Ptr                                  dynamic_map_;
     double                                              resolution_;
     std::string                                         frame_id_;
+
+    cslibs_math::statistics::Distribution<1, 3>         stats_;
 
     void loop();
 
