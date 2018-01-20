@@ -25,7 +25,7 @@ find_package(catkin REQUIRED COMPONENTS
     message_generation
     octomap_msgs
     rviz
-    ndt_map
+    #ndt_map
 )
 
 find_package(PCL REQUIRED COMPONENTS common filters segmentation io)
