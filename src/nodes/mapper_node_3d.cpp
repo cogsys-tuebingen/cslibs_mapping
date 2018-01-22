@@ -24,9 +24,6 @@ MapperNode3d::~MapperNode3d()
         std::cout << "Saving Maps was " << (success ? "successful :-)." : "unsuccessful :-(.") << std::endl;
     } else
       std::cout << "Closing without Saving Maps..." << std::endl;
-
-    if (ndt_3d_map_oru_)
-        delete ndt_3d_map_oru_;
 }
 
 bool MapperNode3d::setup()

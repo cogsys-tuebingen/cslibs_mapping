@@ -131,7 +131,7 @@ bool NDTGridMapper2d::saveMap(
     }
 
     // save dynamic map
-    cslibs_ndt_2d::dynamic_maps::save(dynamic_map_, (p / boost::filesystem::path("map")).string());
+    cslibs_ndt_2d::dynamic_maps::saveBinary(dynamic_map_, (p / boost::filesystem::path("map")).string());
 
     if (!static_map_.data())
         return false;

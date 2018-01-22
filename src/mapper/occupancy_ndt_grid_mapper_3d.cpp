@@ -283,7 +283,7 @@ bool OccupancyNDTGridMapper3d::saveMap(
     }
 
     // save dynamic map
-    cslibs_ndt_3d::dynamic_maps::save(dynamic_map_, (p / boost::filesystem::path("map")).string());
+    cslibs_ndt_3d::dynamic_maps::saveBinary(dynamic_map_, (p / boost::filesystem::path("map")).string());
 
     // save 3d path
     std::string poses_path_3d_yaml  = (p / boost::filesystem::path("poses3d.yaml")).     string();
