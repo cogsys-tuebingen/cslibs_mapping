@@ -25,14 +25,14 @@
     <arg name="bag_file" value="$(arg bag_name).bag" />
 
     <!--<include file="$(find rawseeds_ros)/launch/transforms.launch" />-->
-    <!--<include file="$(find rawseeds_ros)/launch/transforms_biccoca.launch" />-->
+    <include file="$(find rawseeds_ros)/launch/transforms_biccoca.launch" />
 
     <group ns="cslibs_mapping_node_3d">
         <rosparam param="lasers_2d">
             ["/sick/front", "/sick/rear"]
         </rosparam>
         <rosparam param="lasers_3d">
-            ["/rawseeds_ros_pointcloud_filter_node/svs_l/filtered"]
+            ["/svs_l/filtered_points"]
         </rosparam>
 
         <param name="subscriber_queue_size" value="10" />
