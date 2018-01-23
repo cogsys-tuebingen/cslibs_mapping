@@ -7,9 +7,10 @@
 #include <cslibs_math_ros/sensor_msgs/conversion_2d.hpp>
 #include <cslibs_math_ros/geometry_msgs/conversion_2d.hpp>
 
-//#include <ndt_map/NDTMapMsg.h>
-//#include <ndt_map/ndt_conversions.h>
-//#include <pcl/common/transforms.h>
+#include <ndt_map/lazy_grid.h>
+#include <ndt_map/NDTMapMsg.h>
+#include <ndt_map/ndt_conversions.h>
+#include <pcl/common/transforms.h>
 
 namespace cslibs_mapping {
 MapperNode3d::MapperNode3d() :
@@ -72,7 +73,10 @@ bool MapperNode3d::setup()
 
     filter_laserscan3d_    = nh_.param<bool>("filter_laserscan3d", false);
     filter_size_           = nh_.param<double>("filter_size", 0.05);
-//    ndt_3d_map_oru_active_ = nh_.param<bool>("ndt_3d_map_oru_active", true);
+    ndt_3d_map_oru_active_ = nh_.param<bool>("ndt_3d_map_oru_active", true);
+    ndt_2d_map_oru_active_ = nh_.param<bool>("ndt_2d_map_oru_active", true);
+    ndt_3d_map_oru_pub_active_ = nh_.param<bool>("ndt_3d_map_oru_pub_active", false);
+    ndt_2d_map_oru_pub_active_ = nh_.param<bool>("ndt_2d_map_oru_pub_active", false);
 
     std::vector<std::string> lasers2d, lasers3d;
     if (!nh_.getParam("lasers_2d", lasers2d))
@@ -167,8 +171,11 @@ bool MapperNode3d::setup()
     ndt_3d_mapper_.     setup(nh_, ndt_3d_map_topic,     ndt_3d_map_pub_rate,     now, ndt_3d_map_active);
     occ_ndt_3d_mapper_. setup(nh_, occ_ndt_3d_map_topic, occ_ndt_3d_map_pub_rate, now, occ_ndt_3d_map_active);
 
-//    ndt_3d_map_oru_     = new lslgeneric::NDTMap(new lslgeneric::LazyGrid(occ_ndt_3d_grid_resolution / 2.0));
-//    ndt_3d_map_oru_pub_ = nh_.advertise<ndt_map::NDTMapMsg>("map/3d/ndt_oru", 1);
+    ndt_3d_map_oru_.reset(new lslgeneric::NDTMap(new lslgeneric::LazyGrid(occ_ndt_3d_grid_resolution / 2.0)));
+    ndt_3d_map_oru_pub_ = nh_.advertise<ndt_map::NDTMapMsg>("map/3d/ndt_oru", 1);
+
+    ndt_2d_map_oru_.reset(new lslgeneric::NDTMap(new lslgeneric::LazyGrid(occ_ndt_2d_grid_resolution / 2.0)));
+    ndt_2d_map_oru_pub_ = nh_.advertise<ndt_map::NDTMapMsg>("map/2d/ndt_oru", 1);
 
     path_update_interval_  = ros::Duration(path_update_rate > 0.0 ? 1.0 / path_update_rate : 0.0);
     path_.header.stamp     = now;
@@ -220,6 +227,78 @@ void MapperNode3d::laserscan2d(
     insert(occ_2d_mapper_,     msg->header.frame_id, msg->header.stamp, laserscan);
     insert(ndt_2d_mapper_,     msg->header.frame_id, msg->header.stamp, laserscan);
     insert(occ_ndt_2d_mapper_, msg->header.frame_id, msg->header.stamp, laserscan);
+
+    // Örebro NDT-OM Stuff
+    if (ndt_2d_map_oru_active_ && ndt_2d_map_oru_) {
+        tf::Transform o_T_l;
+        if (tf_->lookupTransform(map_frame_,
+                                 msg->header.frame_id,
+                                 msg->header.stamp,
+                                 o_T_l,
+                                 tf_timeout_)) {
+
+            transform_3d_t origin = cslibs_math_ros::tf::conversion_3d::from(o_T_l);
+            pcl::PointCloud<pcl::PointXYZ> pc, pcc;
+            for(auto it = laserscan->begin() ; it != laserscan->end() ; ++ it)
+                if(it->isNormal()) {
+                    pcl::PointXYZ pp(it->getCartesian()(0),
+                                     it->getCartesian()(1),
+                                     0.1+0.02 * (double)rand()/(double)RAND_MAX);
+                    pc.push_back(pp);
+                }
+
+            Eigen::Affine3f transform = Eigen::Affine3f::Identity();
+            for (int i = 0 ; i < 3 ; ++ i)
+                for (int j = 0 ; j < 3 ; ++ j)
+                    transform.matrix()(i, j) = o_T_l.getBasis()[i][j];
+            transform.translation() << o_T_l.getOrigin().x(), o_T_l.getOrigin().y(), o_T_l.getOrigin().z();
+            pcl::transformPointCloud(pc, pcc, transform);
+            std::vector<int> indices;
+            pcl::removeNaNFromPointCloud(pcc, pcc, indices);
+
+            cslibs_time::Time now = cslibs_time::Time::now();
+            ndt_2d_map_oru_->addPointCloud(Eigen::Vector3d(origin.tx(), origin.ty(), origin.tz()), pcc);
+            ndt_2d_map_oru_->computeNDTCells(CELL_UPDATE_MODE_SAMPLE_VARIANCE, 1e9, 255, Eigen::Vector3d(origin.tx(), origin.ty(), origin.tz()), 0.1);
+
+            const double time_ms = (cslibs_time::Time::now() - now).milliseconds();
+            std::cout << "[NDTOru2d]: Insertion took " << time_ms << "ms, ";
+            std::cout << ndt_2d_map_oru_->getAllCells().size() << "|"
+                      << ndt_2d_map_oru_->getAllInitializedCells().size() << "|"
+                      << ndt_2d_map_oru_->numberOfActiveCells() << " cells \n";
+
+            ndt_2d_map_oru_stats_ += time_ms;
+            static const std::string filename = "/tmp/oru2d_stats";
+            std::ofstream out;
+            out.open(filename, std::ofstream::out | std::ofstream::app);
+            out << ndt_2d_map_oru_stats_.getN() << " | " << time_ms << " | " << ndt_2d_map_oru_stats_.getMean() << " | " << ndt_2d_map_oru_stats_.getStandardDeviation() << "\n";
+            out.close();
+
+            if (ndt_2d_map_oru_pub_active_) {
+                ndt_map::NDTMapMsg map_msg;
+                map_msg.header.stamp = msg->header.stamp;
+                map_msg.header.frame_id = map_frame_;
+                ndt_2d_map_oru_->getGridSizeInMeters(map_msg.x_size, map_msg.y_size, map_msg.z_size);
+                ndt_2d_map_oru_->getCentroid(map_msg.x_cen, map_msg.y_cen, map_msg.z_cen);
+                ndt_2d_map_oru_->getCellSizeInMeters(map_msg.x_cell_size, map_msg.y_cell_size, map_msg.z_cell_size);
+                for (const auto &c : ndt_2d_map_oru_->getAllInitializedCellsShared()) {
+                    lslgeneric::NDTCell &cell = *c;
+                    ndt_map::NDTCellMsg cell_msg;
+                    Eigen::Vector3d mean = cell.getMean();
+                    cell_msg.mean_x = mean(0);
+                    cell_msg.mean_y = mean(1);
+                    cell_msg.mean_z = mean(2);
+                    cell_msg.occupancy = cell.getOccupancyRescaled();
+                    for (int i = 0 ; i < 3 ; ++ i)
+                        for (int j = 0 ; j < 3 ; ++ j)
+                            cell_msg.cov_matrix.push_back(cell.getCov()(i, j));
+                    cell_msg.N = cell.getN();
+                    map_msg.cells.push_back(cell_msg);
+                }
+
+                ndt_2d_map_oru_pub_.publish(map_msg);
+            }
+        }
+    }
 }
 
 void MapperNode3d::laserscan3d(
@@ -244,7 +323,7 @@ void MapperNode3d::laserscan3d(
                 ndt_3d_mapper_,     msg->header.frame_id, msg->header.stamp, laserscan.makeShared());
     insert<occ_ndt_map_3d_t, msg_3d_t,         pcl::PointXYZ>(
                 occ_ndt_3d_mapper_, msg->header.frame_id, msg->header.stamp, laserscan.makeShared());
-/*
+
     // Örebro NDT-OM Stuff
     if (ndt_3d_map_oru_active_ && ndt_3d_map_oru_) {
         tf::Transform o_T_l;
@@ -265,26 +344,52 @@ void MapperNode3d::laserscan3d(
                     transform.matrix()(i, j) = o_T_l.getBasis()[i][j];
             transform.translation() << o_T_l.getOrigin().x(), o_T_l.getOrigin().y(), o_T_l.getOrigin().z();
             pcl::transformPointCloud(pc, pcc, transform);
+            std::vector<int> indices;
+            pcl::removeNaNFromPointCloud(pcc, pcc, indices);
 
             cslibs_time::Time now = cslibs_time::Time::now();
             ndt_3d_map_oru_->addPointCloud(Eigen::Vector3d(origin.tx(), origin.ty(), origin.tz()), pcc);
-            ndt_3d_map_oru_->computeNDTCells(CELL_UPDATE_MODE_SAMPLE_VARIANCE, 1e5, 255, Eigen::Vector3d(origin.tx(), origin.ty(), origin.tz()), 0.1);
+            ndt_3d_map_oru_->computeNDTCells(CELL_UPDATE_MODE_SAMPLE_VARIANCE, 1e9, 255, Eigen::Vector3d(origin.tx(), origin.ty(), origin.tz()), 0.1);
 
             const double time_ms = (cslibs_time::Time::now() - now).milliseconds();
-            std::cout << "[NDTOru]: Insertion took " << time_ms << "ms \n";
+            std::cout << "[NDTOru3d]: Insertion took " << time_ms << "ms, ";
+            std::cout << ndt_3d_map_oru_->getAllCells().size() << "|"
+                      << ndt_3d_map_oru_->getAllInitializedCells().size() << "|"
+                      << ndt_3d_map_oru_->numberOfActiveCells() << " cells \n";
 
-            oru_stats_ += time_ms;
-            static const std::string filename = "/tmp/oru_stats";
+            ndt_3d_map_oru_stats_ += time_ms;
+            static const std::string filename = "/tmp/oru3d_stats";
             std::ofstream out;
             out.open(filename, std::ofstream::out | std::ofstream::app);
-            out << oru_stats_.getN() << " | " << time_ms << " | " << oru_stats_.getMean() << " | " << oru_stats_.getStandardDeviation() << "\n";
+            out << ndt_3d_map_oru_stats_.getN() << " | " << time_ms << " | " << ndt_3d_map_oru_stats_.getMean() << " | " << ndt_3d_map_oru_stats_.getStandardDeviation() << "\n";
             out.close();
 
-//            ndt_map::NDTMapMsg map_msg;
-//            lslgeneric::toMessage(ndt_3d_map_oru_, map_msg, map_frame_);
-//            ndt_3d_map_oru_pub_.publish(map_msg);
+            if (ndt_3d_map_oru_pub_active_) {
+                ndt_map::NDTMapMsg map_msg;
+                map_msg.header.stamp = msg->header.stamp;
+                map_msg.header.frame_id = map_frame_;
+                ndt_3d_map_oru_->getGridSizeInMeters(map_msg.x_size, map_msg.y_size, map_msg.z_size);
+                ndt_3d_map_oru_->getCentroid(map_msg.x_cen, map_msg.y_cen, map_msg.z_cen);
+                ndt_3d_map_oru_->getCellSizeInMeters(map_msg.x_cell_size, map_msg.y_cell_size, map_msg.z_cell_size);
+                for (const auto &c : ndt_3d_map_oru_->getAllInitializedCellsShared()) {
+                    lslgeneric::NDTCell &cell = *c;
+                    ndt_map::NDTCellMsg cell_msg;
+                    Eigen::Vector3d mean = cell.getMean();
+                    cell_msg.mean_x = mean(0);
+                    cell_msg.mean_y = mean(1);
+                    cell_msg.mean_z = mean(2);
+                    cell_msg.occupancy = cell.getOccupancyRescaled();
+                    for (int i = 0 ; i < 3 ; ++ i)
+                        for (int j = 0 ; j < 3 ; ++ j)
+                            cell_msg.cov_matrix.push_back(cell.getCov()(i, j));
+                    cell_msg.N = cell.getN();
+                    map_msg.cells.push_back(cell_msg);
+                }
+
+                ndt_3d_map_oru_pub_.publish(map_msg);
+            }
         }
-    }*/
+    }
 }
 
 bool MapperNode3d::saveMap(
@@ -312,7 +417,12 @@ bool MapperNode3d::saveMap(
     const bool res4 = occ_3d_mapper_.    mapper_->saveMap(path + occ_3d_mapper_.    pub_map_.getTopic() + "/", path_);
     const bool res5 = ndt_3d_mapper_.    mapper_->saveMap(path + ndt_3d_mapper_.    pub_map_.getTopic() + "/", path_);
     const bool res6 = occ_ndt_3d_mapper_.mapper_->saveMap(path + occ_ndt_3d_mapper_.pub_map_.getTopic() + "/", path_);
-    return res1 && res2 && res3 && res4 && res5 && res6;
+
+    std::string oru_2d = path + "/Oru2d.jff";
+    std::string oru_3d = path + "/Oru3d.jff";
+    const bool res7 = ndt_3d_map_oru_active_ && (ndt_3d_map_oru_->writeToJFF(oru_3d.c_str())) == 0;
+    const bool res8 = ndt_2d_map_oru_active_ && (ndt_2d_map_oru_->writeToJFF(oru_2d.c_str())) == 0;
+    return res1 && res2 && res3 && res4 && res5 && res6 && res7 && res8;
 }
 
 void MapperNode3d::updatePath(
