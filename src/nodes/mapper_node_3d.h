@@ -23,7 +23,9 @@
 #include <cslibs_math_ros/tf/conversion_3d.hpp>
 #include <cslibs_math_2d/linear/polar_pointcloud.hpp>
 
+#ifdef WITH_ORU_NDT
 #include <ndt_map/ndt_map.h>
+#endif
 
 namespace cslibs_mapping {
 class MapperNode3d
@@ -211,6 +213,8 @@ private:
     MapperWorker<ndt_map_3d_t, msg_3d_t>         ndt_3d_mapper_;
     MapperWorker<occ_ndt_map_3d_t, msg_3d_t>     occ_ndt_3d_mapper_;
 
+
+#ifdef WITH_ORU_NDT
     // Örebro NDT-OM map
     bool                                         ndt_3d_map_oru_active_;
     bool                                         ndt_3d_map_oru_pub_active_;
@@ -224,6 +228,7 @@ private:
     std::shared_ptr<lslgeneric::NDTMap>          ndt_2d_map_oru_;
     ros::Publisher                               ndt_2d_map_oru_pub_;
     cslibs_math::statistics::Distribution<1, 3>  ndt_2d_map_oru_stats_;
+#endif
 
     bool                                     undistortion_;              /// check if undistortion shall be applied
     std::string                              undistortion_fixed_frame_;  /// the fixed frame necessary for the undistortion

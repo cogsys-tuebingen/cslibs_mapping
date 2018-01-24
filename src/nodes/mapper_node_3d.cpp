@@ -7,10 +7,12 @@
 #include <cslibs_math_ros/sensor_msgs/conversion_2d.hpp>
 #include <cslibs_math_ros/geometry_msgs/conversion_2d.hpp>
 
+#ifdef WITH_ORU_NDT
 #include <ndt_map/lazy_grid.h>
 #include <ndt_map/NDTMapMsg.h>
 #include <ndt_map/ndt_conversions.h>
 #include <pcl/common/transforms.h>
+#endif
 
 namespace cslibs_mapping {
 MapperNode3d::MapperNode3d() :
@@ -73,10 +75,12 @@ bool MapperNode3d::setup()
 
     filter_laserscan3d_    = nh_.param<bool>("filter_laserscan3d", false);
     filter_size_           = nh_.param<double>("filter_size", 0.05);
-    ndt_3d_map_oru_active_ = nh_.param<bool>("ndt_3d_map_oru_active", true);
-    ndt_2d_map_oru_active_ = nh_.param<bool>("ndt_2d_map_oru_active", true);
-    ndt_3d_map_oru_pub_active_ = nh_.param<bool>("ndt_3d_map_oru_pub_active", false);
-    ndt_2d_map_oru_pub_active_ = nh_.param<bool>("ndt_2d_map_oru_pub_active", false);
+#ifdef WITH_ORU_NDT
+    ndt_3d_map_oru_active_      = nh_.param<bool>("ndt_3d_map_oru_active", true);
+    ndt_2d_map_oru_active_      = nh_.param<bool>("ndt_2d_map_oru_active", true);
+    ndt_3d_map_oru_pub_active_  = nh_.param<bool>("ndt_3d_map_oru_pub_active", false);
+    ndt_2d_map_oru_pub_active_  = nh_.param<bool>("ndt_2d_map_oru_pub_active", false);
+#endif
 
     std::vector<std::string> lasers2d, lasers3d;
     if (!nh_.getParam("lasers_2d", lasers2d))
@@ -171,11 +175,12 @@ bool MapperNode3d::setup()
     ndt_3d_mapper_.     setup(nh_, ndt_3d_map_topic,     ndt_3d_map_pub_rate,     now, ndt_3d_map_active);
     occ_ndt_3d_mapper_. setup(nh_, occ_ndt_3d_map_topic, occ_ndt_3d_map_pub_rate, now, occ_ndt_3d_map_active);
 
+#ifdef WITH_ORU_NDT
     ndt_3d_map_oru_.reset(new lslgeneric::NDTMap(new lslgeneric::LazyGrid(occ_ndt_3d_grid_resolution / 2.0)));
     ndt_3d_map_oru_pub_ = nh_.advertise<ndt_map::NDTMapMsg>("map/3d/ndt_oru", 1);
-
     ndt_2d_map_oru_.reset(new lslgeneric::NDTMap(new lslgeneric::LazyGrid(occ_ndt_2d_grid_resolution / 2.0)));
     ndt_2d_map_oru_pub_ = nh_.advertise<ndt_map::NDTMapMsg>("map/2d/ndt_oru", 1);
+#endif
 
     path_update_interval_  = ros::Duration(path_update_rate > 0.0 ? 1.0 / path_update_rate : 0.0);
     path_.header.stamp     = now;
@@ -228,6 +233,8 @@ void MapperNode3d::laserscan2d(
     insert(ndt_2d_mapper_,     msg->header.frame_id, msg->header.stamp, laserscan);
     insert(occ_ndt_2d_mapper_, msg->header.frame_id, msg->header.stamp, laserscan);
 
+
+#ifdef WITH_ORU_NDT
     // Örebro NDT-OM Stuff
     if (ndt_2d_map_oru_active_ && ndt_2d_map_oru_) {
         tf::Transform o_T_l;
@@ -299,6 +306,7 @@ void MapperNode3d::laserscan2d(
             }
         }
     }
+#endif
 }
 
 void MapperNode3d::laserscan3d(
@@ -324,6 +332,7 @@ void MapperNode3d::laserscan3d(
     insert<occ_ndt_map_3d_t, msg_3d_t,         pcl::PointXYZ>(
                 occ_ndt_3d_mapper_, msg->header.frame_id, msg->header.stamp, laserscan.makeShared());
 
+#ifdef WITH_ORU_NDT
     // Örebro NDT-OM Stuff
     if (ndt_3d_map_oru_active_ && ndt_3d_map_oru_) {
         tf::Transform o_T_l;
@@ -390,6 +399,7 @@ void MapperNode3d::laserscan3d(
             }
         }
     }
+#endif
 }
 
 bool MapperNode3d::saveMap(
@@ -418,11 +428,16 @@ bool MapperNode3d::saveMap(
     const bool res5 = ndt_3d_mapper_.    mapper_->saveMap(path + ndt_3d_mapper_.    pub_map_.getTopic() + "/", path_);
     const bool res6 = occ_ndt_3d_mapper_.mapper_->saveMap(path + occ_ndt_3d_mapper_.pub_map_.getTopic() + "/", path_);
 
+
+#ifdef WITH_ORU_NDT
     std::string oru_2d = path + "/Oru2d.jff";
     std::string oru_3d = path + "/Oru3d.jff";
     const bool res7 = ndt_3d_map_oru_active_ && (ndt_3d_map_oru_->writeToJFF(oru_3d.c_str())) == 0;
     const bool res8 = ndt_2d_map_oru_active_ && (ndt_2d_map_oru_->writeToJFF(oru_2d.c_str())) == 0;
     return res1 && res2 && res3 && res4 && res5 && res6 && res7 && res8;
+#else
+    return res1 && res2 && res3 && res4 && res5 && res6;
+#endif
 }
 
 void MapperNode3d::updatePath(

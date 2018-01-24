@@ -25,12 +25,12 @@ find_package(catkin REQUIRED COMPONENTS
     message_generation
     octomap_msgs
     rviz
-    ndt_map
 )
 
 find_package(PCL REQUIRED COMPONENTS common filters segmentation io)
 find_package(Boost REQUIRED COMPONENTS filesystem)
 find_package(octomap REQUIRED)
+find_package(ndt_map QUIET)
 
 add_message_files(
     FILES
@@ -61,6 +61,7 @@ include_directories(
     ${pcl_ros_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS}
     ${OCTOMAP_INCLUDE_DIRS}
+    ${ndt_map_INCLUDE_DIRS}
 )
 
 cslibs_mapping_show_headers()
@@ -100,6 +101,10 @@ target_link_libraries(${PROJECT_NAME}_node_2d
     )
 add_dependencies(${PROJECT_NAME}_node_2d ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
+if(${ndt_map_found})
+    add_definitions("-DWITH_ORU_NDT")
+endif()
+
 add_executable(${PROJECT_NAME}_node_3d
     src/nodes/mapper_node_3d.cpp
     )
@@ -110,6 +115,7 @@ target_link_libraries(${PROJECT_NAME}_node_3d
     ${PCL_LIBRARIES}
     yaml-cpp
     ${OCTOMAP_LIBRARIES}
+    ${ndt_map_LIBRARIES}
     )
 add_dependencies(${PROJECT_NAME}_node_3d ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
