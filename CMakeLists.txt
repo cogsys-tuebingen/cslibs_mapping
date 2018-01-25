@@ -119,28 +119,14 @@ target_link_libraries(${PROJECT_NAME}_node_3d
     )
 add_dependencies(${PROJECT_NAME}_node_3d ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
-add_executable(${PROJECT_NAME}_offline_node_2d
-    src/nodes/offline_mapper_node_2d.cpp
-    )
-target_link_libraries(${PROJECT_NAME}_offline_node_2d
-    ${PROJECT_NAME}_2d
-    ${Boost_LIBRARIES}
-    ${catkin_LIBRARIES}
-    )
-add_dependencies(${PROJECT_NAME}_node_2d ${${PROJECT_NAME}_EXPORTED_TARGETS})
-
-add_executable(${PROJECT_NAME}_offline_node_3d
-    src/nodes/offline_mapper_node_3d.cpp
-    )
-target_link_libraries(${PROJECT_NAME}_offline_node_3d
-    ${PROJECT_NAME}_2d
+add_executable(${PROJECT_NAME}_ndt_map_loader_3d
+    src/rviz/ndt_map_loader_3d.cpp
+)
+target_link_libraries(${PROJECT_NAME}_ndt_map_loader_3d
     ${PROJECT_NAME}_3d
     ${catkin_LIBRARIES}
     ${PCL_LIBRARIES}
-    )
-add_dependencies(${PROJECT_NAME}_node_3d ${${PROJECT_NAME}_EXPORTED_TARGETS})
-
-
+)
 
 set(CMAKE_AUTOMOC ON)
 include_directories(${rviz_INCLUDE_DIRS})

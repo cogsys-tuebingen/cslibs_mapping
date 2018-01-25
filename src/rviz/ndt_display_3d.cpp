@@ -31,6 +31,7 @@ NDTDisplay3D::NDTDisplay3D() :
     bool_property_ = new rviz::BoolProperty( "Accumulate", true,
                                              "Accumulate all received updates to one NDT map.",
                                              this, SLOT(updateAccumulation() ));
+
 }
 
 NDTDisplay3D::~NDTDisplay3D()
