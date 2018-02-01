@@ -6,12 +6,14 @@
 namespace cslibs_mapping {
 OccupancyNDTGridMapper3d::OccupancyNDTGridMapper3d(
         const cslibs_gridmaps::utility::InverseModel &inverse_model,
+        const cslibs_gridmaps::utility::InverseModel &inverse_model_visibility,
         const double                                  resolution,
         const std::string                            &frame_id) :
         stop_(false),
         request_map_(false),
         callback_([](const static_map_t::Ptr &){}),
         inverse_model_(std::make_shared<cslibs_gridmaps::utility::InverseModel>(inverse_model)),
+        inverse_model_visibility_(std::make_shared<cslibs_gridmaps::utility::InverseModel>(inverse_model_visibility)),
         resolution_(resolution),
         frame_id_(frame_id)
 
@@ -232,7 +234,7 @@ void OccupancyNDTGridMapper3d::process(const measurement_t &m)
         latest_time_ = m.stamp;
 
     cslibs_time::Time now = cslibs_time::Time::now();
-    dynamic_map_->insert(m.origin, m.points);/*
+    dynamic_map_->insertVolumetric(m.origin, m.points, inverse_model_, inverse_model_visibility_);/*
     for (const auto & p : *(m.points)) {
         const dynamic_map_t::point_t pm = m.origin * p;
         if (pm.isNormal()) {

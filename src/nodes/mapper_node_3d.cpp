@@ -107,6 +107,10 @@ bool MapperNode3d::setup()
     angular_interval_[0]      = static_cast<float>(nh_.param<double>("angle_min",-M_PI));
     angular_interval_[1]      = static_cast<float>(nh_.param<double>("angle_max", M_PI));
 
+    double visibility_threshold         = nh_.param<double>("visibility_threshold", 0.4);
+    double prob_visible_if_occluded     = nh_.param<double>("prob_visible_if_occluded", 0.2);
+    double prob_visible_if_not_occluded = nh_.param<double>("prob_visible_if_not_occluded", 0.8);
+
     cslibs_gridmaps::utility::InverseModel inverse_model(occ_map_prob_prior, occ_map_prob_free, occ_map_prob_occ);
     occ_2d_mapper_.map_frame_ = map_frame_;
     occ_2d_mapper_.mapper_.reset(
@@ -144,9 +148,12 @@ bool MapperNode3d::setup()
                                  ndt_3d_mapper_.map_frame_));
     ndt_3d_mapper_.setCallback();
 
+    cslibs_gridmaps::utility::InverseModel inverse_model_visibility(
+                visibility_threshold, prob_visible_if_occluded, prob_visible_if_not_occluded);
     occ_ndt_3d_mapper_.map_frame_ = map_frame_;
     occ_ndt_3d_mapper_.mapper_.reset(
                 new occ_ndt_map_3d_t(inverse_model,
+                                     inverse_model_visibility,
                                      occ_ndt_3d_grid_resolution,
                                      occ_ndt_3d_mapper_.map_frame_));
     occ_ndt_3d_mapper_.setCallback();

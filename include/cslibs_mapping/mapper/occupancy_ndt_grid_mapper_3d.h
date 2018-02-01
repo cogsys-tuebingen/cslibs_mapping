@@ -49,6 +49,7 @@ public:
 public:
     OccupancyNDTGridMapper3d(
             const cslibs_gridmaps::utility::InverseModel &inverse_model,
+            const cslibs_gridmaps::utility::InverseModel &inverse_model_visibility,
             const double                                  resolution,
             const std::string                            &frame_id);
 
@@ -94,6 +95,7 @@ protected:
     cslibs_time::Time                                   latest_time_;
     dynamic_map_t::Ptr                                  dynamic_map_;
     cslibs_gridmaps::utility::InverseModel::Ptr         inverse_model_;
+    cslibs_gridmaps::utility::InverseModel::Ptr         inverse_model_visibility_;
     double                                              resolution_;
     std::string                                         frame_id_;
 
