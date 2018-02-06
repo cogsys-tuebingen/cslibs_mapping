@@ -124,7 +124,8 @@ void OctomapMapper3d::process(const measurement_t &m)
     static const std::string filename = "/tmp/octomap_stats";
     std::ofstream out;
     out.open(filename, std::ofstream::out | std::ofstream::app);
-    out << stats_.getN() << " | " << time_ms << " | " << stats_.getMean() << " | " << stats_.getStandardDeviation() << std::endl;
+    out << stats_.getN() << " | " << time_ms << " | " << stats_.getMean() << " | " << stats_.getStandardDeviation()
+        << " | mem: " << dynamic_map_->memoryUsage() << std::endl;
     out.close();
 }
 

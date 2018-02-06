@@ -101,9 +101,9 @@ target_link_libraries(${PROJECT_NAME}_node_2d
     )
 add_dependencies(${PROJECT_NAME}_node_2d ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
-if(${ndt_map_found})
+#if(${ndt_map_found})
     add_definitions("-DWITH_ORU_NDT")
-endif()
+#endif()
 
 add_executable(${PROJECT_NAME}_node_3d
     src/nodes/mapper_node_3d.cpp

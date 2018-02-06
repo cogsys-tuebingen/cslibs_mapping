@@ -234,7 +234,8 @@ void OccupancyNDTGridMapper3d::process(const measurement_t &m)
         latest_time_ = m.stamp;
 
     cslibs_time::Time now = cslibs_time::Time::now();
-    dynamic_map_->insertVolumetric(m.origin, m.points, inverse_model_, inverse_model_visibility_);/*
+    //dynamic_map_->insertVolumetric(m.origin, m.points, inverse_model_, inverse_model_visibility_);/*
+    dynamic_map_->insert(m.origin, m.points);/*
     for (const auto & p : *(m.points)) {
         const dynamic_map_t::point_t pm = m.origin * p;
         if (pm.isNormal()) {
@@ -254,7 +255,8 @@ void OccupancyNDTGridMapper3d::process(const measurement_t &m)
     static const std::string filename = "/tmp/occ_ndt_stats";
     std::ofstream out;
     out.open(filename, std::ofstream::out | std::ofstream::app);
-    out << stats_.getN() << " | " << time_ms << " | " << stats_.getMean() << " | " << stats_.getStandardDeviation() << std::endl;
+    out << stats_.getN() << " | " << time_ms << " | " << stats_.getMean() << " | " << stats_.getStandardDeviation()
+        << " | mem: " << dynamic_map_->getByteSize() << std::endl;
     out.close();
 }
 

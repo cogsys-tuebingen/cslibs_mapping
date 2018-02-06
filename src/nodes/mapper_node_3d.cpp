@@ -278,13 +278,17 @@ void MapperNode3d::laserscan2d(
             std::cout << "[NDTOru2d]: Insertion took " << time_ms << "ms, ";
             std::cout << ndt_2d_map_oru_->getAllCells().size() << "|"
                       << ndt_2d_map_oru_->getAllInitializedCells().size() << "|"
-                      << ndt_2d_map_oru_->numberOfActiveCells() << " cells \n";
+                      << ndt_2d_map_oru_->numberOfActiveCells() << " cells"
+                      << " * mem: " << sizeof(lslgeneric::NDTCell) << " + " << sizeof(lslgeneric::NDTMap)
+                      << " size: " << ndt_2d_map_oru_->byteSize() << "\n";
 
             ndt_2d_map_oru_stats_ += time_ms;
             static const std::string filename = "/tmp/oru2d_stats";
             std::ofstream out;
             out.open(filename, std::ofstream::out | std::ofstream::app);
-            out << ndt_2d_map_oru_stats_.getN() << " | " << time_ms << " | " << ndt_2d_map_oru_stats_.getMean() << " | " << ndt_2d_map_oru_stats_.getStandardDeviation() << "\n";
+            out << ndt_2d_map_oru_stats_.getN() << " | " << time_ms << " | " << ndt_2d_map_oru_stats_.getMean()
+                << " | " << ndt_2d_map_oru_stats_.getStandardDeviation()
+                << " | mem: " << ndt_2d_map_oru_->byteSize() << "\n";
             out.close();
 
             if (ndt_2d_map_oru_pub_active_) {
@@ -371,13 +375,17 @@ void MapperNode3d::laserscan3d(
             std::cout << "[NDTOru3d]: Insertion took " << time_ms << "ms, ";
             std::cout << ndt_3d_map_oru_->getAllCells().size() << "|"
                       << ndt_3d_map_oru_->getAllInitializedCells().size() << "|"
-                      << ndt_3d_map_oru_->numberOfActiveCells() << " cells \n";
+                      << ndt_3d_map_oru_->numberOfActiveCells() << " cells"
+                      << " * mem: " << sizeof(lslgeneric::NDTCell) << " + " << sizeof(lslgeneric::NDTMap)
+                      << " size: " << ndt_3d_map_oru_->byteSize() << "\n";
 
             ndt_3d_map_oru_stats_ += time_ms;
             static const std::string filename = "/tmp/oru3d_stats";
             std::ofstream out;
             out.open(filename, std::ofstream::out | std::ofstream::app);
-            out << ndt_3d_map_oru_stats_.getN() << " | " << time_ms << " | " << ndt_3d_map_oru_stats_.getMean() << " | " << ndt_3d_map_oru_stats_.getStandardDeviation() << "\n";
+            out << ndt_3d_map_oru_stats_.getN() << " | " << time_ms << " | " << ndt_3d_map_oru_stats_.getMean()
+                << " | " << ndt_3d_map_oru_stats_.getStandardDeviation()
+                << " | mem: " << ndt_3d_map_oru_->byteSize() << "\n";
             out.close();
 
             if (ndt_3d_map_oru_pub_active_) {
