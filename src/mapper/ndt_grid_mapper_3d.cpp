@@ -119,6 +119,10 @@ void NDTGridMapper3d::mapRequest()
                             sample(b->at(7), p));
         };
 
+        std::vector<std::array<int, 3>> updated_indices;
+        dynamic_map_->getBundleIndices(updated_indices);
+        for (auto &bi : updated_indices)
+            updated_indices_.insert(bi);
         for(auto &bi : updated_indices_) {
             cslibs_time::Time start_retrieve = cslibs_time::Time::now();
             const dynamic_map_t::distribution_bundle_t *b = dynamic_map_->getDistributionBundle(bi);
@@ -239,10 +243,10 @@ void NDTGridMapper3d::process(const measurement_t &m)
     }*/
     const double time_ms = (cslibs_time::Time::now() - now).milliseconds();
     std::cout << "[NDTGridMapper3d]: Insertion took " << time_ms << "ms \n";
-    std::vector<std::array<int, 3>> updated_indices;
+    /*std::vector<std::array<int, 3>> updated_indices;
     dynamic_map_->getBundleIndices(updated_indices);
     for (auto &bi : updated_indices)
-        updated_indices_.insert(bi);
+        updated_indices_.insert(bi);*/
 
     stats_ += time_ms;
     static const std::string filename = "/tmp/ndt_stats";

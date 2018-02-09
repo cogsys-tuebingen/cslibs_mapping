@@ -25,12 +25,13 @@ find_package(catkin REQUIRED COMPONENTS
     message_generation
     octomap_msgs
     rviz
+    ndt_map
 )
 
 find_package(PCL REQUIRED COMPONENTS common filters segmentation io)
 find_package(Boost REQUIRED COMPONENTS filesystem)
 find_package(octomap REQUIRED)
-find_package(ndt_map QUIET)
+#find_package(ndt_map QUIET)
 
 add_message_files(
     FILES
