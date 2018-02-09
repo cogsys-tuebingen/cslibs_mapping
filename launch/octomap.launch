@@ -13,9 +13,9 @@
         <param name="rate" value="10.0" />
 	<param name="output_path" value="" />
 
-        <param name="occ_3d_grid_resolution" value="1.0" />
-        <param name="occ_ndt_3d_grid_resolution" value="2.0" />
-        <param name="ndt_3d_grid_resolution" value="2.0" />
+        <param name="occ_3d_grid_resolution" value="0.1" />
+        <param name="occ_ndt_3d_grid_resolution" value="0.2" />
+        <param name="ndt_3d_grid_resolution" value="0.2" />
 	<param name="filter_laserscan3d" value="false" />
 	<param name="filter_size" value="0.05" />
 
@@ -24,17 +24,17 @@
 	<param name="occ_ndt_2d_map_active" value="false" />
 	<param name="ndt_2d_map_active" value="false" />
 
-	<param name="ndt_3d_map_oru_active" value="true" />
+	<param name="ndt_3d_map_oru_active" value="false" />
 	<param name="occ_3d_map_active" value="true" />
 	<param name="occ_ndt_3d_map_active" value="true" />
 	<param name="ndt_3d_map_active" value="true" />
 
         <param name="ndt_oru_size_x" value="250.0" />
-        <param name="ndt_oru_size_y" value="250.0" />
-        <param name="ndt_oru_size_z" value="40.0" />
-        <param name="ndt_oru_cen_x" value="35.0" />
-        <param name="ndt_oru_cen_y" value="43.0" />
-        <param name="ndt_oru_cen_z" value="17.0" />
+        <param name="ndt_oru_size_y" value="165.0" />
+        <param name="ndt_oru_size_z" value="60.0" />
+        <param name="ndt_oru_cen_x" value="125.0" /><!--35-->
+        <param name="ndt_oru_cen_y" value="82.5" /><!--43-->
+        <param name="ndt_oru_cen_z" value="20.0" /><!--17-->
 
 	<param name="ndt_3d_map_oru_pub_active" value="true" />
 	<param name="ndt_2d_map_oru_pub_active" value="true" />

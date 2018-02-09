@@ -32,7 +32,9 @@ MapperNode3d::~MapperNode3d()
 }
 
 bool MapperNode3d::setup()
-{
+{std::cout << "SIZES: " << sizeof(cslibs_ndt::Distribution<2>) << "; " << sizeof(cslibs_ndt::OccupancyDistribution<3>) <<
+              " - " << sizeof(cslibs_ndt::Distribution<2>) << "; " << sizeof(cslibs_ndt::OccupancyDistribution<3>) <<
+              " - " << sizeof(cslibs_math::statistics::Distribution<2, 3>) << "; " << sizeof(cslibs_math::statistics::Distribution<3, 3>) << std::endl;
     ROS_INFO_STREAM("Setting up subscribers");
     const int           subscriber_queue_size          = nh_.param<int>("subscriber_queue_size", 1);
     const double        occ_map_prob_prior             = nh_.param<double>("occ_map_prob_prior", 0.5);
@@ -185,6 +187,7 @@ bool MapperNode3d::setup()
     occ_ndt_3d_mapper_. setup(nh_, occ_ndt_3d_map_topic, occ_ndt_3d_map_pub_rate, now, occ_ndt_3d_map_active);
 
 //#ifdef WITH_ORU_NDT
+    if (ndt_3d_map_oru_active_) {
     double ndt_oru_size_x = nh_.param<double>("ndt_oru_size_x", 0.0);
     double ndt_oru_size_y = nh_.param<double>("ndt_oru_size_y", 0.0);
     double ndt_oru_size_z = nh_.param<double>("ndt_oru_size_z", 0.0);
@@ -208,7 +211,7 @@ std::cout << "Oru: " << ndt_oru_cen_x << ", " << ndt_oru_size_x << std::endl;
         ndt_2d_map_oru_.reset(new lslgeneric::NDTMap(new lslgeneric::LazyGrid(occ_ndt_2d_grid_resolution / 2.0)));
     ndt_2d_map_oru_pub_ = nh_.advertise<ndt_map::NDTMapMsg>("/map/2d/ndt_oru", 1);
 //#endif
-*/
+*/}
     path_update_interval_  = ros::Duration(path_update_rate > 0.0 ? 1.0 / path_update_rate : 0.0);
     path_.header.stamp     = now;
     path_.header.frame_id  = map_frame_;
@@ -218,7 +221,8 @@ std::cout << "Oru: " << ndt_oru_cen_x << ", " << ndt_oru_size_x << std::endl;
     service_save_map_ = nh_.advertiseService(nh_.getNamespace() + "/save_map", &MapperNode3d::saveMap, this);
 
     tf_.reset(new cslibs_math_ros::tf::TFListener2d);
-    oru_thread_ = std::thread([this](){publishOru3d();});
+    if (ndt_3d_map_oru_active_)
+        oru_thread_ = std::thread([this](){publishOru3d();});
 
     ROS_INFO_STREAM("Setup succesful!");
     return true;

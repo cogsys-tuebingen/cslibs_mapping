@@ -1,0 +1,11 @@
+<?xml version="1.0" ?>
+<launch>
+    <param name="/use_sim_time" value="true" />
+    <group ns="cslibs_mapping_ndt_map_loader_3d">
+
+        <param name="path_ndt_3d" value="/data/0/rawseeds/maps/with_stereo/Bicocca_2009-02-25a-dynamic-natural-light-groundtruth-cartographer/map/3d/ndt/map" />
+        <param name="path_occ_ndt_3d" value="/data/0/rawseeds/maps/with_stereo/Bicocca_2009-02-25a-dynamic-natural-light-groundtruth-cartographer/map/3d/occ_ndt_volumetric/map" />
+    </group>
+
+    <node name="cslibs_mapping_ndt_map_loader_3d" pkg="cslibs_mapping" type="cslibs_mapping_ndt_map_loader_3d" output="screen" clear_params="true" />
+</launch>
