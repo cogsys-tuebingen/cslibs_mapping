@@ -95,6 +95,7 @@ protected:
     std::string                                         frame_id_;
 
     cslibs_math::statistics::Distribution<1, 3>         stats_;
+    std::string                                         stats_string_;
 
     void loop();
 

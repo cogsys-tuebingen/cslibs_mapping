@@ -15,8 +15,8 @@ OccupancyNDTGridMapper3d::OccupancyNDTGridMapper3d(
         inverse_model_(std::make_shared<cslibs_gridmaps::utility::InverseModel>(inverse_model)),
         inverse_model_visibility_(std::make_shared<cslibs_gridmaps::utility::InverseModel>(inverse_model_visibility)),
         resolution_(resolution),
-        frame_id_(frame_id)
-
+        frame_id_(frame_id),
+        stats_string_("")
 {
     thread_ = std::thread([this](){loop();});
 }
@@ -254,20 +254,31 @@ void OccupancyNDTGridMapper3d::process(const measurement_t &m)
     dynamic_map_->getBundleIndices(updated_indices);
     for (auto &bi : updated_indices)
         updated_indices_.insert(bi);*/
-
+/*
+    stats_string_ += stats_.getN() + " | " + time_ms + " | " + stats_.getMean() + " | " +
+            stats_.getStandardDeviation() + " | mem: " + dynamic_map_->getByteSize() + "\n";
     stats_ += time_ms;
-    static const std::string filename = "/tmp/occ_ndt_stats";
+/*    static const std::string filename = "/tmp/occ_ndt_stats";
     std::ofstream out;
-    out.open(filename, std::ofstream::out | std::ofstream::app);
+    out.open(filename, std::ofstream::out | std::ofstream::app);*/
+    std::stringstream out;
     out << stats_.getN() << " | " << time_ms << " | " << stats_.getMean() << " | " << stats_.getStandardDeviation()
         << " | mem: " << dynamic_map_->getByteSize() << std::endl;
-    out.close();
+    stats_string_ += out.str();
+    stats_ += time_ms;
+    //out.close();*/
 }
 
 bool OccupancyNDTGridMapper3d::saveMap(
     const std::string    & path,
     const nav_msgs::Path & poses_path)
 {
+    static const std::string filename = "/tmp/occ_ndt_stats";
+    std::ofstream out;
+    out.open(filename, std::ofstream::out | std::ofstream::app);
+    out << stats_string_ << std::endl;
+    out.close();
+
     std::cout << "[OccupancyNDTGridMapper3d]: Saving Map..." << std::endl;
     while (q_.hasElements()) {
         request_map_ = true;
@@ -302,7 +313,7 @@ bool OccupancyNDTGridMapper3d::saveMap(
         return false;
     // TODO: static map
 
-    std::cout << "[OccupancyNDTGridMapper3d]: Saved Map successful." << std::endl;
+    std::cout << "[OccupancyNDTGridMapper3d]: Saved Map successfully." << std::endl;
     return true;
 }
 }

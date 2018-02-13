@@ -193,7 +193,7 @@ bool OctomapMapper3d::saveMap(
                                                occ_map->getData(), occ_map->getHeight(),
                                                occ_map->getWidth(), occ_map->getOrigin(),
                                                occ_map->getResolution())) {
-        std::cout << "[OctomapMapper3d]: Saved Map successful." << std::endl;
+        std::cout << "[OctomapMapper3d]: Saved Map successfully." << std::endl;
         return true;
     }
     return false;

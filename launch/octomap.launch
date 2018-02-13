@@ -25,8 +25,8 @@
 	<param name="ndt_2d_map_active" value="false" />
 
 	<param name="ndt_3d_map_oru_active" value="false" />
-	<param name="occ_3d_map_active" value="true" />
-	<param name="occ_ndt_3d_map_active" value="true" />
+	<param name="occ_3d_map_active" value="false" />
+	<param name="occ_ndt_3d_map_active" value="false" />
 	<param name="ndt_3d_map_active" value="true" />
 
         <param name="ndt_oru_size_x" value="250.0" />

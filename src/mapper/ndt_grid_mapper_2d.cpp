@@ -150,7 +150,7 @@ bool NDTGridMapper2d::saveMap(
                                                static_map_.data()->getWidth(), static_map_.data()->getOrigin(),
                                                static_map_.data()->getResolution())) {
 
-        std::cout << "[NDTGridMapper2d]: Saved Map successful." << std::endl;
+        std::cout << "[NDTGridMapper2d]: Saved Map successfully." << std::endl;
         return true;
     }
     return false;
