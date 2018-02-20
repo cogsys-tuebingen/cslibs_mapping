@@ -221,6 +221,9 @@ private:
     std::shared_ptr<lslgeneric::NDTMap>          ndt_3d_map_oru_;
     ros::Publisher                               ndt_3d_map_oru_pub_;
     cslibs_math::statistics::Distribution<1, 3>  ndt_3d_map_oru_stats_;
+
+    cslibs_utility::synchronized::queue<pcl::PointCloud<pcl::PointXYZ>> ndt_3d_map_oru_clouds_;
+    cslibs_utility::synchronized::queue<transform_3d_t>                 ndt_3d_map_oru_origins_;
     std::thread                                  oru_thread_;
 /*
     // Örebro NDT-OM map

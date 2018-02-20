@@ -8,14 +8,14 @@
             ["/points"]
         </rosparam>
 
-        <param name="subscriber_queue_size" value="90" />
+        <param name="subscriber_queue_size" value="93000" />
         <param name="base_frame" value="/odom" />
         <param name="rate" value="10.0" />
 	<param name="output_path" value="" />
 
-        <param name="occ_3d_grid_resolution" value="0.1" />
-        <param name="occ_ndt_3d_grid_resolution" value="0.2" />
-        <param name="ndt_3d_grid_resolution" value="0.2" />
+        <param name="occ_3d_grid_resolution" value="0.05" />
+        <param name="occ_ndt_3d_grid_resolution" value="0.1" />
+        <param name="ndt_3d_grid_resolution" value="0.1" />
 	<param name="filter_laserscan3d" value="false" />
 	<param name="filter_size" value="0.05" />
 
@@ -24,17 +24,17 @@
 	<param name="occ_ndt_2d_map_active" value="false" />
 	<param name="ndt_2d_map_active" value="false" />
 
-	<param name="ndt_3d_map_oru_active" value="false" />
+	<param name="ndt_3d_map_oru_active" value="true" />
 	<param name="occ_3d_map_active" value="false" />
 	<param name="occ_ndt_3d_map_active" value="false" />
-	<param name="ndt_3d_map_active" value="true" />
+	<param name="ndt_3d_map_active" value="false" />
 
-        <param name="ndt_oru_size_x" value="250.0" />
-        <param name="ndt_oru_size_y" value="165.0" />
-        <param name="ndt_oru_size_z" value="60.0" />
-        <param name="ndt_oru_cen_x" value="125.0" /><!--35-->
-        <param name="ndt_oru_cen_y" value="82.5" /><!--43-->
-        <param name="ndt_oru_cen_z" value="20.0" /><!--17-->
+        <param name="ndt_oru_size_x" value="45.0" /><!-- geb: 45.0, fr: 300.0, new: 165.0-->
+        <param name="ndt_oru_size_y" value="20.0" /><!-- geb: 20.0, fr: 170.0, new: 250.0-->
+        <param name="ndt_oru_size_z" value="4.0" /> <!-- geb:  4.0, fr:  30.0, new:  60.0-->
+        <param name="ndt_oru_cen_x" value="12.0" /> <!-- geb: 12.0, fr:  70.0, new:  82.5-->
+        <param name="ndt_oru_cen_y" value="0.0" />  <!-- geb:  0.0, fr: -50.0, new: 100.0-->
+        <param name="ndt_oru_cen_z" value="2.0" />  <!-- geb:  2.0, fr:   5.0, new:  20.0-->
 
 	<param name="ndt_3d_map_oru_pub_active" value="true" />
 	<param name="ndt_2d_map_oru_pub_active" value="true" />

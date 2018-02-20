@@ -195,7 +195,7 @@ bool MapperNode3d::setup()
     double ndt_oru_cen_y  = nh_.param<double>("ndt_oru_cen_y",  0.0);
     double ndt_oru_cen_z  = nh_.param<double>("ndt_oru_cen_z",  0.0);
 std::cout << "Oru: " << ndt_oru_cen_x << ", " << ndt_oru_size_x << std::endl;
-    if (ndt_oru_size_x != 0.0 && ndt_oru_size_y != 0.0 && ndt_oru_size_z != 0.0)
+    if (ndt_oru_size_x > 1e-3 && ndt_oru_size_y > 1e-3 && ndt_oru_size_z > 1e-3)
         ndt_3d_map_oru_.reset(new lslgeneric::NDTMap(new lslgeneric::LazyGrid(occ_ndt_3d_grid_resolution / 2.0),
                                                      ndt_oru_cen_x, ndt_oru_cen_y, ndt_oru_cen_z,
                                                      ndt_oru_size_x, ndt_oru_size_y, ndt_oru_size_z, true));
@@ -235,6 +235,41 @@ void MapperNode3d::publishOru3d()
         // Örebro NDT-OM Stuff
 
         if (ndt_3d_map_oru_pub_active_) {
+            while (ndt_3d_map_oru_clouds_.hasElements()) {
+                pcl::PointCloud<pcl::PointXYZ> pcc = ndt_3d_map_oru_clouds_.pop();
+                transform_3d_t origin = ndt_3d_map_oru_origins_.pop();
+
+                cslibs_time::Time now = cslibs_time::Time::now();
+                ndt_3d_map_oru_->addPointCloud(Eigen::Vector3d(origin.tx(), origin.ty(), origin.tz()), pcc);
+                ndt_3d_map_oru_->computeNDTCells(CELL_UPDATE_MODE_SAMPLE_VARIANCE, 1e9, 255, Eigen::Vector3d(origin.tx(), origin.ty(), origin.tz()), 0.1);
+
+                const double time_ms = (cslibs_time::Time::now() - now).milliseconds();
+
+                double cx, cy, cz; int sx, sy, sz;
+                ndt_3d_map_oru_->getCentroid(cx, cy, cz);
+                ndt_3d_map_oru_->getGridSize(sx, sy, sz);
+
+                std::cout << "[NDTOru3d]: Insertion took " << time_ms << "ms, "
+                          << cx << "|" << cy << "|" << cz << ", "
+                          << sx << "|" << sy << "|" << sz << ", ";
+
+                std::cout << ndt_3d_map_oru_ << std::endl;
+                /*std::cout << ndt_3d_map_oru_->getAllCellsShared().size() << "|"
+                              << ndt_3d_map_oru_->getAllInitializedCellsShared().size() << "|"
+                              << ndt_3d_map_oru_->numberOfActiveCells() << " cells"
+                              << " * mem: " << sizeof(lslgeneric::NDTCell) << " + " << sizeof(lslgeneric::NDTMap)
+                              << " size: " << ndt_3d_map_oru_->byteSize() << "\n";
+        */
+                ndt_3d_map_oru_stats_ += time_ms;
+                static const std::string filename = "/tmp/oru3d_stats";
+                std::ofstream out;
+                out.open(filename, std::ofstream::out | std::ofstream::app);
+                out << ndt_3d_map_oru_stats_.getN() << " | " << time_ms << " | " << ndt_3d_map_oru_stats_.getMean()
+                    << " | " << ndt_3d_map_oru_stats_.getStandardDeviation()
+                    << " | mem: " << ndt_3d_map_oru_->byteSize() << "\n";
+                out.close();
+            }
+
             pcl::PointCloud<pcl::PointXYZI> pcl;
 
             //ndt_3d_map_oru_->getGridSizeInMeters(map_msg.x_size, map_msg.y_size, map_msg.z_size);
@@ -425,28 +460,8 @@ void MapperNode3d::laserscan3d(
             std::vector<int> indices;
             pcl::removeNaNFromPointCloud(pcc, pcc, indices);
 
-            cslibs_time::Time now = cslibs_time::Time::now();
-            ndt_3d_map_oru_->addPointCloud(Eigen::Vector3d(origin.tx(), origin.ty(), origin.tz()), pcc);
-            ndt_3d_map_oru_->computeNDTCells(CELL_UPDATE_MODE_SAMPLE_VARIANCE, 1e9, 255, Eigen::Vector3d(origin.tx(), origin.ty(), origin.tz()), 0.1);
-
-            const double time_ms = (cslibs_time::Time::now() - now).milliseconds();
-            std::cout << "[NDTOru3d]: Insertion took " << time_ms << "ms, ";
-
-            std::cout << ndt_3d_map_oru_ << std::endl;
-            /*std::cout << ndt_3d_map_oru_->getAllCellsShared().size() << "|"
-                          << ndt_3d_map_oru_->getAllInitializedCellsShared().size() << "|"
-                          << ndt_3d_map_oru_->numberOfActiveCells() << " cells"
-                          << " * mem: " << sizeof(lslgeneric::NDTCell) << " + " << sizeof(lslgeneric::NDTMap)
-                          << " size: " << ndt_3d_map_oru_->byteSize() << "\n";
-    */
-            ndt_3d_map_oru_stats_ += time_ms;
-            static const std::string filename = "/tmp/oru3d_stats";
-            std::ofstream out;
-            out.open(filename, std::ofstream::out | std::ofstream::app);
-            out << ndt_3d_map_oru_stats_.getN() << " | " << time_ms << " | " << ndt_3d_map_oru_stats_.getMean()
-                << " | " << ndt_3d_map_oru_stats_.getStandardDeviation()
-                << " | mem: " << ndt_3d_map_oru_->byteSize() << "\n";
-            out.close();
+            ndt_3d_map_oru_clouds_.emplace(pcc);
+            ndt_3d_map_oru_origins_.emplace(origin);
         }
     }
 
