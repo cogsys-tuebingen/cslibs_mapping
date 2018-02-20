@@ -11,6 +11,7 @@ OctomapMapper3d::OctomapMapper3d(
         const std::string                            &frame_id) :
         stop_(false),
         request_map_(false),
+        static_map_(cslibs_time::Time()),
         callback_([](const static_map_t::Ptr &){}),
         inverse_model_(inverse_model),
         resolution_(resolution),

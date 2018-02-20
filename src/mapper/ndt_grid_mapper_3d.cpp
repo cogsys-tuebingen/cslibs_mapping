@@ -8,6 +8,7 @@ NDTGridMapper3d::NDTGridMapper3d(
         const std::string & frame_id) :
         stop_(false),
         request_map_(false),
+        static_map_(cslibs_time::Time()),
         callback_([](const static_map_t::Ptr &){}),
         resolution_(resolution),
         frame_id_(frame_id),

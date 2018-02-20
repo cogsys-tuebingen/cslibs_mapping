@@ -10,11 +10,11 @@ NDTGridMapper2d::NDTGridMapper2d(const double resolution,
                              const std::string &frame_id) :
     stop_(false),
     request_map_(false),
+    static_map_(cslibs_time::Time()),
     callback_([](const static_map_t::Ptr &){}),
     resolution_(resolution),
     sampling_resolution_(sampling_resolution),
     frame_id_(frame_id)
-
 {
     thread_ = std::thread([this](){loop();});
 }
@@ -26,7 +26,6 @@ NDTGridMapper2d::~NDTGridMapper2d()
     if(thread_.joinable())
         thread_.join();
 }
-
 
 void NDTGridMapper2d::insert(const measurement_t &measurement)
 {
