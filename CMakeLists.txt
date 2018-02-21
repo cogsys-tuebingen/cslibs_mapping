@@ -121,7 +121,7 @@ target_link_libraries(${PROJECT_NAME}_node_3d
 add_dependencies(${PROJECT_NAME}_node_3d ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
 add_executable(${PROJECT_NAME}_ndt_map_loader_3d
-    src/rviz/ndt_map_loader_3d.cpp
+    src/nodes/ndt_map_loader_3d.cpp
 )
 target_link_libraries(${PROJECT_NAME}_ndt_map_loader_3d
     ${PROJECT_NAME}_3d
