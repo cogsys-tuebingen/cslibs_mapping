@@ -276,7 +276,7 @@ bool MapperNode2d::saveMap(const std::string &path)
         return false;
     }
 
-    OccupancyGridMapper2d::static_map_stamped_t occ_map;
+    OccupancyGridMapper2d::static_map_stamped_t occ_map(cslibs_time::Time());
     occ_mapper_->get(occ_map);
     const std::size_t occ_height = occ_map.data()->getHeight();
     const std::size_t occ_width  = occ_map.data()->getWidth();
