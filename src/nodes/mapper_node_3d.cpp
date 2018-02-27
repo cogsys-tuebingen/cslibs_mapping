@@ -22,8 +22,6 @@ MapperNode3d::~MapperNode3d()
         std::cout << "Saving Maps was " << (success ? "successful :-)." : "unsuccessful :-(.") << std::endl;
     } else
       std::cout << "Closing without Saving Maps..." << std::endl;
-
-    oru_thread_.join();
 }
 
 bool MapperNode3d::setup()
@@ -184,8 +182,6 @@ bool MapperNode3d::setup()
     service_save_map_ = nh_.advertiseService(nh_.getNamespace() + "/save_map", &MapperNode3d::saveMap, this);
 
     tf_.reset(new cslibs_math_ros::tf::TFListener2d);
-    if (ndt_3d_map_oru_active_)
-        oru_thread_ = std::thread([this](){publishOru3d();});
 
     ROS_INFO_STREAM("Setup succesful!");
     return true;
