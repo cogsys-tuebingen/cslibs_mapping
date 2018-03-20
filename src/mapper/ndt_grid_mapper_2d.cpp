@@ -1,157 +1,105 @@
-#include <cslibs_mapping/mapper/ndt_grid_mapper_2d.h>
+#include "ndt_grid_mapper_2d.h"
+
+#include <cslibs_plugins_data/types/laserscan.hpp>
+#include <cslibs_math_2d/linear/pointcloud.hpp>
+#include <cslibs_gridmaps/static_maps/algorithms/normalize.hpp>
 
 #include <cslibs_ndt_2d/serialization/dynamic_maps/gridmap.hpp>
 #include <cslibs_ndt_2d/conversion/probability_gridmap.hpp>
-#include <cslibs_mapping/mapper/save_map.hpp>
+
+#include <class_loader/class_loader_register_macro.h>
+CLASS_LOADER_REGISTER_CLASS(cslibs_mapping::mapper::NDTGridMapper2D, cslibs_mapping::mapper::Mapper)
 
 namespace cslibs_mapping {
-NDTGridMapper2d::NDTGridMapper2d(const double resolution,
-                             const double sampling_resolution,
-                             const std::string &frame_id) :
-    stop_(false),
-    request_map_(false),
-    static_map_(cslibs_time::Time()),
-    callback_([](const static_map_t::Ptr &){}),
-    resolution_(resolution),
-    sampling_resolution_(sampling_resolution),
-    frame_id_(frame_id)
+namespace mapper {
+const NDTGridMapper2D::map_t::ConstPtr NDTGridMapper2D::getMap() const
 {
-    thread_ = std::thread([this](){loop();});
+    std::unique_lock<std::mutex> l(map_mutex_);
+    if (!map_)
+        map_notify_.wait(l);
+
+    return map_;
 }
 
-NDTGridMapper2d::~NDTGridMapper2d()
+bool NDTGridMapper2D::setupMap(ros::NodeHandle &nh)
 {
-    stop_ = true;
-    notify_event_.notify_one();
-    if(thread_.joinable())
-        thread_.join();
+    auto param_name = [this](const std::string &name){return name_ + "/" + name;};
+
+    const double resolution = nh.param<double>(param_name("resolution"), 1.0);
+    std::vector<double> origin;
+    nh.param<std::vector<double>>(param_name("origin"), origin);
+
+    if (origin.size() != 3)
+        return false;
+
+    map_.reset(new maps::NDTGridMap2D(
+                   cslibs_math_2d::Pose2d(origin[0], origin[1], origin[2]), resolution));
+    return true;
 }
 
-void NDTGridMapper2d::insert(const measurement_t &measurement)
+bool NDTGridMapper2D::uses(const data_t::ConstPtr &type)
 {
-    q_.emplace(measurement);
-    notify_event_.notify_one();
+    return type->isType<cslibs_plugins_data::types::Laserscan>();
 }
 
-void NDTGridMapper2d::get(static_map_stamped_t &map)
+void NDTGridMapper2D::process(const data_t::ConstPtr &data)
 {
-    request_map_ = true;
-    lock_t static_map_lock(static_map_mutex_);
-    notify_event_.notify_one();
-    notify_static_map_.wait(static_map_lock);
-    map = static_map_;
-}
+    std::unique_lock<std::mutex> l(map_mutex_);
+    const cslibs_plugins_data::types::Laserscan &laser_data = data->as<cslibs_plugins_data::types::Laserscan>();
 
-void NDTGridMapper2d::requestMap()
-{
-    request_map_ = true;
-}
+    cslibs_math_2d::Transform2d o_T_d;
+    if (tf_->lookupTransform(map_frame_,
+                             laser_data.getFrame(),
+                             ros::Time(laser_data.getTimeFrame().end.seconds()),
+                             o_T_d,
+                             tf_timeout_)) {
 
-void NDTGridMapper2d::setCallback(const callback_t &cb)
-{
-    if(!request_map_) {
-        callback_ = cb;
-    }
-}
+        const cslibs_plugins_data::types::Laserscan::rays_t rays = laser_data.getRays();
+        cslibs_math_2d::Pointcloud2d::Ptr cloud(new cslibs_math_2d::Pointcloud2d);
 
-void NDTGridMapper2d::loop()
-{
-    lock_t notify_event_mutex_lock(notify_event_mutex_);
-    while(!stop_) {
-        notify_event_.wait(notify_event_mutex_lock);
-        while(q_.hasElements()) {
-            if(stop_)
-                break;
-
-            //mapRequest();
-
-            auto m = q_.pop();
-            process(m);
+        for (const auto &ray : rays) {
+            if (ray.valid()) {
+                const cslibs_math_2d::Point2d map_point = o_T_d * ray.point;
+                if (map_point.isNormal())
+                    cloud->insert(map_point);
+            }
         }
-        mapRequest();
+        map_->getMap()->insert(o_T_d, cloud);
     }
+
+    map_notify_.notify_all();
 }
 
-void NDTGridMapper2d::mapRequest()
+bool NDTGridMapper2D::saveMap()
 {
-    if(request_map_ && dynamic_map_) {
-        cslibs_ndt_2d::conversion::from(dynamic_map_, static_map_.data(), sampling_resolution_);
-        cslibs_gridmaps::static_maps::algorithms::normalize<double>(*static_map_.data());
-        callback_(static_map_);
-    }
-    request_map_ = false;
-    notify_static_map_.notify_all();
-}
-
-void NDTGridMapper2d::process(const measurement_t &m)
-{
-    if(!dynamic_map_) {
-        dynamic_map_.reset(new dynamic_map_t(cslibs_math_2d::Transform2d::identity(),
-                                             resolution_));
-        latest_time_ = m.stamp;
-    }
-
-    if(m.stamp > latest_time_) {
-        latest_time_ = m.stamp;
-    }
-
-    cslibs_time::Time start = cslibs_time::Time::now();
-    for(const auto &p : *(m.points)) {
-        const cslibs_math_2d::Point2d pm = m.origin * p;
-        dynamic_map_->add(pm);
-    }
-    std::cout << "[NDTGridMapper2d]: Insertion took " << (cslibs_time::Time::now() - start).milliseconds() << "ms \n";
-}
-
-bool NDTGridMapper2d::saveMap(
-    const std::string    & path,
-    const nav_msgs::Path & poses_path)
-{
-    std::cout << "[NDTGridMapper2d]: Saving Map..." << std::endl;
-    while (q_.hasElements()) {
-        request_map_ = true;
-        lock_t static_map_lock(static_map_mutex_);
-        notify_event_.notify_one();
-        notify_static_map_.wait(static_map_lock);
-    }
-
-    if (!dynamic_map_) {
-        std::cout << "[NDTGridMapper2d]: No Map." << std::endl;
+    std::unique_lock<std::mutex> l(map_mutex_);
+    if (!map_) {
+        std::cout << "[NDTGridMapper2D]: No Map." << std::endl;
         return true;
     }
 
-    boost::filesystem::path p(path);
-
-    if(!boost::filesystem::is_directory(p))
-        boost::filesystem::create_directories(p);
-    if(!boost::filesystem::is_directory(p)) {
-        std::cout << "[NDTGridMapper2d]: '" << path << "' is not a directory." << std::endl;
+    std::cout << "[NDTGridMapper2D]: Saving Map..." << std::endl;
+    if (!checkPath()) {
+        std::cout << "[NDTGridMapper2D]: '" << path_ << "' is not a directory." << std::endl;
         return false;
     }
 
-    // save dynamic map
-    cslibs_ndt_2d::dynamic_maps::saveBinary(dynamic_map_, (p / boost::filesystem::path("map")).string());
-
-    if (!static_map_.data())
+    if (!cslibs_ndt_2d::dynamic_maps::saveBinary(map_->getMap(), (path_ / boost::filesystem::path("map")).string()))
         return false;
 
-    // save static map (occ.map.yaml, occ.map.pgm, occ.map.raw.pgm, poses.yaml)
-    std::string occ_path_yaml    = (p / boost::filesystem::path("occ.map.yaml")).    string();
-    std::string occ_path_pgm     = (p / boost::filesystem::path("occ.map.pgm")).     string();
-    std::string occ_path_raw_yaml= (p / boost::filesystem::path("occ.map.raw.yaml")).string();
-    std::string occ_path_raw_pgm = (p / boost::filesystem::path("occ.map.raw.pgm")). string();
-    std::string poses_path_yaml  = (p / boost::filesystem::path("poses.yaml")).      string();
+    cslibs_gridmaps::static_maps::ProbabilityGridmap::Ptr tmp;
+    cslibs_ndt_2d::conversion::from(map_->getMap(), tmp, map_->getMap()->getResolution() / 10.0);
+    if (!tmp)
+        return false;
 
-    if (cslibs_mapping::serialization::saveMap(occ_path_yaml, occ_path_pgm, "occ.map.pgm",
-                                               occ_path_raw_yaml, occ_path_raw_pgm, "occ.map.raw.pgm",
-                                               poses_path_yaml, poses_path,
-                                               static_map_.data()->getData(), static_map_.data()->getHeight(),
-                                               static_map_.data()->getWidth(), static_map_.data()->getOrigin(),
-                                               static_map_.data()->getResolution())) {
+    cslibs_gridmaps::static_maps::algorithms::normalize<double>(*tmp);
+    if (cslibs_mapping::mapper::saveMap(path_, nullptr, tmp->getData(), tmp->getHeight(),
+                                        tmp->getWidth(), tmp->getOrigin(), tmp->getResolution())) {
 
-        std::cout << "[NDTGridMapper2d]: Saved Map successfully." << std::endl;
+        std::cout << "[NDTGridMapper2D]: Saved Map successfully." << std::endl;
         return true;
     }
     return false;
+}
 }
 }

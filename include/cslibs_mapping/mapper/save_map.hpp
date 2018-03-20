@@ -1,5 +1,5 @@
-#ifndef SAVE_MAP_HPP
-#define SAVE_MAP_HPP
+#ifndef CSLIBS_MAPPING_SAVE_MAP_HPP
+#define CSLIBA_MAPPING_SAVE_MAP_HPP
 
 #include <cslibs_math_2d/linear/pose.hpp>
 #include <nav_msgs/Path.h>
@@ -7,31 +7,34 @@
 #include <cslibs_math_2d/serialization/transform.hpp>
 #include <cslibs_math_ros/sensor_msgs/conversion_2d.hpp>
 #include <cslibs_math_ros/geometry_msgs/conversion_2d.hpp>
+#include <cslibs_math/common/equal.hpp>
 
 #include <boost/filesystem.hpp>
 #include <yaml-cpp/yaml.h>
 #include <fstream>
 
 namespace cslibs_mapping {
-namespace serialization {
+namespace mapper {
 template <typename T>
 inline bool saveMap(
-        const std::string            & occ_path_yaml,
-        const std::string            & occ_path_pgm,
-        const std::string            & occ_path_pgm_rel,
-        const std::string            & occ_path_raw_yaml,
-        const std::string            & occ_path_raw_pgm,
-        const std::string            & occ_path_raw_pgm_rel,
-        const std::string            & poses_path_yaml,
-        const nav_msgs::Path         & poses_path,
-        const std::vector<T>         & occ_data,
-        const std::size_t            & occ_height,
-        const std::size_t            & occ_width,
-        const cslibs_math_2d::Pose2d & occ_origin,
-        const double                 & occ_resolution,
-        const double                 & occ_free_threshold     = 0.196,
-        const double                 & occ_occupied_threshold = 0.65)
+        const std::string            &path,
+        const nav_msgs::Path::Ptr    &poses,
+        const std::vector<T>         &occ_data,
+        const std::size_t            &occ_height,
+        const std::size_t            &occ_width,
+        const cslibs_math_2d::Pose2d &occ_origin,
+        const double                 &occ_resolution,
+        const double                 &occ_free_threshold     = 0.196,
+        const double                 &occ_occupied_threshold = 0.65)
 {
+    const std::string occ_path_yaml        = (path / boost::filesystem::path("occ.map.yaml")).       string();
+    const std::string occ_path_pgm_rel     = "occ.map.pgm";
+    const std::string occ_path_pgm         = (path / boost::filesystem::path(occ_path_pgm_rel)).     string();
+    const std::string occ_path_raw_yaml    = (path / boost::filesystem::path("occ.map.raw.yaml")).   string();
+    const std::string occ_path_raw_pgm_rel = "occ.map.raw.pgm";
+    const std::string occ_path_raw_pgm     = (path / boost::filesystem::path(occ_path_raw_pgm_rel)). string();
+    const std::string poses_path_yaml      = (path / boost::filesystem::path("poses.yaml")).         string();
+
     // map header
     {
         std::ofstream occ_out_yaml(occ_path_yaml);
@@ -142,14 +145,17 @@ inline bool saveMap(
             std::cout << "[SaveMap]: Could not open file '" << poses_path_yaml << "'." << std::endl;
             return false;
         }
-        YAML::Emitter poses_yaml(poses_out_yaml);
-        poses_yaml << YAML::BeginSeq;
-        for (const auto &p_w : poses_path.poses) {
-            const cslibs_math_2d::Transform2d p_m = m_t_w * cslibs_math_ros::geometry_msgs::conversion_2d::from(p_w.pose);
-            poses_yaml << YAML::Flow << YAML::BeginSeq << p_m.tx() * occ_inv_resolution << p_m.ty() * occ_inv_resolution << YAML::EndSeq;
+
+        if (poses) {
+            YAML::Emitter poses_yaml(poses_out_yaml);
+            poses_yaml << YAML::BeginSeq;
+            for (const auto &p_w : poses->poses) {
+                const cslibs_math_2d::Transform2d p_m = m_t_w * cslibs_math_ros::geometry_msgs::conversion_2d::from(p_w.pose);
+                poses_yaml << YAML::Flow << YAML::BeginSeq << p_m.tx() * occ_inv_resolution << p_m.ty() * occ_inv_resolution << YAML::EndSeq;
+            }
+            poses_yaml << YAML::EndSeq;
+            poses_out_yaml.close();
         }
-        poses_yaml << YAML::EndSeq;
-        poses_out_yaml.close();
     }
 
     return true;
@@ -180,4 +186,4 @@ inline bool savePath(
 }
 }
 
-#endif // SAVE_MAP_HPP
+#endif // CSLIBS_MAPPING_SAVE_MAP_HPP
