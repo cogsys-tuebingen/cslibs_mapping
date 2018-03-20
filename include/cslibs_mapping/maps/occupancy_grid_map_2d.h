@@ -2,7 +2,7 @@
 #define CSLIBS_MAPPING_OCCUPANCY_GRID_MAP_2D_H
 
 #include <cslibs_mapping/maps/map.h>
-#include <cslibs_gridmaps/static_maps/probability_gridmap.h>
+#include <cslibs_gridmaps/dynamic_maps/probability_gridmap.h>
 
 namespace cslibs_mapping {
 namespace maps {
@@ -12,7 +12,7 @@ public:
     using Ptr      = std::shared_ptr<OccupancyGridMap2D>;
     using ConstPtr = std::shared_ptr<const OccupancyGridMap2D>;
 
-    using map_t    = cslibs_gridmaps::static_maps::ProbabilityGridmap;
+    using map_t    = cslibs_gridmaps::dynamic_maps::ProbabilityGridmap;
     template <typename ... args_t>
     OccupancyGridMap2D(const args_t &...args) :
         map_(new map_t(args...))

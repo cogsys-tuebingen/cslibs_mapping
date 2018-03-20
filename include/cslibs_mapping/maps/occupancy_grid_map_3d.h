@@ -19,13 +19,13 @@ public:
     {
     }
 
-    map_t::Ptr getMap()
+    std::shared_ptr<map_t> getMap()
     {
         return map_;
     }
 
 private:
-    const map_t::Ptr map_;
+    const std::shared_ptr<map_t> map_;
 };
 }
 }
