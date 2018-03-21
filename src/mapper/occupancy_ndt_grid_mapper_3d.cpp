@@ -20,6 +20,26 @@ const OccupancyNDTGridMapper3D::map_t::ConstPtr OccupancyNDTGridMapper3D::getMap
     return map_;
 }
 
+void OccupancyNDTGridMapper3D::setupVisibilityBasedUpdateParameters(ros::NodeHandle &nh)
+{
+    visibility_based_update_ = nh.param<bool>(param_name("visibility_based_update"), false);
+    if (!visibility_based_update_)
+        return;
+
+    const double prob_prior    = nh.param(param_name("prob_prior"), 0.5);
+    const double prob_free     = nh.param(param_name("prob_free"), 0.45);
+    const double prob_occupied = nh.param(param_name("prob_occupied"), 0.65);
+    ivm_.reset(new cslibs_gridmaps::utility::InverseModel(
+                   prob_prior, prob_free, prob_occupied));
+
+    double visibility_threshold         = nh_.param<double>("visibility_threshold", 0.4);
+    double prob_visible_if_occluded     = nh_.param<double>("prob_visible_if_occluded", 0.2);
+    double prob_visible_if_not_occluded = nh_.param<double>("prob_visible_if_not_occluded", 0.8);
+    ivm_visibility_.reset(new cslibs_gridmaps::utility::InverseModel(
+                              visibility_threshold, prob_visible_if_occluded, prob_visible_if_not_occluded));
+
+}
+
 bool OccupancyNDTGridMapper3D::setupMap(ros::NodeHandle &nh)
 {
     auto param_name = [this](const std::string &name){return name_ + "/" + name;};
@@ -31,6 +51,7 @@ bool OccupancyNDTGridMapper3D::setupMap(ros::NodeHandle &nh)
     if (origin.size() != 6)
         return false;
 
+    setupVisibilityBasedUpdateParameters(nh);
     map_.reset(new maps::OccupancyNDTGridMap3D(
                    cslibs_math_3d::Pose3d(cslibs_math_3d::Vector3d(origin[0], origin[1], origin[2]),
                                           cslibs_math_3d::Quaternion(origin[3], origin[4], origin[5])),
@@ -66,7 +87,9 @@ void OccupancyNDTGridMapper3D::process(const data_t::ConstPtr &data)
                     cloud->insert(map_point);
             }
         }
-        map_->getMap()->insert(o_T_d, cloud);
+        visibility_based_update_ ?
+                    map_->getMap()->insertVisible(o_T_d, cloud, ivm_, ivm_visibility_) :
+                    map_->getMap()->insert(o_T_d, cloud);
     }
 
     map_notify_.notify_one();
