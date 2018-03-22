@@ -56,7 +56,8 @@ void DistributionsPublisher::publishNDTGridMap3D(const map_t::ConstPtr &map, con
         distributions->header.frame_id = map->getFrame();
 
         publisher_.publish(distributions);
-    }
+    } else
+        std::cout << "[DistributionsPublisher '" << name_ << "']: Map could not be published!" << std::endl;
 }
 
 void DistributionsPublisher::publishOccupancyNDTGridMap3D(const map_t::ConstPtr &map, const ros::Time &time)
@@ -72,7 +73,8 @@ void DistributionsPublisher::publishOccupancyNDTGridMap3D(const map_t::ConstPtr 
         distributions->header.frame_id = map->getFrame();
 
         publisher_.publish(distributions);
-    }
+    } else
+        std::cout << "[DistributionsPublisher '" << name_ << "']: Map could not be published!" << std::endl;
 }
 }
 }

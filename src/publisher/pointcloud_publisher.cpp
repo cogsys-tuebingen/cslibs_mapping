@@ -64,7 +64,8 @@ void PointcloudPublisher::publishNDTGridMap3D(const map_t::ConstPtr &map, const 
         msg.header.frame_id = map->getFrame();
 
         publisher_.publish(msg);
-    }
+    } else
+        std::cout << "[PointcloudPublisher '" << name_ << "']: Map could not be published!" << std::endl;
 }
 
 void PointcloudPublisher::publishOccupancyNDTGridMap3D(const map_t::ConstPtr &map, const ros::Time &time)
@@ -83,7 +84,8 @@ void PointcloudPublisher::publishOccupancyNDTGridMap3D(const map_t::ConstPtr &ma
         msg.header.frame_id = map->getFrame();
 
         publisher_.publish(msg);
-    }
+    } else
+        std::cout << "[PointcloudPublisher '" << name_ << "']: Map could not be published!" << std::endl;
 }
 }
 }
