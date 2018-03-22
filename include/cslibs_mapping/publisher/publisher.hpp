@@ -56,7 +56,8 @@ public:
             std::cout << "[Publisher '" << name_ << "']: Using mapper '" << mapper_name << "'." << std::endl;
 
             // advertise topic
-            doAdvertise(nh);
+            const std::string topic = nh.param<std::string>(param_name("topic"), "/cslibs_mapping/" + name_);
+            doAdvertise(nh, topic);
         }
     }
 
@@ -80,7 +81,7 @@ private:
     }
 
     virtual bool uses(const map_t::ConstPtr &map) const = 0;
-    virtual void doAdvertise(ros::NodeHandle &nh) = 0;
+    virtual void doAdvertise(ros::NodeHandle &nh, const std::string &topic) = 0;
     virtual void publish(const map_t::ConstPtr &map, const ros::Time &time) = 0;
 
     std::thread    thread_;
