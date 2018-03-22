@@ -75,13 +75,13 @@ bool NDTGridMapper2D::saveMap()
 {
     std::unique_lock<std::mutex> l(map_mutex_);
     if (!map_) {
-        std::cout << "[NDTGridMapper2D]: No Map." << std::endl;
+        std::cout << "[NDTGridMapper2D '" << name_ << "']: No Map." << std::endl;
         return true;
     }
 
-    std::cout << "[NDTGridMapper2D]: Saving Map..." << std::endl;
+    std::cout << "[NDTGridMapper2D '" << name_ << "']: Saving Map..." << std::endl;
     if (!checkPath()) {
-        std::cout << "[NDTGridMapper2D]: '" << path_ << "' is not a directory." << std::endl;
+        std::cout << "[NDTGridMapper2D '" << name_ << "']: '" << path_ << "' is not a directory." << std::endl;
         return false;
     }
 
@@ -97,7 +97,7 @@ bool NDTGridMapper2D::saveMap()
     if (cslibs_mapping::mapper::saveMap(path_, nullptr, tmp->getData(), tmp->getHeight(),
                                         tmp->getWidth(), tmp->getOrigin(), tmp->getResolution())) {
 
-        std::cout << "[NDTGridMapper2D]: Saved Map successfully." << std::endl;
+        std::cout << "[NDTGridMapper2D '" << name_ << "']: Saved Map successfully." << std::endl;
         return true;
     }
     return false;

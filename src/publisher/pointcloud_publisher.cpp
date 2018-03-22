@@ -45,7 +45,7 @@ void PointcloudPublisher::publish(const map_t::ConstPtr &map, const ros::Time &t
     else if (map->isType<cslibs_mapping::maps::OccupancyNDTGridMap3D>())
         publishOccupancyNDTGridMap3D(map, time);
     else
-        std::cout << "[PointcloudPublisher]: Got wrong map type!" << std::endl;
+        std::cout << "[PointcloudPublisher '" << name_ << "']: Got wrong map type!" << std::endl;
 }
 
 void PointcloudPublisher::publishNDTGridMap3D(const map_t::ConstPtr &map, const ros::Time &time)

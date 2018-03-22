@@ -77,18 +77,18 @@ bool NDTGridMapper3D::saveMap()
 {
     std::unique_lock<std::mutex> l(map_mutex_);
     if (!map_) {
-        std::cout << "[NDTGridMapper3D]: No Map." << std::endl;
+        std::cout << "[NDTGridMapper3D '" << name_ << "']: No Map." << std::endl;
         return true;
     }
 
-    std::cout << "[NDTGridMapper3D]: Saving Map..." << std::endl;
+    std::cout << "[NDTGridMapper3D '" << name_ << "']: Saving Map..." << std::endl;
     if (!checkPath()) {
-        std::cout << "[NDTGridMapper3D]: '" << path_ << "' is not a directory." << std::endl;
+        std::cout << "[NDTGridMapper3D '" << name_ << "']: '" << path_ << "' is not a directory." << std::endl;
         return false;
     }
 
     if (cslibs_ndt_3d::dynamic_maps::saveBinary(map_->getMap(), (path_ / boost::filesystem::path("map")).string())) {
-        std::cout << "[NDTGridMapper3D]: Saved Map successfully." << std::endl;
+        std::cout << "[NDTGridMapper3D '" << name_ << "']: Saved Map successfully." << std::endl;
         return true;
     }
     return false;

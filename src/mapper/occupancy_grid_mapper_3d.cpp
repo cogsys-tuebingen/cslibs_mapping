@@ -69,13 +69,13 @@ bool OccupancyGridMapper3D::saveMap()
 {
     std::unique_lock<std::mutex> l(map_mutex_);
     if (!map_) {
-        std::cout << "[OccupancyGridMapper3D]: No Map." << std::endl;
+        std::cout << "[OccupancyGridMapper3D '" << name_ << "']: No Map." << std::endl;
         return true;
     }
 
-    std::cout << "[OccupancyGridMapper3D]: Saving Map..." << std::endl;
+    std::cout << "[OccupancyGridMapper3D '" << name_ << "']: Saving Map..." << std::endl;
     if (!checkPath()) {
-        std::cout << "[OccupancyGridMapper3D]: '" << path_ << "' is not a directory." << std::endl;
+        std::cout << "[OccupancyGridMapper3D '" << name_ << "']: '" << path_ << "' is not a directory." << std::endl;
         return false;
     }
 
@@ -83,7 +83,7 @@ bool OccupancyGridMapper3D::saveMap()
     {
         std::ofstream map_out_yaml(map_path_yaml);
         if (!map_out_yaml.is_open()) {
-            std::cout << "[OccupancyGridMapper3D]: Could not open file '" << map_path_yaml << "'." << std::endl;
+            std::cout << "[OccupancyGridMapper3D '" << name_ << "']: Could not open file '" << map_path_yaml << "'." << std::endl;
             return false;
         }
         if (map_->getMap()->write(map_out_yaml)) {
@@ -91,7 +91,7 @@ bool OccupancyGridMapper3D::saveMap()
             return true;
         }
         else {
-            std::cout << "[OccupancyGridMapper3D]: Could not write to file '" << map_path_yaml << "'." << std::endl;
+            std::cout << "[OccupancyGridMapper3D '" << name_ << "']: Could not write to file '" << map_path_yaml << "'." << std::endl;
             return false;
         }
     }

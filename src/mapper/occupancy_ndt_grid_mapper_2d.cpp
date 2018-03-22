@@ -99,13 +99,13 @@ bool OccupancyNDTGridMapper2D::saveMap()
 {
     std::unique_lock<std::mutex> l(map_mutex_);
     if (!map_) {
-        std::cout << "[OccupancyNDTGridMapper2D]: No Map." << std::endl;
+        std::cout << "[OccupancyNDTGridMapper2D '" << name_ << "']: No Map." << std::endl;
         return true;
     }
 
-    std::cout << "[OccupancyNDTGridMapper2D]: Saving Map..." << std::endl;
+    std::cout << "[OccupancyNDTGridMapper2D '" << name_ << "']: Saving Map..." << std::endl;
     if (!checkPath()) {
-        std::cout << "[OccupancyNDTGridMapper2D]: '" << path_ << "' is not a directory." << std::endl;
+        std::cout << "[OccupancyNDTGridMapper2D '" << name_ << "']: '" << path_ << "' is not a directory." << std::endl;
         return false;
     }
 
@@ -122,7 +122,7 @@ bool OccupancyNDTGridMapper2D::saveMap()
     if (cslibs_mapping::mapper::saveMap(path_, nullptr, tmp->getData(), tmp->getHeight(),
                                         tmp->getWidth(), tmp->getOrigin(), tmp->getResolution())) {
 
-        std::cout << "[OccupancyNDTGridMapper2D]: Saved Map successfully." << std::endl;
+        std::cout << "[OccupancyNDTGridMapper2D '" << name_ << "']: Saved Map successfully." << std::endl;
         return true;
     }
     return false;
