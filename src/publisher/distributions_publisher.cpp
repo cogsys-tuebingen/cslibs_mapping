@@ -62,6 +62,9 @@ void DistributionsPublisher::publishNDTGridMap3D(const map_t::ConstPtr &map, con
 
 void DistributionsPublisher::publishOccupancyNDTGridMap3D(const map_t::ConstPtr &map, const ros::Time &time)
 {
+    if (!ivm_)
+        std::cout << "[DistributionsPublisher '" << name_ << "']: Map could not be published!" << std::endl;
+
     using local_map_t = cslibs_ndt_3d::dynamic_maps::OccupancyGridmap;
     const local_map_t::Ptr &m = map->as<cslibs_mapping::maps::OccupancyNDTGridMap3D>().getMap();
 

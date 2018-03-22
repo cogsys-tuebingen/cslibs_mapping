@@ -32,7 +32,7 @@ add_service_files(
 
 catkin_package(
     INCLUDE_DIRS include
-    LIBRARIES ${PROJECT_NAME}
+    LIBRARIES    ${PROJECT_NAME}
     CATKIN_DEPENDS cslibs_plugins cslibs_plugins_data cslibs_gridmaps cslibs_ndt_2d cslibs_ndt_3d
                    cslibs_time cslibs_utility cslibs_math_ros
     CFG_EXTRAS cslibs_mapping_enable_c++11.cmake
@@ -63,8 +63,7 @@ cslibs_mapping_show_headers()
 if(PCL_FOUND)
     if (octomap_FOUND)
         #pcl + octomap
-        add_library(${PROJECT_NAME}            
-            src/nodes/mapping_node.cpp
+        add_library(${PROJECT_NAME}
             src/mapper/ndt_grid_mapper_2d.cpp
             src/mapper/ndt_grid_mapper_3d.cpp
             src/mapper/occupancy_grid_mapper_2d.cpp
@@ -84,7 +83,6 @@ if(PCL_FOUND)
     else()
         #pcl
         add_library(${PROJECT_NAME}
-            src/nodes/mapping_node.cpp
             src/mapper/ndt_grid_mapper_2d.cpp
             src/mapper/ndt_grid_mapper_3d.cpp
             src/mapper/occupancy_grid_mapper_2d.cpp
@@ -102,7 +100,6 @@ if(PCL_FOUND)
 else()
     #no pcl and no octomap
     add_library(${PROJECT_NAME}
-        src/nodes/mapping_node.cpp
         src/mapper/ndt_grid_mapper_2d.cpp
         src/mapper/occupancy_grid_mapper_2d.cpp
         src/mapper/occupancy_ndt_grid_mapper_2d.cpp
@@ -114,9 +111,24 @@ else()
 endif()
 
 
+add_executable(${PROJECT_NAME}_node
+    src/nodes/mapping_node.cpp
+)
+add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(${PROJECT_NAME}_node
+    ${PROJECT_NAME}
+    ${catkin_LIBRARIES}
+     yaml-cpp
+)
+
+
 install(FILES plugins.xml DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 
 install(TARGETS ${PROJECT_NAME}
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION})
+
+install(DIRECTORY include/${PROJECT_NAME}/
+        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
+

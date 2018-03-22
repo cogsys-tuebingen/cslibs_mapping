@@ -36,6 +36,7 @@ public:
                       const std::map<std::string, mapper_t::Ptr> &mappers)
     {
         auto param_name = [this](const std::string &name){return name_ + "/" + name;};
+        publish_rate_ = nh.param<double>(param_name("rate"), 10.0);
 
         const std::string mapper_name = nh.param<std::string>(param_name("mapper"), "");
         if (mapper_name == "")

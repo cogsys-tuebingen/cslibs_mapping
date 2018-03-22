@@ -28,8 +28,8 @@ void OccupancyGridPublisher::doAdvertise(ros::NodeHandle &nh, const std::string 
     auto param_name = [this](const std::string &name){return name_ + "/" + name;};
 
     sampling_resolution_ = nh.param<double>(param_name("sampling_resolution"), 0.025);
-    const bool occupancy_ndt = nh.param<bool>(param_name("occupancy_ndt"), false);
-    if (occupancy_ndt) {
+    const bool occupancy = nh.param<bool>(param_name("occupancy"), false);
+    if (occupancy) {
         const double prob_prior    = nh.param(param_name("prob_prior"),    0.5);
         const double prob_free     = nh.param(param_name("prob_free"),     0.45);
         const double prob_occupied = nh.param(param_name("prob_occupied"), 0.65);
@@ -64,6 +64,9 @@ void OccupancyGridPublisher::publishNDTGridMap2D(const map_t::ConstPtr &map, con
 
 void OccupancyGridPublisher::publishOccupancyNDTGridMap2D(const map_t::ConstPtr &map, const ros::Time &time)
 {
+    if (!ivm_)
+        std::cout << "[OccupancyGridPublisher '" << name_ << "']: Map could not be published!" << std::endl;
+
     using local_map_t = cslibs_ndt_2d::dynamic_maps::OccupancyGridmap;
     const local_map_t::Ptr &m = map->as<cslibs_mapping::maps::OccupancyNDTGridMap2D>().getMap();
 
@@ -74,6 +77,9 @@ void OccupancyGridPublisher::publishOccupancyNDTGridMap2D(const map_t::ConstPtr 
 
 void OccupancyGridPublisher::publishOccupancyGridMap2D(const map_t::ConstPtr &map, const ros::Time &time)
 {
+    if (!ivm_)
+        std::cout << "[OccupancyGridPublisher '" << name_ << "']: Map could not be published!" << std::endl;
+
     using local_map_t = cslibs_gridmaps::dynamic_maps::ProbabilityGridmap;
     const local_map_t::Ptr &m = map->as<cslibs_mapping::maps::OccupancyGridMap2D>().getMap();
 

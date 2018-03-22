@@ -1,4 +1,4 @@
-<library path="lib/libcslibs_mapping">
+<library path="libcslibs_mapping">
   <!-- Mapper -->
   <class type="cslibs_mapping::mapper::NDTGridMapper2D" base_class_type="cslibs_mapping::mapper::Mapper">
     <description> </description>

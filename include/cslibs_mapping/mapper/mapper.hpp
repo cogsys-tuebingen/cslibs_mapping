@@ -51,9 +51,8 @@ public:
                 queue_.emplace(data);
         };
 
-        map_frame_  = nh.param<std::string>(param_name("map_frame"), "/map");
-        path_       = nh.param<std::string>(param_name("path"), "/tmp/maps");
         tf_         = tf;
+        map_frame_  = nh.param<std::string>(param_name("map_frame"), "/map");
         tf_timeout_ = ros::Duration(nh.param<double>(param_name("tf_timeout"), 0.1));
 
         std::vector<std::string> data_provider_names;

@@ -46,7 +46,7 @@ bool OccupancyNDTGridMapper3D::setupMap(ros::NodeHandle &nh)
     auto param_name = [this](const std::string &name){return name_ + "/" + name;};
 
     double resolution = nh.param<double>(param_name("resolution"), 1.0);
-    std::vector<double> origin;
+    std::vector<double> origin = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
     origin = nh.param<std::vector<double>>(param_name("origin"), origin);
 
     if (origin.size() != 6)
