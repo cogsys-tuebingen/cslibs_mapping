@@ -10,7 +10,7 @@
 
 namespace cslibs_mapping {
 namespace publisher {
-class Publisher
+class Publisher : public cslibs_plugins::Plugin
 {
 public:
     using Ptr          = std::shared_ptr<Publisher>;
@@ -32,13 +32,8 @@ public:
         return "cslibs_mapping::publisher::Publisher";
     }
 
-    inline std::string getName() const
-    {
-        return name_;
-    }
-
-    inline void setup(const std::map<std::string, mapper_t::Ptr> &mappers,
-                      ros::NodeHandle &nh)
+    inline void setup(ros::NodeHandle &nh,
+                      const std::map<std::string, mapper_t::Ptr> &mappers)
     {
         auto param_name = [this](const std::string &name){return name_ + "/" + name;};
 
@@ -89,7 +84,6 @@ private:
     double         publish_rate_;
 
 protected:
-    std::string    name_;
     ros::Publisher publisher_;
 };
 }
