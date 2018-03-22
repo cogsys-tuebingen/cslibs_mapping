@@ -59,19 +59,18 @@ public:
 
     inline void start()
     {
-        thread_ = std::thread([this](){ loop(); });
+        if (mapper_)
+            thread_ = std::thread([this](){ loop(); });
     }
 
 private:
     inline void loop()
     {
+        assert (mapper_);
+
         ros::Rate r(publish_rate_);
         while (ros::ok()) {
-            const ros::Time now = ros::Time::now();
-            if (mapper_)
-                if (const map_t::ConstPtr map = mapper_->getMap())
-                    publish(map, now);
-
+           // publish(mapper_->getMap(), ros::Time::now());
             r.sleep();
         }
     }

@@ -41,7 +41,7 @@ void OccupancyGridPublisher::doAdvertise(ros::NodeHandle &nh, const std::string 
 }
 
 void OccupancyGridPublisher::publish(const map_t::ConstPtr &map, const ros::Time &time)
-{
+{std::cout << "publish" << std::endl;
     if (map->isType<cslibs_mapping::maps::NDTGridMap2D>())
         publishNDTGridMap2D(map, time);
     else if (map->isType<cslibs_mapping::maps::OccupancyNDTGridMap2D>())

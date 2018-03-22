@@ -13,6 +13,8 @@
 #include <cslibs_mapping/maps/map.h>
 #include <cslibs_mapping/mapper/save_map.hpp>
 
+#include <condition_variable>
+
 namespace cslibs_mapping {
 namespace mapper {
 class Mapper : public cslibs_plugins::Plugin
@@ -24,10 +26,15 @@ public:
     using map_t           = cslibs_mapping::maps::Map;
     using tf_listener_t   = cslibs_math_ros::tf::TFListener2d;
 
+    using mutex_t = std::mutex;
+    using cond_t  = std::condition_variable;
+    using lock_t  = std::unique_lock<mutex_t>;
+
     inline Mapper() = default;
     inline ~Mapper()
     {
         stop_ = true;
+        cond_.notify_one();
 
         while (queue_.hasElements())
             queue_.pop();
@@ -47,8 +54,11 @@ public:
     {
         auto param_name = [this](const std::string &name){return name_ + "/" + name;};
         auto callback = [this](const data_t::ConstPtr &data) {
-            if (this->uses(data))
+            if (this->uses(data)) {
+                lock_t l(mutex_);
                 queue_.emplace(data);
+                cond_.notify_one();
+            }
         };
 
         tf_         = tf;
@@ -81,6 +91,7 @@ public:
 
     inline void start()
     {
+        stop_   = false;
         thread_ = std::thread([this](){ loop(); });
     }
 
@@ -95,8 +106,13 @@ public:
 private:
     inline void loop()
     {
+        lock_t l(mutex_);
         while (!stop_) {
-            if (queue_.hasElements())
+
+            while (queue_.empty() && !stop_)
+                cond_.wait(l);
+
+            while (queue_.hasElements())
                 process(queue_.pop());
         }
     }
@@ -111,6 +127,9 @@ private:
 
     std::vector<typename data_provider_t::connection_t::Ptr> handles_;
     cslibs_utility::synchronized::queue<data_t::ConstPtr>    queue_;
+
+    mutable mutex_t mutex_;
+    cond_t          cond_;
 
 protected:
     inline bool checkPath() const

@@ -73,7 +73,16 @@ bool MappingNode::setup()
 void MappingNode::start()
 {
     for (auto &d : data_providers_)
-        d.second->enable();
+        if (d.second)
+            d.second->enable();
+
+    for (auto &m : mappers_)
+        if (m.second)
+            m.second->start();
+
+    for (auto &p : publishers_)
+        if (p.second)
+            p.second->start();
 
     const double node_rate = nh_.param<double>("node_rate", 60.0);
     if (node_rate == 0.0) {
