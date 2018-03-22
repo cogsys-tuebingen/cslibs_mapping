@@ -14,12 +14,14 @@ public:
 
     using map_t    = cslibs_gridmaps::dynamic_maps::ProbabilityGridmap;
     template <typename ... args_t>
-    OccupancyGridMap2D(const args_t &...args) :
+    OccupancyGridMap2D(const std::string &frame,
+                       const args_t &...args) :
+        Map(frame),
         map_(new map_t(args...))
     {
     }
 
-    map_t::Ptr getMap()
+    map_t::Ptr getMap() const
     {
         return map_;
     }

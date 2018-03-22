@@ -14,12 +14,14 @@ public:
 
     using map_t = cslibs_ndt_3d::dynamic_maps::Gridmap;
     template <typename ... args_t>
-    NDTGridMap3D(const args_t &...args) :
+    NDTGridMap3D(const std::string &frame,
+                 const args_t &...args) :
+        Map(frame),
         map_(new map_t(args...))
     {
     }
 
-    map_t::Ptr getMap()
+    map_t::Ptr getMap() const
     {
         return map_;
     }

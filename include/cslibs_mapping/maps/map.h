@@ -9,6 +9,13 @@ public:
     using Ptr      = std::shared_ptr<Map>;
     using ConstPtr = std::shared_ptr<const Map>;
 
+    inline Map() = delete;
+    inline Map(const std::string &frame) :
+        frame_(frame)
+    {
+    }
+    virtual inline ~Map() = default;
+
     template<typename T>
     bool isType() const
     {
@@ -21,6 +28,14 @@ public:
     {
         return dynamic_cast<const T&>(*this);
     }
+
+    inline std::string getFrame() const
+    {
+        return frame_;
+    }
+
+private:
+    std::string frame_;
 };
 }
 }

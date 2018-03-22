@@ -23,6 +23,7 @@ const OccupancyNDTGridMapper2D::map_t::ConstPtr OccupancyNDTGridMapper2D::getMap
 
 void OccupancyNDTGridMapper2D::setupVisibilityBasedUpdateParameters(ros::NodeHandle &nh)
 {
+    auto param_name = [this](const std::string &name){return name_ + "/" + name;};
     visibility_based_update_ = nh.param<bool>(param_name("visibility_based_update"), false);
     if (!visibility_based_update_)
         return;
@@ -33,9 +34,9 @@ void OccupancyNDTGridMapper2D::setupVisibilityBasedUpdateParameters(ros::NodeHan
     ivm_.reset(new cslibs_gridmaps::utility::InverseModel(
                    prob_prior, prob_free, prob_occupied));
 
-    double visibility_threshold         = nh_.param<double>("visibility_threshold", 0.4);
-    double prob_visible_if_occluded     = nh_.param<double>("prob_visible_if_occluded", 0.2);
-    double prob_visible_if_not_occluded = nh_.param<double>("prob_visible_if_not_occluded", 0.8);
+    double visibility_threshold         = nh.param<double>("visibility_threshold", 0.4);
+    double prob_visible_if_occluded     = nh.param<double>("prob_visible_if_occluded", 0.2);
+    double prob_visible_if_not_occluded = nh.param<double>("prob_visible_if_not_occluded", 0.8);
     ivm_visibility_.reset(new cslibs_gridmaps::utility::InverseModel(
                               visibility_threshold, prob_visible_if_occluded, prob_visible_if_not_occluded));
 
@@ -54,6 +55,7 @@ bool OccupancyNDTGridMapper2D::setupMap(ros::NodeHandle &nh)
 
     setupVisibilityBasedUpdateParameters(nh);
     map_.reset(new maps::OccupancyNDTGridMap2D(
+                   map_frame_,
                    cslibs_math_2d::Pose2d(origin[0], origin[1], origin[2]), resolution));
     return true;
 }

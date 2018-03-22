@@ -13,10 +13,10 @@ namespace mapper {
 class OccupancyNDTGridMapper3D : public Mapper
 {
 public:
-    const inline map_t::ConstPtr getMap() const override;
+    virtual const inline map_t::ConstPtr getMap() const override;
 
 private:
-    inline setupVisibilityBasedUpdateParameters(ros::NodeHandle &nh);
+    inline void setupVisibilityBasedUpdateParameters(ros::NodeHandle &nh);
     virtual inline bool setupMap(ros::NodeHandle &nh) override;
     virtual inline bool uses(const data_t::ConstPtr &type) override;
     virtual inline void process(const data_t::ConstPtr &data) override;

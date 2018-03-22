@@ -33,8 +33,8 @@ bool OccupancyGridMapper2D::setupMap(ros::NodeHandle &nh)
     std::vector<double> origin;
     nh.param<std::vector<double>>(param_name("origin"), origin);
 
-    const double prob_prior     = nh.param(param_name("prob_prior"), 0.5);
-    const double prob_free      = nh.param(param_name("prob_free"), 0.45);
+    const double prob_prior     = nh.param(param_name("prob_prior"),    0.5);
+    const double prob_free      = nh.param(param_name("prob_free"),     0.45);
     const double prob_occupied  = nh.param(param_name("prob_occupied"), 0.65);
     ivm_.reset(new cslibs_gridmaps::utility::InverseModel(prob_prior, prob_free, prob_occupied));
 
@@ -42,6 +42,7 @@ bool OccupancyGridMapper2D::setupMap(ros::NodeHandle &nh)
         return false;
 
     map_.reset(new maps::OccupancyGridMap2D(
+                   map_frame_,
                    cslibs_math_2d::Pose2d(origin[0], origin[1], origin[2]), resolution, chunk_resolution));
     return true;
 }

@@ -23,8 +23,6 @@ public:
     inline Publisher() = default;
     inline ~Publisher()
     {
-        map_request_.disable();
-
         if (thread_.joinable())
             thread_.join();
     }
@@ -44,22 +42,21 @@ public:
     {
         auto param_name = [this](const std::string &name){return name_ + "/" + name;};
 
-        std::string mapper_name = nh.getParam<std::string>(param_name("mapper"), "");
+        const std::string mapper_name = nh.param<std::string>(param_name("mapper"), "");
         if (mapper_name == "")
-            throw std::runtime_error("[Publisher '" << name_ << "']: No mapper was found!");
+            throw std::runtime_error("[Publisher '" + name_ + "']: No mapper was found!");
 
         auto mapper = mappers.find(mapper_name);
         if (mapper == mappers.end())
-            throw std::runtime_error("[Publisher '" << name_ << "']: Cannot find mapper '" + mapper_name + "'!");
+            throw std::runtime_error("[Publisher '" + name_ + "']: Cannot find mapper '" + mapper_name + "'!");
 
-        if (this->uses(mapper->getMap())) {
+        if (this->uses(mapper->second->getMap())) {
             // set mapper
-            mapper_ = mapper;
+            mapper_ = mapper->second;
             std::cout << "[Publisher '" << name_ << "']: Using mapper '" << mapper_name << "'." << std::endl;
 
             // advertise topic
-            std::string topic = nh.getParam<std::string>(param_name("topic"), "");
-            doAdvertise(nh, topic);
+            doAdvertise(nh);
         }
     }
 
@@ -82,8 +79,9 @@ private:
         }
     }
 
-    inline void doAdvertise(ros::NodeHandle &nh, const std::string &topic) = 0;
-    inline void publish(const map_t::ConstPtr &map, const ros::Time &time) = 0;
+    virtual bool uses(const map_t::ConstPtr &map) const = 0;
+    virtual void doAdvertise(ros::NodeHandle &nh) = 0;
+    virtual void publish(const map_t::ConstPtr &map, const ros::Time &time) = 0;
 
     std::thread    thread_;
     mapper_t::Ptr  mapper_;

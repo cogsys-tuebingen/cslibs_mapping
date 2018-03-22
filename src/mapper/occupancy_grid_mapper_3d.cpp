@@ -23,8 +23,8 @@ bool OccupancyGridMapper3D::setupMap(ros::NodeHandle &nh)
 {
     auto param_name = [this](const std::string &name){return name_ + "/" + name;};
 
-    double resolution = nh.param<double>(param_name("resolution"), 1.0);
-    map_.reset(new maps::OccupancyGridMap3D(resolution));
+    const double resolution = nh.param<double>(param_name("resolution"), 1.0);
+    map_.reset(new maps::OccupancyGridMap3D(map_frame_, resolution));
     return true;
 }
 

@@ -33,6 +33,7 @@ bool NDTGridMapper2D::setupMap(ros::NodeHandle &nh)
         return false;
 
     map_.reset(new maps::NDTGridMap2D(
+                   map_frame_,
                    cslibs_math_2d::Pose2d(origin[0], origin[1], origin[2]), resolution));
     return true;
 }

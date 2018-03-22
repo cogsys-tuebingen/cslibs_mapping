@@ -13,7 +13,7 @@ namespace mapper {
 class NDTGridMapper2D : public Mapper
 {
 public:
-    inline const map_t::ConstPtr getMap() const override;
+    virtual inline const map_t::ConstPtr getMap() const override;
 
 private:
     virtual inline bool setupMap(ros::NodeHandle &nh) override;

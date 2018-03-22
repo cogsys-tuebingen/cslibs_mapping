@@ -14,12 +14,14 @@ public:
 
     using map_t    = octomap::OcTree;
     template <typename ... args_t>
-    OccupancyGridMap3D(const args_t &...args) :
+    OccupancyGridMap3D(const std::string &frame,
+                       const args_t &...args) :
+        Map(frame),
         map_(new map_t(args...))
     {
     }
 
-    std::shared_ptr<map_t> getMap()
+    std::shared_ptr<map_t> getMap() const
     {
         return map_;
     }

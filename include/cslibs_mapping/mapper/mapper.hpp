@@ -87,7 +87,7 @@ public:
         thread_ = std::thread([this](){ loop(); });
     }
 
-    const virtual inline map_t::ConstPtr getMap() const = 0;
+    virtual const map_t::ConstPtr getMap() const = 0;
     virtual bool saveMap() = 0;
 
 private:

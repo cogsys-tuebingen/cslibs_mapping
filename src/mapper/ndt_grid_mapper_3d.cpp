@@ -24,7 +24,7 @@ bool NDTGridMapper3D::setupMap(ros::NodeHandle &nh)
 {
     auto param_name = [this](const std::string &name){return name_ + "/" + name;};
 
-    double resolution = nh.param<double>(param_name("resolution"), 1.0);
+    const double resolution = nh.param<double>(param_name("resolution"), 1.0);
     std::vector<double> origin;
     origin = nh.param<std::vector<double>>(param_name("origin"), origin);
 
@@ -32,6 +32,7 @@ bool NDTGridMapper3D::setupMap(ros::NodeHandle &nh)
         return false;
 
     map_.reset(new maps::NDTGridMap3D(
+                   map_frame_,
                    cslibs_math_3d::Pose3d(cslibs_math_3d::Vector3d(origin[0], origin[1], origin[2]),
                                           cslibs_math_3d::Quaternion(origin[3], origin[4], origin[5])),
                    resolution));
