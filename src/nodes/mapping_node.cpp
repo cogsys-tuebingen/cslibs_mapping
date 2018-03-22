@@ -4,7 +4,6 @@
 #include <cslibs_plugins/plugin_factory.hpp>
 
 namespace cslibs_mapping {
-namespace nodes {
 MappingNode::MappingNode() :
     nh_("~"),
     tf_(new tf_listener_t)
@@ -92,16 +91,15 @@ void MappingNode::start()
     }
 }
 
-bool MappingNode::saveMaps(std_srvs::Empty::Request &request, std_srvs::Empty::Response &response)
+bool MappingNode::saveMaps(cslibs_mapping::SaveMap::Request &request, cslibs_mapping::SaveMap::Response &response)
 {
     bool success = true;
     for (auto &m : mappers_)
-        if (!m.second->saveMap())
+        if (!m.second->saveMap(request.path.data))
             success = false;
 
     ROS_INFO_STREAM("Saved maps " << (success ? "successful!" : "unsuccessful!"));
     return success;
-}
 }
 }
 
@@ -109,7 +107,7 @@ int main(int argc, char *argv[])
 {
     ros::init(argc, argv, "cslibs_mapping");
 
-    cslibs_mapping::nodes::MappingNode node;
+    cslibs_mapping::MappingNode node;
     if (node.setup()) {
         ROS_INFO_STREAM("Node is set up and ready to start!");
         node.start();

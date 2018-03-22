@@ -3,13 +3,11 @@
 
 #include <cslibs_mapping/mapper/mapper.hpp>
 #include <cslibs_mapping/publisher/publisher.hpp>
+#include <cslibs_mapping/SaveMap.h>
 
 #include <cslibs_plugins_data/data_provider_2d.hpp>
 
-#include <std_srvs/Empty.h>
-
 namespace cslibs_mapping {
-namespace nodes {
 class MappingNode
 {
 public:
@@ -20,7 +18,7 @@ public:
     inline void start();
 
 private:
-    inline bool saveMaps(std_srvs::Empty::Request &request, std_srvs::Empty::Response &response);
+    inline bool saveMaps(cslibs_mapping::SaveMap::Request &request, cslibs_mapping::SaveMap::Response &response);
 
     template <typename T>
     using map_t           = std::map<std::string, typename T::Ptr>;
@@ -37,7 +35,6 @@ private:
     map_t<mapper_t>        mappers_;
     map_t<publisher_t>     publishers_;
 };
-}
 }
 
 #endif // CSLIBS_MAPPING_NODE_H

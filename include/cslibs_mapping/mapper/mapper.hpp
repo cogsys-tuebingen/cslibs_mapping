@@ -85,8 +85,13 @@ public:
         thread_ = std::thread([this](){ loop(); });
     }
 
+    inline bool saveMap(const std::string &path)
+    {
+        path_ = (boost::filesystem::path(path) / boost::filesystem::path(name_)).string();
+        return saveMap();
+    }
+
     virtual const map_t::ConstPtr getMap() const = 0;
-    virtual bool saveMap() = 0;
 
 private:
     inline void loop()
@@ -100,6 +105,7 @@ private:
     virtual bool setupMap(ros::NodeHandle &nh) = 0;
     virtual bool uses(const data_t::ConstPtr &type) = 0;
     virtual void process(const data_t::ConstPtr &data) = 0;
+    virtual bool saveMap() = 0;
 
     std::thread thread_;
     bool        stop_;
