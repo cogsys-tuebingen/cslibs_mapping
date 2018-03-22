@@ -84,14 +84,16 @@ void OccupancyGridPublisher::publishOccupancyGridMap2D(const map_t::ConstPtr &ma
     const std::size_t chunk_step = m->getChunkSize();
     const local_map_t::index_t min_chunk_index = m->getMinChunkIndex();
     const local_map_t::index_t max_chunk_index = m->getMaxChunkIndex();
-    for(int i = min_chunk_index[1] ; i <= max_chunk_index[1] ; ++i) {
-        for(int j = min_chunk_index[0] ; j <= max_chunk_index[0] ; ++j) {
+    for (int i = min_chunk_index[1] ; i <= max_chunk_index[1] ; ++ i) {
+        for (int j = min_chunk_index[0] ; j <= max_chunk_index[0] ; ++ j) {
+
             local_map_t::chunk_t *chunk = m->getChunk({{j,i}});
-            if(chunk != nullptr) {
+            if (chunk != nullptr) {
                 const std::size_t cx = static_cast<std::size_t>((j - min_chunk_index[0]) * static_cast<int>(chunk_step));
                 const std::size_t cy = static_cast<std::size_t>((i - min_chunk_index[1]) * static_cast<int>(chunk_step));
-                for(std::size_t k = 0 ; k < chunk_step ; ++k)
-                    for(std::size_t l = 0 ; l < chunk_step ; ++l)
+
+                for (std::size_t k = 0 ; k < chunk_step ; ++k)
+                    for (std::size_t l = 0 ; l < chunk_step ; ++l)
                         occ_map->at(cx + l, cy + k) = chunk->at(l,k);
             }
         }
