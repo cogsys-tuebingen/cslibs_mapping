@@ -21,6 +21,7 @@
   <exec_depend>message_runtime</exec_depend>
   <build_depend>message_generation</build_depend>
   <depend>yaml-cpp</depend>
+  <depend>pluginlib</depend>
 
   <export>
     <cslibs_mapping plugin="${prefix}/plugins.xml"/>

@@ -25,6 +25,8 @@ public:
     using data_provider_t = cslibs_plugins_data::DataProvider2D;
     using map_t           = cslibs_mapping::maps::Map;
     using tf_listener_t   = cslibs_math_ros::tf::TFListener2d;
+    using handle_vector_t = std::vector<typename data_provider_t::connection_t::Ptr>;
+    using data_queue_t    = cslibs_utility::synchronized::queue<data_t::ConstPtr>;
 
     using mutex_t = std::mutex;
     using cond_t  = std::condition_variable;
@@ -122,11 +124,11 @@ private:
     virtual void process(const data_t::ConstPtr &data) = 0;
     virtual bool saveMap() = 0;
 
-    std::thread thread_;
-    bool        stop_;
+    std::thread     thread_;
+    bool            stop_;
 
-    std::vector<typename data_provider_t::connection_t::Ptr> handles_;
-    cslibs_utility::synchronized::queue<data_t::ConstPtr>    queue_;
+    handle_vector_t handles_;
+    data_queue_t    queue_;
 
     mutable mutex_t mutex_;
     cond_t          cond_;
@@ -141,8 +143,8 @@ protected:
         return true;
     }
 
-    std::string map_frame_;
-    std::string path_;
+    std::string        map_frame_;
+    std::string        path_;
 
     tf_listener_t::Ptr tf_;
     ros::Duration      tf_timeout_;

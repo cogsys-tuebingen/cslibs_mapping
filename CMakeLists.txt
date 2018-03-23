@@ -8,11 +8,8 @@ include(cmake/cslibs_mapping_extras.cmake)
 include(cmake/cslibs_mapping_show_headers.cmake)
 include(cmake/cslibs_mapping_add_unit_test_gtest.cmake)
 
-add_definitions(-DEIGEN_DISABLE_UNALIGNED_ARRAY_ASSERT
-                -DEIGEN_DONT_VECTORIZE
-                -DEIGEN_DONT_ALIGN
-                -DEIGEN_USE_NEW_STDVECTOR
-                -DEIGEN_YES_I_KNOW_SPARSE_MODULE_IS_NOT_STABLE_YET)
+# disable Eigen alignment
+add_definitions(-DEIGEN_DONT_VECTORIZE)
 
 find_package(catkin REQUIRED COMPONENTS
     cslibs_plugins
@@ -24,6 +21,7 @@ find_package(catkin REQUIRED COMPONENTS
     cslibs_utility
     cslibs_math_ros
     message_generation
+    pluginlib
 )
 
 find_package(Boost REQUIRED COMPONENTS filesystem)
@@ -53,8 +51,10 @@ include_directories(
     ${Boost_INCLUDE_DIRS}
 )
 if(PCL_FOUND)
+    find_package(pcl_ros REQUIRED)
     include_directories(
         ${PCL_INCLUDE_DIRS}
+        ${pcl_ros_INCLUDE_DIRS}
     )
     if(octomap_FOUND)
         find_package(octomap_msgs REQUIRED)
@@ -103,6 +103,7 @@ if(PCL_FOUND)
             ${PCL_LIBRARIES}
         )
     endif()
+    link_directories(${PCL_LIBRARY_DIRS})
 else()
     #no pcl and no octomap
     add_library(${PROJECT_NAME}

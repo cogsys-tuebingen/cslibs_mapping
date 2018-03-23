@@ -1,6 +1,8 @@
 #ifndef CSLIBS_MAPPING_MAP_H
 #define CSLIBS_MAPPING_MAP_H
 
+#include <eigen3/Eigen/Eigen>
+
 namespace cslibs_mapping {
 namespace maps {
 class Map

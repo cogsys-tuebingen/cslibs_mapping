@@ -22,6 +22,7 @@ private:
 
     template <typename T>
     using map_t           = std::map<std::string, typename T::Ptr>;
+
     using data_provider_t = cslibs_plugins_data::DataProvider2D;
     using mapper_t        = cslibs_mapping::mapper::Mapper;
     using publisher_t     = cslibs_mapping::publisher::Publisher;
