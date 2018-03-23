@@ -41,54 +41,58 @@ void PointcloudPublisher::doAdvertise(ros::NodeHandle &nh, const std::string &to
 void PointcloudPublisher::publish(const map_t::ConstPtr &map, const ros::Time &time)
 {
     if (map->isType<cslibs_mapping::maps::NDTGridMap3D>())
-        publishNDTGridMap3D(map, time);
-    else if (map->isType<cslibs_mapping::maps::OccupancyNDTGridMap3D>())
-        publishOccupancyNDTGridMap3D(map, time);
-    else
-        std::cout << "[PointcloudPublisher '" << name_ << "']: Got wrong map type!" << std::endl;
+        return publishNDTGridMap3D(map, time);
+    if (map->isType<cslibs_mapping::maps::OccupancyNDTGridMap3D>())
+        return publishOccupancyNDTGridMap3D(map, time);
+    std::cout << "[PointcloudPublisher '" << name_ << "']: Got wrong map type!" << std::endl;
 }
 
 void PointcloudPublisher::publishNDTGridMap3D(const map_t::ConstPtr &map, const ros::Time &time)
 {
     using local_map_t = cslibs_ndt_3d::dynamic_maps::Gridmap;
-    const local_map_t::Ptr &m = map->as<cslibs_mapping::maps::NDTGridMap3D>().getMap();
+    const auto handle = map->as<cslibs_mapping::maps::NDTGridMap3D>().get();
+    const local_map_t::Ptr &m = handle.data();
+    if (m) {
+        pcl::PointCloud<pcl::PointXYZI>::Ptr cloud;
+        cslibs_ndt_3d::conversion::from(m, cloud, fast_);
 
-    pcl::PointCloud<pcl::PointXYZI>::Ptr cloud;
-    cslibs_ndt_3d::conversion::from(m, cloud, fast_);
+        if (cloud) {
+            sensor_msgs::PointCloud2 msg;
+            pcl::toROSMsg(*cloud, msg);
 
-    if (cloud) {
-        sensor_msgs::PointCloud2 msg;
-        pcl::toROSMsg(*cloud, msg);
+            msg.header.stamp    = time;
+            msg.header.frame_id = map->getFrame();
 
-        msg.header.stamp    = time;
-        msg.header.frame_id = map->getFrame();
-
-        publisher_.publish(msg);
-    } else
-        std::cout << "[PointcloudPublisher '" << name_ << "']: Map could not be published!" << std::endl;
+            publisher_.publish(msg);
+            return;
+        }
+    }
+    std::cout << "[PointcloudPublisher '" << name_ << "']: Map could not be published!" << std::endl;
 }
 
 void PointcloudPublisher::publishOccupancyNDTGridMap3D(const map_t::ConstPtr &map, const ros::Time &time)
 {
-    if (!ivm_)
-        std::cout << "[PointcloudPublisher '" << name_ << "']: Map could not be published!" << std::endl;
+    if (ivm_) {
+        using local_map_t = cslibs_ndt_3d::dynamic_maps::OccupancyGridmap;
+        const auto handle = map->as<cslibs_mapping::maps::OccupancyNDTGridMap3D>().get();
+        const local_map_t::Ptr &m = handle.data();
+        if (m) {
+            pcl::PointCloud<pcl::PointXYZI>::Ptr cloud;
+            cslibs_ndt_3d::conversion::from(m, cloud, ivm_, fast_, occ_threshold_);
 
-    using local_map_t = cslibs_ndt_3d::dynamic_maps::OccupancyGridmap;
-    const local_map_t::Ptr &m = map->as<cslibs_mapping::maps::OccupancyNDTGridMap3D>().getMap();
+            if (cloud) {
+                sensor_msgs::PointCloud2 msg;
+                pcl::toROSMsg(*cloud, msg);
 
-    pcl::PointCloud<pcl::PointXYZI>::Ptr cloud;
-    cslibs_ndt_3d::conversion::from(m, cloud, ivm_, fast_, occ_threshold_);
+                msg.header.stamp    = time;
+                msg.header.frame_id = map->getFrame();
 
-    if (cloud) {
-        sensor_msgs::PointCloud2 msg;
-        pcl::toROSMsg(*cloud, msg);
-
-        msg.header.stamp    = time;
-        msg.header.frame_id = map->getFrame();
-
-        publisher_.publish(msg);
-    } else
-        std::cout << "[PointcloudPublisher '" << name_ << "']: Map could not be published!" << std::endl;
+                publisher_.publish(msg);
+                return;
+            }
+        }
+    }
+    std::cout << "[PointcloudPublisher '" << name_ << "']: Map could not be published!" << std::endl;
 }
 }
 }

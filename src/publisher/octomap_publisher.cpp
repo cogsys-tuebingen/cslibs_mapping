@@ -23,17 +23,20 @@ void OctomapPublisher::publish(const map_t::ConstPtr &map, const ros::Time &time
 {
     if (map->isType<cslibs_mapping::maps::OccupancyGridMap3D>()) {
         using local_map_t = octomap::OcTree;
-        const std::shared_ptr<local_map_t> &m = map->as<cslibs_mapping::maps::OccupancyGridMap3D>().getMap();
+        const auto handle = map->as<cslibs_mapping::maps::OccupancyGridMap3D>().get();
+        const std::shared_ptr<local_map_t> &m = handle.data();
+        if (m) {
+            octomap_msgs::Octomap msg;
+            octomap_msgs::fullMapToMsg(*m, msg);
 
-        octomap_msgs::Octomap msg;
-        octomap_msgs::fullMapToMsg(*m, msg);
+            msg.header.stamp    = time;
+            msg.header.frame_id = map->getFrame();
 
-        msg.header.stamp    = time;
-        msg.header.frame_id = map->getFrame();
-
-        publisher_.publish(msg);
-    } else
-        std::cout << "[OctomapPublisher '" << name_ << "']: Got wrong map type!" << std::endl;
+            publisher_.publish(msg);
+            return;
+        }
+    }
+    std::cout << "[OctomapPublisher '" << name_ << "']: Got wrong map type!" << std::endl;
 }
 }
 }

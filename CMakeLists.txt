@@ -8,6 +8,12 @@ include(cmake/cslibs_mapping_extras.cmake)
 include(cmake/cslibs_mapping_show_headers.cmake)
 include(cmake/cslibs_mapping_add_unit_test_gtest.cmake)
 
+add_definitions(-DEIGEN_DISABLE_UNALIGNED_ARRAY_ASSERT
+                -DEIGEN_DONT_VECTORIZE
+                -DEIGEN_DONT_ALIGN
+                -DEIGEN_USE_NEW_STDVECTOR
+                -DEIGEN_YES_I_KNOW_SPARSE_MODULE_IS_NOT_STABLE_YET)
+
 find_package(catkin REQUIRED COMPONENTS
     cslibs_plugins
     cslibs_plugins_data

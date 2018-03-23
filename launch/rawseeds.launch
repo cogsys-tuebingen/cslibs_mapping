@@ -6,10 +6,6 @@
     <arg name="bag_file_1" value="Bicocca_2009-02-25a-dynamic-natural-light-groundtruth-cartographer-with-stereo_1.bag" />
     <arg name="bag_args"   value="--clock --rate 1.0 -s 9 -k --pause" />
 
-    <!-- using only one map, the world and map frame can be collapsed -->
-    <node pkg="tf" type="static_transform_publisher" name="map_T_w" args="0 0 0 0 0 0 map world 10"/>
-    <node pkg="tf" type="static_transform_publisher" name="odom_T_w" args="0 0 0 0 0 0 odom world 10"/>
-
     <include file="$(find rawseeds_ros)/launch/transforms_biccoca.launch"/>
     <include file="$(find rawseeds_ros)/launch/stereo.launch"/>
 
@@ -22,9 +18,9 @@
 	  <param name="base_class"               value="cslibs_plugins_data::DataProvider2D"/>
 	  <param name="topic"                    value="/sick/front"/>
 	  <param name="undistortion"             value="false"/>
-	  <param name="undistortion_fixed_frame" value="odom"/>
+	  <param name="undistortion_fixed_frame" value="/odom"/>
 	  <param name="undistortion_tf_timeout"  value="0.1"/>
-	  <param name="range_max"                value="82.0"/>
+	  <param name="range_max"                value="80.0"/>
 	  <param name="range_min"                value="0.1"/>
 	  <param name="queue_size"               value="10"/>
 	  <param name="rate"                     value="0.0"/>
@@ -36,7 +32,7 @@
           <param name="undistortion"             value="false"/>
           <param name="undistortion_fixed_frame" value="/odom"/>
           <param name="undistortion_tf_timeout"  value="0.1"/>
-          <param name="range_max"                value="82.0"/>
+          <param name="range_max"                value="80.0"/>
           <param name="range_min"                value="0.1"/>
           <param name="queue_size"               value="10"/>
           <param name="rate"                     value="0.0"/>
@@ -57,6 +53,7 @@
           <rosparam param="data_providers">
                 ["front_laser", "rear_laser"]
           </rosparam>
+	  <param name="map_frame"	 value="/odom"/>
 	  <param name="resolution" 	 value="1.0"/>
 	</group>
 	<group ns="occ_ndt_2d">
@@ -65,6 +62,7 @@
           <rosparam param="data_providers">
                 ["front_laser", "rear_laser"]
           </rosparam>
+	  <param name="map_frame"	 value="/odom"/>
 	  <param name="resolution" 	 value="1.0"/>
 	</group>
 	<group ns="occ_2d">
@@ -73,6 +71,7 @@
           <rosparam param="data_providers">
                 ["front_laser", "rear_laser"]
           </rosparam>
+	  <param name="map_frame"	 value="/odom"/>
 	  <param name="resolution" 	 value="0.05"/>
 	  <param name="chunk_resolution" value="5.0"/>
 	</group>
@@ -84,6 +83,7 @@
           <rosparam param="data_providers">
                 ["stereo"]
           </rosparam>
+	  <param name="map_frame"	 value="/odom"/>
 	  <param name="resolution" 	 value="1.0"/>
 	</group>
 	<group ns="occ_ndt_3d">
@@ -92,6 +92,7 @@
           <rosparam param="data_providers">
                 ["stereo"]
           </rosparam>
+	  <param name="map_frame"	 value="/odom"/>
 	  <param name="resolution" 	 value="1.0"/>
 	</group>
 	<group ns="occ_3d">
@@ -100,6 +101,7 @@
           <rosparam param="data_providers">
                 ["stereo"]
           </rosparam>
+	  <param name="map_frame"	 value="/odom"/>
 	  <param name="resolution" 	 value="0.05"/>
 	</group>
 

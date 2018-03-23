@@ -14,10 +14,6 @@ namespace cslibs_mapping {
 namespace mapper {
 const OccupancyNDTGridMapper2D::map_t::ConstPtr OccupancyNDTGridMapper2D::getMap() const
 {
-    std::unique_lock<std::mutex> l(map_mutex_);
-    if (!map_)
-        map_notify_.wait(l);
-
     return map_;
 }
 
@@ -67,7 +63,10 @@ bool OccupancyNDTGridMapper2D::uses(const data_t::ConstPtr &type)
 
 void OccupancyNDTGridMapper2D::process(const data_t::ConstPtr &data)
 {
-    std::unique_lock<std::mutex> l(map_mutex_);
+    assert (uses(data));
+    assert (!visibility_based_update_ || ivm_);
+    assert (!visibility_based_update_ || ivm_visibility_);
+
     const cslibs_plugins_data::types::Laserscan &laser_data = data->as<cslibs_plugins_data::types::Laserscan>();
 
     cslibs_math_2d::Transform2d o_T_d;
@@ -80,24 +79,19 @@ void OccupancyNDTGridMapper2D::process(const data_t::ConstPtr &data)
         const cslibs_plugins_data::types::Laserscan::rays_t rays = laser_data.getRays();
         cslibs_math_2d::Pointcloud2d::Ptr cloud(new cslibs_math_2d::Pointcloud2d);
 
-        for (const auto &ray : rays) {
-            if (ray.valid()) {
-                const cslibs_math_2d::Point2d map_point = o_T_d * ray.point;
-                if (map_point.isNormal())
-                    cloud->insert(map_point);
-            }
-        }
-        visibility_based_update_ ?
-                    map_->getMap()->insertVisible(o_T_d, cloud, ivm_, ivm_visibility_) :
-                    map_->getMap()->insert(o_T_d, cloud);
-    }
+        for (const auto &ray : rays)
+            if (ray.valid() && ray.point.isNormal())
+                cloud->insert(ray.point);
 
-    map_notify_.notify_all();
+        const auto handle = map_->get();
+        visibility_based_update_ ?
+                    handle.data()->insertVisible(o_T_d, cloud, ivm_, ivm_visibility_) :
+                    handle.data()->insert(o_T_d, cloud);
+    }
 }
 
 bool OccupancyNDTGridMapper2D::saveMap()
 {
-    std::unique_lock<std::mutex> l(map_mutex_);
     if (!map_) {
         std::cout << "[OccupancyNDTGridMapper2D '" << name_ << "']: No Map." << std::endl;
         return true;
@@ -109,14 +103,17 @@ bool OccupancyNDTGridMapper2D::saveMap()
         return false;
     }
 
-    if (!cslibs_ndt_2d::dynamic_maps::saveBinary(map_->getMap(), (path_ / boost::filesystem::path("map")).string()))
-        return false;
-
     cslibs_gridmaps::static_maps::ProbabilityGridmap::Ptr tmp;
-    cslibs_gridmaps::utility::InverseModel::Ptr ivm(new cslibs_gridmaps::utility::InverseModel(0.65, 0.45, 0.196));
-    cslibs_ndt_2d::conversion::from(map_->getMap(), tmp, map_->getMap()->getResolution() / 10.0, ivm);
-    if (!tmp)
-        return false;
+    {
+        const auto handle = map_->get();
+        if (!cslibs_ndt_2d::dynamic_maps::saveBinary(handle.data(), (path_ / boost::filesystem::path("map")).string()))
+            return false;
+
+        cslibs_gridmaps::utility::InverseModel::Ptr ivm(new cslibs_gridmaps::utility::InverseModel(0.65, 0.45, 0.196));
+        cslibs_ndt_2d::conversion::from(handle.data(), tmp, handle.data()->getResolution() / 10.0, ivm);
+        if (!tmp)
+            return false;
+    }
 
     cslibs_gridmaps::static_maps::algorithms::normalize<double>(*tmp);
     if (cslibs_mapping::mapper::saveMap(path_, nullptr, tmp->getData(), tmp->getHeight(),

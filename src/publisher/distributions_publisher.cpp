@@ -36,48 +36,52 @@ void DistributionsPublisher::doAdvertise(ros::NodeHandle &nh, const std::string 
 void DistributionsPublisher::publish(const map_t::ConstPtr &map, const ros::Time &time)
 {
     if (map->isType<cslibs_mapping::maps::NDTGridMap3D>())
-        publishNDTGridMap3D(map, time);
-    else if (map->isType<cslibs_mapping::maps::OccupancyNDTGridMap3D>())
-        publishOccupancyNDTGridMap3D(map, time);
-    else
-        std::cout << "[DistributionsPublisher '" << name_ << "']: Got wrong map type!" << std::endl;
+        return publishNDTGridMap3D(map, time);
+    if (map->isType<cslibs_mapping::maps::OccupancyNDTGridMap3D>())
+        return publishOccupancyNDTGridMap3D(map, time);
+    std::cout << "[DistributionsPublisher '" << name_ << "']: Got wrong map type!" << std::endl;
 }
 
 void DistributionsPublisher::publishNDTGridMap3D(const map_t::ConstPtr &map, const ros::Time &time)
 {
     using local_map_t = cslibs_ndt_3d::dynamic_maps::Gridmap;
-    const local_map_t::Ptr &m = map->as<cslibs_mapping::maps::NDTGridMap3D>().getMap();
+    const auto handle = map->as<cslibs_mapping::maps::NDTGridMap3D>().get();
+    const local_map_t::Ptr &m = handle.data();
+    if (m) {
+        cslibs_ndt_3d::DistributionArray::Ptr distributions;
+        cslibs_ndt_3d::conversion::from(m, distributions, fast_);
 
-    cslibs_ndt_3d::DistributionArray::Ptr distributions;
-    cslibs_ndt_3d::conversion::from(m, distributions, fast_);
+        if (distributions) {
+            distributions->header.stamp    = time;
+            distributions->header.frame_id = map->getFrame();
 
-    if (distributions) {
-        distributions->header.stamp    = time;
-        distributions->header.frame_id = map->getFrame();
-
-        publisher_.publish(distributions);
-    } else
-        std::cout << "[DistributionsPublisher '" << name_ << "']: Map could not be published!" << std::endl;
+            publisher_.publish(distributions);
+            return;
+        }
+    }
+    std::cout << "[DistributionsPublisher '" << name_ << "']: Map could not be published!" << std::endl;
 }
 
 void DistributionsPublisher::publishOccupancyNDTGridMap3D(const map_t::ConstPtr &map, const ros::Time &time)
 {
-    if (!ivm_)
-        std::cout << "[DistributionsPublisher '" << name_ << "']: Map could not be published!" << std::endl;
+    if (ivm_) {
+        using local_map_t = cslibs_ndt_3d::dynamic_maps::OccupancyGridmap;
+        const auto handle = map->as<cslibs_mapping::maps::OccupancyNDTGridMap3D>().get();
+        const local_map_t::Ptr &m = handle.data();
+        if (m) {
+            cslibs_ndt_3d::DistributionArray::Ptr distributions;
+            cslibs_ndt_3d::conversion::from(m, distributions, ivm_, fast_);
 
-    using local_map_t = cslibs_ndt_3d::dynamic_maps::OccupancyGridmap;
-    const local_map_t::Ptr &m = map->as<cslibs_mapping::maps::OccupancyNDTGridMap3D>().getMap();
+            if (distributions) {
+                distributions->header.stamp    = time;
+                distributions->header.frame_id = map->getFrame();
 
-    cslibs_ndt_3d::DistributionArray::Ptr distributions;
-    cslibs_ndt_3d::conversion::from(m, distributions, ivm_, fast_);
-
-    if (distributions) {
-        distributions->header.stamp    = time;
-        distributions->header.frame_id = map->getFrame();
-
-        publisher_.publish(distributions);
-    } else
-        std::cout << "[DistributionsPublisher '" << name_ << "']: Map could not be published!" << std::endl;
+                publisher_.publish(distributions);
+                return;
+            }
+        }
+    }
+    std::cout << "[DistributionsPublisher '" << name_ << "']: Map could not be published!" << std::endl;
 }
 }
 }

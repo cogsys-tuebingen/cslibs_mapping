@@ -21,9 +21,7 @@ private:
     virtual inline void process(const data_t::ConstPtr &data) override;
     virtual inline bool saveMap() override;
 
-    maps::NDTGridMap2D::Ptr         map_;
-    mutable std::mutex              map_mutex_;
-    mutable std::condition_variable map_notify_;
+    maps::NDTGridMap2D::Ptr map_;
 };
 }
 }

@@ -16,14 +16,14 @@ public:
     }
     virtual inline ~Map() = default;
 
-    template<typename T>
+    template <typename T>
     bool isType() const
     {
         const T *t = dynamic_cast<const T*>(this);
         return t != nullptr;
     }
 
-    template<typename T>
+    template <typename T>
     T const & as() const
     {
         return dynamic_cast<const T&>(*this);

@@ -70,7 +70,7 @@ private:
 
         ros::Rate r(publish_rate_);
         while (ros::ok()) {
-           // publish(mapper_->getMap(), ros::Time::now());
+            publish(mapper_->getMap(), ros::Time::now());
             r.sleep();
         }
     }

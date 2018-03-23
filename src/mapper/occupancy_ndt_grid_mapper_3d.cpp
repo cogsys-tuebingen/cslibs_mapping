@@ -13,10 +13,6 @@ namespace cslibs_mapping {
 namespace mapper {
 const OccupancyNDTGridMapper3D::map_t::ConstPtr OccupancyNDTGridMapper3D::getMap() const
 {
-    std::unique_lock<std::mutex> l(map_mutex_);
-    if (!map_)
-        map_notify_.wait(l);
-
     return map_;
 }
 
@@ -68,7 +64,8 @@ bool OccupancyNDTGridMapper3D::uses(const data_t::ConstPtr &type)
 
 void OccupancyNDTGridMapper3D::process(const data_t::ConstPtr &data)
 {
-    std::unique_lock<std::mutex> l(map_mutex_);
+    assert (uses(data));
+
     const cslibs_plugins_data::types::Pointcloud &cloud_data = data->as<cslibs_plugins_data::types::Pointcloud>();
 
     tf::Transform o_T_d_tmp;
@@ -78,28 +75,17 @@ void OccupancyNDTGridMapper3D::process(const data_t::ConstPtr &data)
                              o_T_d_tmp,
                              tf_timeout_)) {
         cslibs_math_3d::Transform3d o_T_d = cslibs_math_ros::tf::conversion_3d::from(o_T_d_tmp);
-
-        const cslibs_math_3d::Pointcloud3d::Ptr points = cloud_data.getPoints();
-        cslibs_math_3d::Pointcloud3d::Ptr cloud(new cslibs_math_3d::Pointcloud3d);
-
-        for (const auto &point : *points) {
-            if (point.isNormal()) {
-                const cslibs_math_3d::Point3d map_point = o_T_d * point;
-                if (map_point.isNormal())
-                    cloud->insert(map_point);
-            }
+        if (const cslibs_math_3d::Pointcloud3d::Ptr cloud = cloud_data.getPoints()) {
+            const auto handle = map_->get();
+            visibility_based_update_ ?
+                        handle.data()->insertVisible(o_T_d, cloud, ivm_, ivm_visibility_) :
+                        handle.data()->insert(o_T_d, cloud);
         }
-        visibility_based_update_ ?
-                    map_->getMap()->insertVisible(o_T_d, cloud, ivm_, ivm_visibility_) :
-                    map_->getMap()->insert(o_T_d, cloud);
     }
-
-    map_notify_.notify_one();
 }
 
 bool OccupancyNDTGridMapper3D::saveMap()
 {
-    std::unique_lock<std::mutex> l(map_mutex_);
     if (!map_) {
         std::cout << "[OccupancyNDTGridMapper3D '" << name_ << "']: No Map." << std::endl;
         return true;
@@ -111,7 +97,7 @@ bool OccupancyNDTGridMapper3D::saveMap()
         return false;
     }
 
-    if (cslibs_ndt_3d::dynamic_maps::saveBinary(map_->getMap(), (path_ / boost::filesystem::path("map")).string())) {
+    if (cslibs_ndt_3d::dynamic_maps::saveBinary(map_->get().data(), (path_ / boost::filesystem::path("map")).string())) {
         std::cout << "[OccupancyNDTGridMapper3D '" << name_ << "']: Saved Map successfully." << std::endl;
         return true;
     }

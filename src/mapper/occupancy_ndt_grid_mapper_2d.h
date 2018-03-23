@@ -23,8 +23,6 @@ private:
     virtual inline bool saveMap() override;
 
     maps::OccupancyNDTGridMap2D::Ptr map_;
-    mutable std::mutex               map_mutex_;
-    mutable std::condition_variable  map_notify_;
 
     bool visibility_based_update_;
     cslibs_gridmaps::utility::InverseModel::Ptr ivm_;

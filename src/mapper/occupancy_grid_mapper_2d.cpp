@@ -15,10 +15,6 @@ namespace cslibs_mapping {
 namespace mapper {
 const OccupancyGridMapper2D::map_t::ConstPtr OccupancyGridMapper2D::getMap() const
 {
-    std::unique_lock<std::mutex> l(map_mutex_);
-    if (!map_)
-        map_notify_.wait(l);
-
     return map_;
 }
 
@@ -54,7 +50,9 @@ bool OccupancyGridMapper2D::uses(const data_t::ConstPtr &type)
 
 void OccupancyGridMapper2D::process(const data_t::ConstPtr &data)
 {
-    std::unique_lock<std::mutex> l(map_mutex_);
+    assert (uses(data));
+    assert (ivm_);
+
     const cslibs_plugins_data::types::Laserscan &laser_data = data->as<cslibs_plugins_data::types::Laserscan>();
 
     cslibs_math_2d::Transform2d o_T_d;
@@ -65,12 +63,14 @@ void OccupancyGridMapper2D::process(const data_t::ConstPtr &data)
                              tf_timeout_)) {
 
         const cslibs_plugins_data::types::Laserscan::rays_t rays = laser_data.getRays();
+        const auto handle = map_->get();
+        const cslibs_gridmaps::dynamic_maps::ProbabilityGridmap::Ptr map = handle.data();
 
         for (const auto &ray : rays) {
-            if (ray.valid()) {
+            if (ray.valid() && ray.point.isNormal()) {
                 const cslibs_math_2d::Point2d map_point = o_T_d * ray.point;
                 if (map_point.isNormal()) {
-                    auto it = map_->getMap()->getLineIterator(o_T_d.translation(), map_point);
+                    auto it = map->getLineIterator(o_T_d.translation(), map_point);
                     while(!it.done()) {
                         double l = it.distance2() > resolution2_ ?
                                     ivm_->updateFree(*it) : ivm_->updateOccupied(*it);
@@ -82,13 +82,10 @@ void OccupancyGridMapper2D::process(const data_t::ConstPtr &data)
             }
         }
     }
-
-    map_notify_.notify_all();
 }
 
 bool OccupancyGridMapper2D::saveMap()
 {
-    std::unique_lock<std::mutex> l(map_mutex_);
     if (!map_) {
         std::cout << "[OccupancyGridMapper2D '" << name_ << "']: No Map." << std::endl;
         return true;
@@ -107,38 +104,44 @@ bool OccupancyGridMapper2D::saveMap()
             std::cout << "[OccupancyGridMapper2D '" << name_ << "']: Could not open file '" << map_path_yaml << "'." << std::endl;
             return false;
         }
-        map_out_yaml << YAML::Node(map_->getMap());
+        map_out_yaml << YAML::Node(map_->get().data());
         map_out_yaml.close();
     }
 
-    const cslibs_gridmaps::dynamic_maps::ProbabilityGridmap::Ptr &map = map_->getMap();
-    cslibs_gridmaps::static_maps::ProbabilityGridmap::Ptr tmp(
-                new cslibs_gridmaps::static_maps::ProbabilityGridmap(map->getOrigin(),
-                                                                     map->getResolution(),
-                                                                     map->getHeight(),
-                                                                     map->getWidth(),
-                                                                     ivm_->getLogOddsPrior()));
-    const std::size_t chunk_step = map->getChunkSize();
-    const std::array<int, 2> min_chunk_index = map->getMinChunkIndex();
-    const std::array<int, 2> max_chunk_index = map->getMaxChunkIndex();
-    for(int i = min_chunk_index[1] ; i <= max_chunk_index[1] ; ++ i)
-        for(int j = min_chunk_index[0] ; j <= max_chunk_index[0] ; ++ j) {
-            cslibs_gridmaps::dynamic_maps::ProbabilityGridmap::chunk_t *chunk = map_->getMap()->getChunk({{j,i}});
-            if (chunk != nullptr) {
-                const std::size_t cx = static_cast<std::size_t>((j - min_chunk_index[0]) * static_cast<int>(chunk_step));
-                const std::size_t cy = static_cast<std::size_t>((i - min_chunk_index[1]) * static_cast<int>(chunk_step));
-                for (std::size_t k = 0 ; k < chunk_step ; ++ k)
-                    for (std::size_t l = 0 ; l < chunk_step ; ++ l)
-                        tmp->at(cx + l, cy + k) = chunk->at(l,k);
+    cslibs_gridmaps::static_maps::ProbabilityGridmap::Ptr tmp;
+    {
+        const auto handle = map_->get();
+        const cslibs_gridmaps::dynamic_maps::ProbabilityGridmap::Ptr &map = handle.data();
+        tmp.reset(new cslibs_gridmaps::static_maps::ProbabilityGridmap(map->getOrigin(),
+                                                                       map->getResolution(),
+                                                                       map->getHeight(),
+                                                                       map->getWidth(),
+                                                                       ivm_->getLogOddsPrior()));
+        const std::size_t chunk_step = map->getChunkSize();
+        const std::array<int, 2> min_chunk_index = map->getMinChunkIndex();
+        const std::array<int, 2> max_chunk_index = map->getMaxChunkIndex();
+        for(int i = min_chunk_index[1] ; i <= max_chunk_index[1] ; ++ i) {
+            for(int j = min_chunk_index[0] ; j <= max_chunk_index[0] ; ++ j) {
+                cslibs_gridmaps::dynamic_maps::ProbabilityGridmap::chunk_t *chunk = map->getChunk({{j,i}});
+                if (chunk != nullptr) {
+                    const std::size_t cx = static_cast<std::size_t>((j - min_chunk_index[0]) * static_cast<int>(chunk_step));
+                    const std::size_t cy = static_cast<std::size_t>((i - min_chunk_index[1]) * static_cast<int>(chunk_step));
+                    for (std::size_t k = 0 ; k < chunk_step ; ++ k)
+                        for (std::size_t l = 0 ; l < chunk_step ; ++ l)
+                            tmp->at(cx + l, cy + k) = chunk->at(l,k);
+                }
             }
         }
+    }
 
-    cslibs_gridmaps::static_maps::conversion::LogOdds::from(tmp, tmp);
-    if (cslibs_mapping::mapper::saveMap(path_, nullptr, tmp->getData(), tmp->getHeight(),
-                                        tmp->getWidth(), tmp->getOrigin(), tmp->getResolution())) {
+    if (tmp) {
+        cslibs_gridmaps::static_maps::conversion::LogOdds::from(tmp, tmp);
+        if (cslibs_mapping::mapper::saveMap(path_, nullptr, tmp->getData(), tmp->getHeight(),
+                                            tmp->getWidth(), tmp->getOrigin(), tmp->getResolution())) {
 
-        std::cout << "[OccupancyGridMapper2D '" << name_ << "']: Saved Map successfully." << std::endl;
-        return true;
+            std::cout << "[OccupancyGridMapper2D '" << name_ << "']: Saved Map successfully." << std::endl;
+            return true;
+        }
     }
     return false;
 }

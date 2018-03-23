@@ -23,9 +23,7 @@ private:
     virtual inline void process(const data_t::ConstPtr &data) override;
     virtual inline bool saveMap() override;
 
-    maps::OccupancyGridMap2D::Ptr   map_;
-    mutable std::mutex              map_mutex_;
-    mutable std::condition_variable map_notify_;
+    maps::OccupancyGridMap2D::Ptr map_;
 
     double                                      resolution2_;
     cslibs_gridmaps::utility::InverseModel::Ptr ivm_;
