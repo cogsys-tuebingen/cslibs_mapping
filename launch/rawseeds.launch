@@ -166,7 +166,7 @@
 	  <param name="mapper"		    value="occ_ndt_3d"/>
 	  <param name="rate"		    value="10.0"/>
 	  <param name="topic"		    value="/cslibs_mapping/occ_ndt_3d/map/pointcloud"/>
-	  <param name="occupancy_ndt"	    value="false"/>
+	  <param name="occupancy_ndt"	    value="true"/>
 	</group>
 
 	<group ns="occ_3d_octomap">
