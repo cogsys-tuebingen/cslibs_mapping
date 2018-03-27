@@ -23,8 +23,7 @@ void OctomapPublisher::publish(const map_t::ConstPtr &map, const ros::Time &time
 {
     if (map->isType<cslibs_mapping::maps::OccupancyGridMap3D>()) {
         using local_map_t = octomap::OcTree;
-        const auto handle = map->as<cslibs_mapping::maps::OccupancyGridMap3D>().get();
-        const std::shared_ptr<local_map_t> &m = handle.data();
+        const std::shared_ptr<local_map_t> &m = map->as<cslibs_mapping::maps::OccupancyGridMap3D>().get();
         if (m) {
             octomap_msgs::Octomap msg;
             octomap_msgs::fullMapToMsg(*m, msg);

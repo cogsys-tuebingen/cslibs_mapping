@@ -70,6 +70,7 @@ private:
 
         ros::Rate r(publish_rate_);
         while (ros::ok()) {
+            std::cout << "[Publisher '" << name_ << "']: Publishing ..." << std::endl;
             publish(mapper_->getMap(), ros::Time::now());
             r.sleep();
         }

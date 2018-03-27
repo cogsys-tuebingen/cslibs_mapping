@@ -36,7 +36,7 @@ public:
     inline ~Mapper()
     {
         stop_ = true;
-        cond_.notify_one();
+        notify_.notify_one();
 
         while (queue_.hasElements())
             queue_.pop();
@@ -59,7 +59,7 @@ public:
             if (this->uses(data)) {
                 lock_t l(mutex_);
                 queue_.emplace(data);
-                cond_.notify_one();
+                notify_.notify_one();
             }
         };
 
@@ -111,11 +111,16 @@ private:
         lock_t l(mutex_);
         while (!stop_) {
 
-            while (queue_.empty() && !stop_)
-                cond_.wait(l);
+            if (queue_.empty())
+                notify_.wait(l);
 
-            while (queue_.hasElements())
+            while (queue_.hasElements()) {
+                if (stop_)
+                    break;
+
                 process(queue_.pop());
+                std::cout << name_ + " = " << queue_.size() << std::endl;
+            }
         }
     }
 
@@ -131,7 +136,7 @@ private:
     data_queue_t    queue_;
 
     mutable mutex_t mutex_;
-    cond_t          cond_;
+    cond_t          notify_;
 
 protected:
     inline bool checkPath() const

@@ -53,10 +53,8 @@ void NDTGridMapper3D::process(const data_t::ConstPtr &data)
                              o_T_d_tmp,
                              tf_timeout_)) {
         cslibs_math_3d::Transform3d o_T_d = cslibs_math_ros::tf::conversion_3d::from(o_T_d_tmp);
-        if (const cslibs_math_3d::Pointcloud3d::Ptr cloud = cloud_data.getPoints()) {
-            const auto handle = map_->get();
-            handle.data()->insert(o_T_d, cloud);
-        }
+        if (const cslibs_math_3d::Pointcloud3d::Ptr cloud = cloud_data.getPoints())
+            map_->get()->insert(o_T_d, cloud);
     }
 }
 
@@ -73,7 +71,7 @@ bool NDTGridMapper3D::saveMap()
         return false;
     }
 
-    if (cslibs_ndt_3d::dynamic_maps::saveBinary(map_->get().data(), (path_ / boost::filesystem::path("map")).string())) {
+    if (cslibs_ndt_3d::dynamic_maps::saveBinary(map_->get(), (path_ / boost::filesystem::path("map")).string())) {
         std::cout << "[NDTGridMapper3D '" << name_ << "']: Saved Map successfully." << std::endl;
         return true;
     }

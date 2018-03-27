@@ -63,8 +63,7 @@ void OccupancyGridMapper2D::process(const data_t::ConstPtr &data)
                              tf_timeout_)) {
 
         const cslibs_plugins_data::types::Laserscan::rays_t rays = laser_data.getRays();
-        const auto handle = map_->get();
-        const cslibs_gridmaps::dynamic_maps::ProbabilityGridmap::Ptr map = handle.data();
+        const cslibs_gridmaps::dynamic_maps::ProbabilityGridmap::Ptr &map = map_->get();
 
         for (const auto &ray : rays) {
             if (ray.valid() && ray.point.isNormal()) {
@@ -104,14 +103,13 @@ bool OccupancyGridMapper2D::saveMap()
             std::cout << "[OccupancyGridMapper2D '" << name_ << "']: Could not open file '" << map_path_yaml << "'." << std::endl;
             return false;
         }
-        map_out_yaml << YAML::Node(map_->get().data());
+        map_out_yaml << YAML::Node(map_->get());
         map_out_yaml.close();
     }
 
     cslibs_gridmaps::static_maps::ProbabilityGridmap::Ptr tmp;
     {
-        const auto handle = map_->get();
-        const cslibs_gridmaps::dynamic_maps::ProbabilityGridmap::Ptr &map = handle.data();
+        const cslibs_gridmaps::dynamic_maps::ProbabilityGridmap::Ptr &map = map_->get();
         tmp.reset(new cslibs_gridmaps::static_maps::ProbabilityGridmap(map->getOrigin(),
                                                                        map->getResolution(),
                                                                        map->getHeight(),

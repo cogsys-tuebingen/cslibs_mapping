@@ -45,8 +45,7 @@ void DistributionsPublisher::publish(const map_t::ConstPtr &map, const ros::Time
 void DistributionsPublisher::publishNDTGridMap3D(const map_t::ConstPtr &map, const ros::Time &time)
 {
     using local_map_t = cslibs_ndt_3d::dynamic_maps::Gridmap;
-    const auto handle = map->as<cslibs_mapping::maps::NDTGridMap3D>().get();
-    const local_map_t::Ptr &m = handle.data();
+    const local_map_t::Ptr &m = map->as<cslibs_mapping::maps::NDTGridMap3D>().get();
     if (m) {
         cslibs_ndt_3d::DistributionArray::Ptr distributions;
         cslibs_ndt_3d::conversion::from(m, distributions, fast_);
@@ -66,8 +65,7 @@ void DistributionsPublisher::publishOccupancyNDTGridMap3D(const map_t::ConstPtr 
 {
     if (ivm_) {
         using local_map_t = cslibs_ndt_3d::dynamic_maps::OccupancyGridmap;
-        const auto handle = map->as<cslibs_mapping::maps::OccupancyNDTGridMap3D>().get();
-        const local_map_t::Ptr &m = handle.data();
+        const local_map_t::Ptr &m = map->as<cslibs_mapping::maps::OccupancyNDTGridMap3D>().get();
         if (m) {
             cslibs_ndt_3d::DistributionArray::Ptr distributions;
             cslibs_ndt_3d::conversion::from(m, distributions, ivm_, fast_);

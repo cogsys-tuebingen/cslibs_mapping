@@ -11,7 +11,7 @@ namespace cslibs_mapping {
 namespace mapper {
 const OccupancyGridMapper3D::map_t::ConstPtr OccupancyGridMapper3D::getMap() const
 {
-    map_->get().data()->updateInnerOccupancy();
+    map_->get()->updateInnerOccupancy();
     return map_;
 }
 
@@ -57,8 +57,7 @@ void OccupancyGridMapper3D::process(const data_t::ConstPtr &data)
             const octomath::Vector3 origin(o_T_d.translation()(0),
                                            o_T_d.translation()(1),
                                            o_T_d.translation()(2));
-            const auto handle = map_->get();
-            handle.data()->insertPointCloud(cloud, origin, -1, true, true);
+            map_->get()->insertPointCloud(cloud, origin, -1, true, true);
         }
     }
 }
@@ -83,7 +82,7 @@ bool OccupancyGridMapper3D::saveMap()
             std::cout << "[OccupancyGridMapper3D '" << name_ << "']: Could not open file '" << map_path_yaml << "'." << std::endl;
             return false;
         }
-        if (map_->get().data()->write(map_out_yaml)) {
+        if (map_->get()->write(map_out_yaml)) {
             map_out_yaml.close();
             return true;
         }

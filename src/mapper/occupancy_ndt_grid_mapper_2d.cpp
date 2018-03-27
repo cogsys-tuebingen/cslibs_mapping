@@ -83,10 +83,9 @@ void OccupancyNDTGridMapper2D::process(const data_t::ConstPtr &data)
             if (ray.valid() && ray.point.isNormal())
                 cloud->insert(ray.point);
 
-        const auto handle = map_->get();
         visibility_based_update_ ?
-                    handle.data()->insertVisible(o_T_d, cloud, ivm_, ivm_visibility_) :
-                    handle.data()->insert(o_T_d, cloud);
+                    map_->get()->insertVisible(o_T_d, cloud, ivm_, ivm_visibility_) :
+                    map_->get()->insert(o_T_d, cloud);
     }
 }
 
@@ -105,12 +104,12 @@ bool OccupancyNDTGridMapper2D::saveMap()
 
     cslibs_gridmaps::static_maps::ProbabilityGridmap::Ptr tmp;
     {
-        const auto handle = map_->get();
-        if (!cslibs_ndt_2d::dynamic_maps::saveBinary(handle.data(), (path_ / boost::filesystem::path("map")).string()))
+        const auto &map = map_->get();
+        if (!cslibs_ndt_2d::dynamic_maps::saveBinary(map, (path_ / boost::filesystem::path("map")).string()))
             return false;
 
         cslibs_gridmaps::utility::InverseModel::Ptr ivm(new cslibs_gridmaps::utility::InverseModel(0.65, 0.45, 0.196));
-        cslibs_ndt_2d::conversion::from(handle.data(), tmp, handle.data()->getResolution() / 10.0, ivm);
+        cslibs_ndt_2d::conversion::from(map, tmp, map->getResolution() / 10.0, ivm);
         if (!tmp)
             return false;
     }
