@@ -134,7 +134,7 @@
 	  <param name="sampling_resolution" value="0.025"/>
 	  <param name="occupancy"	    value="true"/>
 	</group>
-	
+<!--
 	<group ns="ndt_3d_distributions">
 	  <param name="class"		    value="cslibs_mapping::publisher::DistributionsPublisher"/>
 	  <param name="base_class"	    value="cslibs_mapping::publisher::Publisher"/>
@@ -151,7 +151,7 @@
 	  <param name="topic"		    value="/cslibs_mapping/occ_ndt_3d/map/distributions"/>
 	  <param name="occupancy_ndt"	    value="true"/>
 	</group>
-<!--
+-->
 	<group ns="ndt_3d_pointcloud">
 	  <param name="class"		    value="cslibs_mapping::publisher::PointcloudPublisher"/>
 	  <param name="base_class"	    value="cslibs_mapping::publisher::Publisher"/>
@@ -168,7 +168,7 @@
 	  <param name="topic"		    value="/cslibs_mapping/occ_ndt_3d/map/pointcloud"/>
 	  <param name="occupancy_ndt"	    value="true"/>
 	</group>
--->
+
 	<group ns="occ_3d_octomap">
 	  <param name="class"		    value="cslibs_mapping::publisher::OctomapPublisher"/>
 	  <param name="base_class"	    value="cslibs_mapping::publisher::Publisher"/>
