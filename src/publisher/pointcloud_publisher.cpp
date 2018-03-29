@@ -1,7 +1,7 @@
 #include "pointcloud_publisher.h"
 
-#include <cslibs_mapping/maps/ndt_grid_map_3d.h>
-#include <cslibs_mapping/maps/occupancy_ndt_grid_map_3d.h>
+#include <cslibs_mapping/maps/ndt_grid_map_3d.hpp>
+#include <cslibs_mapping/maps/occupancy_ndt_grid_map_3d.hpp>
 
 #include <cslibs_ndt_3d/conversion/pointcloud.hpp>
 

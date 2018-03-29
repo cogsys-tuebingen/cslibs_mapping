@@ -1,8 +1,8 @@
 #include "occupancy_grid_publisher.h"
 
-#include <cslibs_mapping/maps/ndt_grid_map_2d.h>
-#include <cslibs_mapping/maps/occupancy_ndt_grid_map_2d.h>
-#include <cslibs_mapping/maps/occupancy_grid_map_2d.h>
+#include <cslibs_mapping/maps/ndt_grid_map_2d.hpp>
+#include <cslibs_mapping/maps/occupancy_ndt_grid_map_2d.hpp>
+#include <cslibs_mapping/maps/occupancy_grid_map_2d.hpp>
 
 #include <cslibs_ndt_2d/conversion/probability_gridmap.hpp>
 

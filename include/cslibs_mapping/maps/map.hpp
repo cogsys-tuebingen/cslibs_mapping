@@ -1,5 +1,5 @@
-#ifndef CSLIBS_MAPPING_MAP_H
-#define CSLIBS_MAPPING_MAP_H
+#ifndef CSLIBS_MAPPING_MAP_HPP
+#define CSLIBS_MAPPING_MAP_HPP
 
 #include <eigen3/Eigen/Eigen>
 
@@ -42,4 +42,4 @@ private:
 }
 }
 
-#endif // CSLIBS_MAPPING_MAP_H
+#endif // CSLIBS_MAPPING_MAP_HPP

@@ -1,7 +1,7 @@
-#ifndef CSLIBS_MAPPING_OCCUPANCY_NDT_GRID_MAP_2D_H
-#define CSLIBS_MAPPING_OCCUPANCY_NDT_GRID_MAP_2D_H
+#ifndef CSLIBS_MAPPING_OCCUPANCY_NDT_GRID_MAP_2D_HPP
+#define CSLIBS_MAPPING_OCCUPANCY_NDT_GRID_MAP_2D_HPP
 
-#include <cslibs_mapping/maps/map.h>
+#include <cslibs_mapping/maps/map.hpp>
 #include <cslibs_ndt_2d/dynamic_maps/occupancy_gridmap.hpp>
 
 namespace cslibs_mapping {
@@ -14,8 +14,8 @@ public:
 
     using map_t    = cslibs_ndt_2d::dynamic_maps::OccupancyGridmap;
     template <typename ... args_t>
-    OccupancyNDTGridMap2D(const std::string &frame,
-                 const args_t &...args) :
+    inline OccupancyNDTGridMap2D(const std::string &frame,
+                                 const args_t &...args) :
         Map(frame),
         map_(new map_t(args...))
     {
@@ -32,4 +32,4 @@ private:
 }
 }
 
-#endif // CSLIBS_MAPPING_OCCUPANCY_NDT_GRID_MAP_2D_H
+#endif // CSLIBS_MAPPING_OCCUPANCY_NDT_GRID_MAP_2D_HPP

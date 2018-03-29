@@ -10,7 +10,7 @@
 #include <cslibs_utility/synchronized/synchronized_queue.hpp>
 #include <cslibs_math_ros/tf/tf_listener_2d.hpp>
 
-#include <cslibs_mapping/maps/map.h>
+#include <cslibs_mapping/maps/map.hpp>
 #include <cslibs_mapping/mapper/save_map.hpp>
 
 #include <condition_variable>

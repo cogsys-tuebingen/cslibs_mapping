@@ -1,7 +1,7 @@
-#ifndef CSLIBS_MAPPING_NDT_GRID_MAP_3D_H
-#define CSLIBS_MAPPING_NDT_GRID_MAP_3D_H
+#ifndef CSLIBS_MAPPING_NDT_GRID_MAP_3D_HPP
+#define CSLIBS_MAPPING_NDT_GRID_MAP_3D_HPP
 
-#include <cslibs_mapping/maps/map.h>
+#include <cslibs_mapping/maps/map.hpp>
 #include <cslibs_ndt_3d/dynamic_maps/gridmap.hpp>
 
 namespace cslibs_mapping {
@@ -14,8 +14,8 @@ public:
 
     using map_t    = cslibs_ndt_3d::dynamic_maps::Gridmap;
     template <typename ... args_t>
-    NDTGridMap3D(const std::string &frame,
-                 const args_t &...args) :
+    inline NDTGridMap3D(const std::string &frame,
+                        const args_t &...args) :
         Map(frame),
         map_(new map_t(args...))
     {
@@ -32,4 +32,4 @@ private:
 }
 }
 
-#endif // CSLIBS_MAPPING_NDT_GRID_MAP_3D_H
+#endif // CSLIBS_MAPPING_NDT_GRID_MAP_3D_HPP

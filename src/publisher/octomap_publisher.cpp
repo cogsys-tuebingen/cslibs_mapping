@@ -1,6 +1,6 @@
 #include "octomap_publisher.h"
 
-#include <cslibs_mapping/maps/occupancy_grid_map_3d.h>
+#include <cslibs_mapping/maps/occupancy_grid_map_3d.hpp>
 #include <octomap_msgs/Octomap.h>
 #include <octomap_msgs/conversions.h>
 

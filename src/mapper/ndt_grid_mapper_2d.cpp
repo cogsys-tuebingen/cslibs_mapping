@@ -78,11 +78,10 @@ bool NDTGridMapper2D::saveMap()
 
     cslibs_gridmaps::static_maps::ProbabilityGridmap::Ptr tmp;
     {
-        const auto &map = map_->get();
-        if (!cslibs_ndt_2d::dynamic_maps::saveBinary(map, (path_ / boost::filesystem::path("map")).string()))
+        if (!cslibs_ndt_2d::dynamic_maps::saveBinary(map_->get(), (path_ / boost::filesystem::path("map")).string()))
             return false;
 
-        cslibs_ndt_2d::conversion::from(map, tmp, map->getResolution() / 10.0);
+        cslibs_ndt_2d::conversion::from(map_->get(), tmp, map_->get()->getResolution() / 10.0);
         if (!tmp)
             return false;
     }

@@ -6,7 +6,7 @@
 #include <condition_variable>
 
 #include <cslibs_mapping/mapper/mapper.hpp>
-#include <cslibs_mapping/maps/occupancy_grid_map_3d.h>
+#include <cslibs_mapping/maps/occupancy_grid_map_3d.hpp>
 
 namespace cslibs_mapping {
 namespace mapper {

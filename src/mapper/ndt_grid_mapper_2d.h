@@ -6,7 +6,7 @@
 #include <condition_variable>
 
 #include <cslibs_mapping/mapper/mapper.hpp>
-#include <cslibs_mapping/maps/ndt_grid_map_2d.h>
+#include <cslibs_mapping/maps/ndt_grid_map_2d.hpp>
 
 namespace cslibs_mapping {
 namespace mapper {

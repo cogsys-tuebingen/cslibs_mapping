@@ -8,7 +8,7 @@
 #include <cslibs_gridmaps/utility/inverse_model.hpp>
 
 #include <cslibs_mapping/mapper/mapper.hpp>
-#include <cslibs_mapping/maps/occupancy_grid_map_2d.h>
+#include <cslibs_mapping/maps/occupancy_grid_map_2d.hpp>
 
 namespace cslibs_mapping {
 namespace mapper {
