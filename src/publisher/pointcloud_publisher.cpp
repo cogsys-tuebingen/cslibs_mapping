@@ -23,7 +23,6 @@ void PointcloudPublisher::doAdvertise(ros::NodeHandle &nh, const std::string &to
 {
     auto param_name = [this](const std::string &name){return name_ + "/" + name;};
 
-    fast_ = nh.param<bool>(param_name("fast"), false);
     const bool occupancy_ndt = nh.param<bool>(param_name("occupancy_ndt"), false);
     if (occupancy_ndt) {
         const double prob_prior    = nh.param(param_name("prob_prior"),    0.5);
@@ -53,7 +52,7 @@ void PointcloudPublisher::publishNDTGridMap3D(const map_t::ConstPtr &map, const 
     const local_map_t::Ptr &m = map->as<cslibs_mapping::maps::NDTGridMap3D>().get();
     if (m) {
         pcl::PointCloud<pcl::PointXYZI>::Ptr cloud;
-        cslibs_ndt_3d::conversion::from(m, cloud, fast_);
+        cslibs_ndt_3d::conversion::from(m, cloud);
 
         if (cloud) {
             sensor_msgs::PointCloud2 msg;
@@ -76,7 +75,7 @@ void PointcloudPublisher::publishOccupancyNDTGridMap3D(const map_t::ConstPtr &ma
         const local_map_t::Ptr &m = map->as<cslibs_mapping::maps::OccupancyNDTGridMap3D>().get();
         if (m) {
             pcl::PointCloud<pcl::PointXYZI>::Ptr cloud;
-            cslibs_ndt_3d::conversion::from(m, cloud, ivm_, fast_, occ_threshold_);
+            cslibs_ndt_3d::conversion::from(m, cloud, ivm_, occ_threshold_);
 
             if (cloud) {
                 sensor_msgs::PointCloud2 msg;

@@ -20,7 +20,6 @@ void DistributionsPublisher::doAdvertise(ros::NodeHandle &nh, const std::string 
 {
     auto param_name = [this](const std::string &name){return name_ + "/" + name;};
 
-    fast_ = nh.param<bool>(param_name("fast"), false);
     const bool occupancy_ndt = nh.param<bool>(param_name("occupancy_ndt"), false);
     if (occupancy_ndt) {
         const double prob_prior    = nh.param(param_name("prob_prior"),    0.5);
@@ -48,7 +47,7 @@ void DistributionsPublisher::publishNDTGridMap3D(const map_t::ConstPtr &map, con
     const local_map_t::Ptr &m  = map->as<cslibs_mapping::maps::NDTGridMap3D>().get();
     if (m) {
         cslibs_ndt_3d::DistributionArray::Ptr distributions;
-        cslibs_ndt_3d::conversion::from(m, distributions, fast_);
+        cslibs_ndt_3d::conversion::from(m, distributions);
 
         if (distributions) {
             distributions->header.stamp    = time;
@@ -68,7 +67,7 @@ void DistributionsPublisher::publishOccupancyNDTGridMap3D(const map_t::ConstPtr 
         const local_map_t::Ptr &m  = map->as<cslibs_mapping::maps::OccupancyNDTGridMap3D>().get();
         if (m) {
             cslibs_ndt_3d::DistributionArray::Ptr distributions;
-            cslibs_ndt_3d::conversion::from(m, distributions, ivm_, fast_);
+            cslibs_ndt_3d::conversion::from(m, distributions, ivm_);
 
             if (distributions) {
                 distributions->header.stamp    = time;
