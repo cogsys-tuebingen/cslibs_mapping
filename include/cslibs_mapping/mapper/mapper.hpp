@@ -119,7 +119,6 @@ private:
                     break;
 
                 process(queue_.pop());
-                std::cout << name_ + " = " << queue_.size() << std::endl;
             }
         }
     }

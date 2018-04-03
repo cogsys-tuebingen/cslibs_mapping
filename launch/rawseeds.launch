@@ -178,7 +178,7 @@
 	</group>
     </group>
 
-    <node name="rviz" pkg="rviz" type="rviz" required="true"/>
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find cslibs_mapping)/config/rawseeds.rviz" required="true"/>
 <!--    <node pkg="rosbag" type="play" name="rosbag" args="$(arg bag_args) $(arg bag_root)/$(arg bag_file_0) $(arg bag_root)/$(arg bag_file_1)" required="true"/>-->
 
     <node name="cslibs_mapping" pkg="cslibs_mapping" type="cslibs_mapping_node" output="screen" required="true" clear_params="true"/>
