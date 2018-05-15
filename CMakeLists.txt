@@ -21,6 +21,7 @@ find_package(catkin REQUIRED COMPONENTS
     cslibs_utility
     cslibs_math_ros
     message_generation
+    std_msgs
     pluginlib
 )
 
@@ -32,6 +33,11 @@ find_package(yaml-cpp REQUIRED)
 add_service_files(
     FILES
     SaveMap.srv
+)
+
+generate_messages(
+  DEPENDENCIES
+  std_msgs
 )
 
 catkin_package(
