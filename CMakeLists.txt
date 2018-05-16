@@ -91,6 +91,7 @@ if(PCL_FOUND)
             ${catkin_LIBRARIES}
             ${PCL_LIBRARIES}
             ${OCTOMAP_LIBRARIES}
+            yaml-cpp
         )
     else()
         #pcl
@@ -107,6 +108,7 @@ if(PCL_FOUND)
         target_link_libraries(${PROJECT_NAME}
             ${catkin_LIBRARIES}
             ${PCL_LIBRARIES}
+            yaml-cpp
         )
     endif()
     link_directories(${PCL_LIBRARY_DIRS})
@@ -120,6 +122,7 @@ else()
     )
     target_link_libraries(${PROJECT_NAME}
         ${catkin_LIBRARIES}
+        yaml-cpp
     )
 endif()
 
