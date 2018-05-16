@@ -7,9 +7,7 @@ include(cmake/cslibs_mapping_enable_c++11.cmake)
 include(cmake/cslibs_mapping_extras.cmake)
 include(cmake/cslibs_mapping_show_headers.cmake)
 include(cmake/cslibs_mapping_add_unit_test_gtest.cmake)
-
-# disable Eigen alignment
-add_definitions(-DEIGEN_DONT_VECTORIZE)
+include(cmake/cslibs_mapping_eigen_cpu_flags.cmake)
 
 find_package(catkin REQUIRED COMPONENTS
     cslibs_plugins
