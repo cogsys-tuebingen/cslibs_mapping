@@ -5,6 +5,7 @@
 #include <cslibs_math_ros/tf/conversion_3d.hpp>
 
 #include <cslibs_ndt_3d/serialization/dynamic_maps/gridmap.hpp>
+#include <cslibs_time/time.hpp>
 
 #include <class_loader/class_loader_register_macro.h>
 CLASS_LOADER_REGISTER_CLASS(cslibs_mapping::mapper::NDTGridMapper3D, cslibs_mapping::mapper::Mapper)
@@ -53,8 +54,17 @@ void NDTGridMapper3D::process(const data_t::ConstPtr &data)
                              o_T_d_tmp,
                              tf_timeout_)) {
         cslibs_math_3d::Transform3d o_T_d = cslibs_math_ros::tf::conversion_3d::from(o_T_d_tmp);
-        if (const cslibs_math_3d::Pointcloud3d::Ptr cloud = cloud_data.getPoints())
+        if (const cslibs_math_3d::Pointcloud3d::Ptr cloud = cloud_data.getPoints()) {
+            const cslibs_time::Time start = cslibs_time::Time::now();
             map_->get()->insert(o_T_d, cloud);
+            const double time = (cslibs_time::Time::now() - start).milliseconds();
+            stats_ += time;
+            stats_print_ += "[NDTGridMapper3D]: N | current | mean | std | mem = " +
+                    std::to_string(stats_.getN()) + " | " + std::to_string(time)
+                    + " | " + std::to_string(stats_.getMean())
+                    + " | " + std::to_string(stats_.getStandardDeviation())
+                    + " | " + std::to_string(map_->get()->getByteSize()) + "\n";
+        }
     }
 }
 
@@ -70,6 +80,15 @@ bool NDTGridMapper3D::saveMap()
         std::cout << "[NDTGridMapper3D '" << name_ << "']: '" << path_ << "' is not a directory." << std::endl;
         return false;
     }
+
+    using path_t = boost::filesystem::path;
+    path_t path_root(path_);
+    if (!cslibs_ndt::common::serialization::create_directory(path_root))
+        return false;
+
+    std::ofstream out((path_root / path_t("stats")).string(), std::fstream::trunc);
+    out << stats_print_ << std::endl;
+    out.close();
 
     if (cslibs_ndt_3d::dynamic_maps::saveBinary(map_->get(), (path_ / boost::filesystem::path("map")).string())) {
         std::cout << "[NDTGridMapper3D '" << name_ << "']: Saved Map successfully." << std::endl;

@@ -26,6 +26,7 @@
   <build_depend>message_generation</build_depend>
   <depend>yaml-cpp</depend>
   <depend>pluginlib</depend>
+  <depend>ndt_map</depend>
 
   <export>
     <cslibs_mapping plugin="${prefix}/plugins.xml"/>

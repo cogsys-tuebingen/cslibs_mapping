@@ -3,6 +3,8 @@
 #include <cslibs_plugins_data/types/pointcloud.hpp>
 #include <cslibs_math_3d/linear/pointcloud.hpp>
 #include <cslibs_math_ros/tf/conversion_3d.hpp>
+#include <cslibs_time/time.hpp>
+#include <cslibs_ndt/serialization/filesystem.hpp>
 
 #include <class_loader/class_loader_register_macro.h>
 CLASS_LOADER_REGISTER_CLASS(cslibs_mapping::mapper::OccupancyGridMapper3D, cslibs_mapping::mapper::Mapper)
@@ -57,7 +59,16 @@ void OccupancyGridMapper3D::process(const data_t::ConstPtr &data)
             const octomath::Vector3 origin(o_T_d.translation()(0),
                                            o_T_d.translation()(1),
                                            o_T_d.translation()(2));
+
+            const cslibs_time::Time start = cslibs_time::Time::now();
             map_->get()->insertPointCloud(cloud, origin, -1, true, true);
+            const double time = (cslibs_time::Time::now() - start).milliseconds();
+            stats_ += time;
+            stats_print_ += "[NDTGridMapper3D]: N | current | mean | std | mem = " +
+                    std::to_string(stats_.getN()) + " | " + std::to_string(time)
+                    + " | " + std::to_string(stats_.getMean())
+                    + " | " + std::to_string(stats_.getStandardDeviation())
+                    + " | " + std::to_string(map_->get()->memoryUsage()) + "\n";
         }
     }
 }
@@ -75,7 +86,16 @@ bool OccupancyGridMapper3D::saveMap()
         return false;
     }
 
-    std::string map_path_yaml = (path_ / boost::filesystem::path("map.yaml")).string();
+    using path_t = boost::filesystem::path;
+    path_t path_root(path_);
+    if (!cslibs_ndt::common::serialization::create_directory(path_root))
+        return false;
+
+    std::ofstream out((path_root / path_t("stats")).string(), std::fstream::trunc);
+    out << stats_print_ << std::endl;
+    out.close();
+
+    std::string map_path_yaml = (path_ / boost::filesystem::path("map.ot")).string();
     {
         std::ofstream map_out_yaml(map_path_yaml);
         if (!map_out_yaml.is_open()) {
