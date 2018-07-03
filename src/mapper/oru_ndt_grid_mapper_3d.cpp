@@ -32,9 +32,6 @@ bool OruNDTGridMapper3D::setupMap(ros::NodeHandle &nh)
     const double ndt_oru_cen_y  = nh.param<double>(param_name("ndt_oru_cen_y"),  0.0);
     const double ndt_oru_cen_z  = nh.param<double>(param_name("ndt_oru_cen_z"),  0.0);
 
-    if (origin.size() != 6)
-        return false;
-
     if (ndt_oru_size_x > 1e-3 && ndt_oru_size_y > 1e-3 && ndt_oru_size_z > 1e-3)
         map_.reset(new maps::OruNDTGridMap3D(
                        map_frame_,
@@ -65,10 +62,10 @@ void OruNDTGridMapper3D::process(const data_t::ConstPtr &data)
                              ros::Time(cloud_data.getTimeFrame().end.seconds()),
                              o_T_d_tmp,
                              tf_timeout_)) {
-        cslibs_math_3d::Transform3d o_T_d = cslibs_math_ros::tf::conversion_3d::from(o_T_d_tmp);
+        cslibs_math_3d::Transform3d origin = cslibs_math_ros::tf::conversion_3d::from(o_T_d_tmp);
         if (const cslibs_math_3d::Pointcloud3d::Ptr cloud = cloud_data.getPoints()) {
             pcl::PointCloud<pcl::PointXYZ> pc, pcc;
-            for (cslibs_math_3d::Point3d &p : cloud->getPoints()) {
+            for (const cslibs_math_3d::Point3d &p : cloud->getPoints()) {
                 pcl::PointXYZ pt(p(0), p(1), p(2));
                 pc.push_back(pt);
             }
@@ -76,8 +73,8 @@ void OruNDTGridMapper3D::process(const data_t::ConstPtr &data)
             Eigen::Affine3f transform = Eigen::Affine3f::Identity();
             for (int i = 0 ; i < 3 ; ++ i)
                 for (int j = 0 ; j < 3 ; ++ j)
-                    transform.matrix()(i, j) = o_T_d.getBasis()[i][j];
-            transform.translation() << o_T_d.getOrigin().x(), o_T_d.getOrigin().y(), o_T_d.getOrigin().z();
+                    transform.matrix()(i, j) = o_T_d_tmp.getBasis()[i][j];
+            transform.translation() << o_T_d_tmp.getOrigin().x(), o_T_d_tmp.getOrigin().y(), o_T_d_tmp.getOrigin().z();
             pcl::transformPointCloud(pc, pcc, transform);
             std::vector<int> indices;
             pcl::removeNaNFromPointCloud(pcc, pcc, indices);
