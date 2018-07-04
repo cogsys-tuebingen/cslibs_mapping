@@ -28,7 +28,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: Laser SICK Rear
+    SyncSource: ""
 Visualization Manager:
   Class: ""
   Displays:
@@ -55,31 +55,9 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: false
-        base_link:
-          Value: true
-        frontal_cam:
-          Value: true
-        gps_antenna:
-          Value: true
-        hokuyo_front:
-          Value: true
-        hokuyo_rear:
-          Value: true
-        imu:
-          Value: true
         odom:
           Value: true
-        omni_cam:
-          Value: true
-        sick_front:
-          Value: true
-        sick_rear:
-          Value: true
-        svs_l:
-          Value: true
-        svs_r:
-          Value: true
-        svs_t:
+        points:
           Value: true
       Marker Scale: 1
       Name: TF
@@ -88,29 +66,8 @@ Visualization Manager:
       Show Names: true
       Tree:
         odom:
-          base_link:
-            frontal_cam:
-              {}
-            gps_antenna:
-              {}
-            hokuyo_front:
-              {}
-            hokuyo_rear:
-              {}
-            imu:
-              {}
-            omni_cam:
-              {}
-            sick_front:
-              {}
-            sick_rear:
-              {}
-            svs_l:
-              {}
-            svs_r:
-              {}
-            svs_t:
-              {}
+          points:
+            {}
       Update Interval: 0
       Value: true
     - Alpha: 1
@@ -408,25 +365,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 121.003098
+      Distance: 68.660408
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 2.99999475
-        Y: -14.8344851
-        Z: 0.00144859136
+        X: 0
+        Y: 0
+        Z: 0
       Focal Shape Fixed Size: false
       Focal Shape Size: 0.0500000007
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 1.56979632
+      Pitch: 0.500398457
       Target Frame: odom
       Value: Orbit (rviz)
-      Yaw: 0.295398146
+      Yaw: 2.68040013
     Saved: ~
 Window Geometry:
   Displays:

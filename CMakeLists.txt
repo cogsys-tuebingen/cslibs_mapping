@@ -48,6 +48,7 @@ catkin_package(
                cslibs_mapping_extras.cmake
                cslibs_mapping_show_headers.cmake
                cslibs_mapping_add_unit_test_gtest.cmake
+               cslibs_mapping_eigen_cpu_flags.cmake
 )
 
 include_directories(
@@ -87,7 +88,8 @@ if(PCL_FOUND)
                 src/mapper/occupancy_grid_mapper_3d.cpp
                 src/mapper/occupancy_ndt_grid_mapper_2d.cpp
                 src/mapper/occupancy_ndt_grid_mapper_3d.cpp
-                src/mapper/oru_ndt_grid_mapper_3d.cpp
+                src/mapper/oru_ndt_om_grid_mapper_3d.cpp
+                src/mapper/oru_ndt_omfg_grid_mapper_3d.cpp
                 src/publisher/distributions_publisher.cpp
                 src/publisher/occupancy_grid_publisher.cpp
                 src/publisher/octomap_publisher.cpp
@@ -130,7 +132,8 @@ if(PCL_FOUND)
                 src/mapper/occupancy_grid_mapper_2d.cpp
                 src/mapper/occupancy_ndt_grid_mapper_2d.cpp
                 src/mapper/occupancy_ndt_grid_mapper_3d.cpp
-                src/mapper/oru_ndt_grid_mapper_3d.cpp
+                src/mapper/oru_ndt_om_grid_mapper_3d.cpp
+                src/mapper/oru_ndt_omfg_grid_mapper_3d.cpp
                 src/publisher/distributions_publisher.cpp
                 src/publisher/occupancy_grid_publisher.cpp
                 src/publisher/pointcloud_publisher.cpp
@@ -161,6 +164,7 @@ if(PCL_FOUND)
         endif()
     endif()
     link_directories(${PCL_LIBRARY_DIRS})
+    add_definitions(${PCL_DEFINITIONS})
 else()
     #no pcl and no octomap or ndt_map
     add_library(${PROJECT_NAME}
@@ -185,7 +189,6 @@ target_link_libraries(${PROJECT_NAME}_node
     ${catkin_LIBRARIES}
      yaml-cpp
 )
-
 
 install(FILES plugins.xml DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 

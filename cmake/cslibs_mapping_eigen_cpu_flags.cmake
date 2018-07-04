@@ -53,8 +53,9 @@ string(REGEX REPLACE ".*vendor_id[ \t]*:[ \t]+([a-zA-Z0-9_-]+).*" "\\1" _vendor_
 string(REGEX REPLACE ".*cpu family[ \t]*:[ \t]+([a-zA-Z0-9_-]+).*" "\\1" _cpu_family "${_cpuinfo}")
 string(REGEX REPLACE ".*model[ \t]*:[ \t]+([a-zA-Z0-9_-]+).*" "\\1" _cpu_model "${_cpuinfo}")
 string(REGEX REPLACE ".*flags[ \t]*:[ \t]+([^\n]+).*" "\\1" _cpu_flags "${_cpuinfo}")
-if(_vendor_id STREQUAL "GenuineIntel")
-    if(_cpu_family EQUAL 6)
+
+if(${_vendor_id} STREQUAL "GenuineIntel")
+    if(${_cpu_family} EQUAL 6)
         # taken from the Intel ORM
         # http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
         # CPUID Signature Values of Of Recent Intel Microarchitectures
@@ -98,9 +99,13 @@ if(_vendor_id STREQUAL "GenuineIntel")
         # 3C | Broadwell (likely a bug in the SDE)
         # 3C | Haswell        
 
-        if(_cpu_model EQUAL 60)
+        if(${_cpu_model} EQUAL 60)
             message("[cslibs_mapping]: Found Xeon E3 v3, disabling eigen vectorization.")
-            add_definitions(-DEIGEN_DONT_VECTORIZE)
+            string(REPLACE "-march=native" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+            string(REPLACE "-mavx" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+            add_definitions(-DEIGEN_DONT_ALIGN -fvisibility-inlines-hidden)
+#            add_definitions(-DEIGEN_DONT_VECTORIZE -DEIGEN_DONT_ALIGN)
+            add_definitions(-msse -mfpmath=sse)
         endif()
     endif()
 endif()

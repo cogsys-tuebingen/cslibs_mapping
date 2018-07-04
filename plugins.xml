@@ -18,7 +18,10 @@
   <class type="cslibs_mapping::mapper::OccupancyNDTGridMapper3D" base_class_type="cslibs_mapping::mapper::Mapper">
     <description> </description>
   </class>
-  <class type="cslibs_mapping::mapper::OruNDTGridMapper3D" base_class_type="cslibs_mapping::mapper::Mapper">
+  <class type="cslibs_mapping::mapper::OruNDTOMFGGridMapper3D" base_class_type="cslibs_mapping::mapper::Mapper">
+    <description> </description>
+  </class>
+  <class type="cslibs_mapping::mapper::OruNDTOMGridMapper3D" base_class_type="cslibs_mapping::mapper::Mapper">
     <description> </description>
   </class>
 

@@ -1,5 +1,7 @@
 #include "pointcloud_publisher.h"
 
+#include <pcl/pcl_config.h>
+
 #include <cslibs_mapping/maps/ndt_grid_map_3d.hpp>
 #include <cslibs_mapping/maps/occupancy_ndt_grid_map_3d.hpp>
 
@@ -48,6 +50,7 @@ void PointcloudPublisher::publish(const map_t::ConstPtr &map, const ros::Time &t
 
 void PointcloudPublisher::publishNDTGridMap3D(const map_t::ConstPtr &map, const ros::Time &time)
 {
+    return;
     using local_map_t = cslibs_ndt_3d::dynamic_maps::Gridmap;
     const local_map_t::Ptr &m = map->as<cslibs_mapping::maps::NDTGridMap3D>().get();
     if (m) {

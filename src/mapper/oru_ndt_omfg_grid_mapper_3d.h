@@ -1,5 +1,5 @@
-#ifndef CSLIBS_MAPPING_ORU_NDT_GRID_MAPPER_3D_H
-#define CSLIBS_MAPPING_ORU_NDT_GRID_MAPPER_3D_H
+#ifndef CSLIBS_MAPPING_ORU_NDT_OMFG_GRID_MAPPER_3D_H
+#define CSLIBS_MAPPING_ORU_NDT_OMFG_GRID_MAPPER_3D_H
 
 #include <mutex>
 #include <atomic>
@@ -12,7 +12,7 @@
 
 namespace cslibs_mapping {
 namespace mapper {
-class OruNDTGridMapper3D : public Mapper
+class OruNDTOMFGGridMapper3D : public Mapper
 {
 public:
     virtual const inline map_t::ConstPtr getMap() const override;
@@ -27,8 +27,12 @@ private:
 
     cslibs_math::statistics::Distribution<1,6> stats_;
     std::string stats_print_;
+
+    double ndt_oru_local_size_x_;
+    double ndt_oru_local_size_y_;
+    double ndt_oru_local_size_z_;
 };
 }
 }
 
-#endif // CSLIBS_MAPPING_ORU_NDT_GRID_MAPPER_3D_H
+#endif // CSLIBS_MAPPING_ORU_NDT_OMFG_GRID_MAPPER_3D_H
