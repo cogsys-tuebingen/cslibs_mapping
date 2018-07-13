@@ -62,7 +62,7 @@ void OruNDTOMFGGridMapper3D::process(const data_t::ConstPtr &data)
     tf::Transform o_T_d_tmp;
     if (tf_->lookupTransform(map_frame_,
                              cloud_data.getFrame(),
-                             ros::Time(cloud_data.getTimeFrame().end.seconds()),
+                             ros::Time(cloud_data.getTimeFrame().start.seconds()),
                              o_T_d_tmp,
                              tf_timeout_)) {
         cslibs_math_3d::Transform3d origin = cslibs_math_ros::tf::conversion_3d::from(o_T_d_tmp);

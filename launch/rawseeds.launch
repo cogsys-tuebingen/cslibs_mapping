@@ -17,7 +17,7 @@
 	  <param name="class"                    value="cslibs_plugins_data::LaserProvider2D"/>
 	  <param name="base_class"               value="cslibs_plugins_data::DataProvider2D"/>
 	  <param name="topic"                    value="/sick/front"/>
-	  <param name="undistortion"             value="false"/>
+	  <param name="undistortion"             value="true"/>
 	  <param name="undistortion_fixed_frame" value="/odom"/>
 	  <param name="undistortion_tf_timeout"  value="0.1"/>
 	  <param name="range_max"                value="80.0"/>
@@ -29,7 +29,7 @@
           <param name="class"                    value="cslibs_plugins_data::LaserProvider2D"/>
           <param name="base_class"               value="cslibs_plugins_data::DataProvider2D"/>
           <param name="topic"                    value="/sick/rear"/>
-          <param name="undistortion"             value="false"/>
+          <param name="undistortion"             value="true"/>
           <param name="undistortion_fixed_frame" value="/odom"/>
           <param name="undistortion_tf_timeout"  value="0.1"/>
           <param name="range_max"                value="80.0"/>
@@ -54,7 +54,7 @@
                 ["front_laser", "rear_laser"]
           </rosparam>
 	  <param name="map_frame"	 value="/odom"/>
-	  <param name="resolution" 	 value="1.0"/>
+	  <param name="resolution" 	 value="0.4"/>
 	</group>
 	<group ns="occ_ndt_2d">
           <param name="class"      	 value="cslibs_mapping::mapper::OccupancyNDTGridMapper2D"/>
@@ -63,9 +63,9 @@
                 ["front_laser", "rear_laser"]
           </rosparam>
 	  <param name="map_frame"	 value="/odom"/>
-	  <param name="resolution" 	 value="1.0"/>
+	  <param name="resolution" 	 value="0.4"/>
 	</group>
-	<group ns="occ_2d">
+<!--	<group ns="occ_2d">
           <param name="class"      	 value="cslibs_mapping::mapper::OccupancyGridMapper2D"/>
           <param name="base_class" 	 value="cslibs_mapping::mapper::Mapper"/>  	
           <rosparam param="data_providers">
@@ -74,7 +74,7 @@
 	  <param name="map_frame"	 value="/odom"/>
 	  <param name="resolution" 	 value="0.05"/>
 	  <param name="chunk_resolution" value="5.0"/>
-	</group>
+	</group>-->
 
 	<!-- 3D mappers -->
 	<group ns="ndt_3d">
@@ -84,7 +84,7 @@
                 ["stereo"]
           </rosparam>
 	  <param name="map_frame"	 value="/odom"/>
-	  <param name="resolution" 	 value="1.0"/>
+	  <param name="resolution" 	 value="0.4"/>
 	</group>
 	<group ns="occ_ndt_3d">
           <param name="class"      	 value="cslibs_mapping::mapper::OccupancyNDTGridMapper3D"/>
@@ -93,9 +93,19 @@
                 ["stereo"]
           </rosparam>
 	  <param name="map_frame"	 value="/odom"/>
-	  <param name="resolution" 	 value="1.0"/>
+	  <param name="resolution" 	 value="0.4"/>
 	</group>
-	<group ns="occ_3d">
+	<group ns="occ_ndt_3d_visibility">
+          <param name="class"      	 value="cslibs_mapping::mapper::OccupancyNDTGridMapper3D"/>
+          <param name="base_class" 	 value="cslibs_mapping::mapper::Mapper"/>	
+          <rosparam param="data_providers">
+                ["stereo"]
+          </rosparam>
+	  <param name="map_frame"	 value="/odom"/>
+	  <param name="resolution" 	 value="0.4"/>
+	  <param name="visibility_based_update" value="true"/>
+	</group>
+<!--	<group ns="occ_3d">
           <param name="class"      	 value="cslibs_mapping::mapper::OccupancyGridMapper3D"/>
           <param name="base_class" 	 value="cslibs_mapping::mapper::Mapper"/>	
           <rosparam param="data_providers">
@@ -103,7 +113,7 @@
           </rosparam>
 	  <param name="map_frame"	 value="/odom"/>
 	  <param name="resolution" 	 value="0.05"/>
-	</group>
+	</group>-->
 
 
 	<!-- publishers -->
@@ -125,7 +135,7 @@
 	  <param name="sampling_resolution" value="0.025"/>
 	  <param name="occupancy"	    value="true"/>
 	</group>
-	<group ns="occ_2d_occ_grid">
+<!--	<group ns="occ_2d_occ_grid">
 	  <param name="class"		    value="cslibs_mapping::publisher::OccupancyGridPublisher"/>
 	  <param name="base_class"	    value="cslibs_mapping::publisher::Publisher"/>
 	  <param name="mapper"		    value="occ_2d"/>
@@ -133,8 +143,8 @@
 	  <param name="topic"		    value="/cslibs_mapping/occ_2d/map"/>
 	  <param name="sampling_resolution" value="0.025"/>
 	  <param name="occupancy"	    value="true"/>
-	</group>
-
+	</group>-->
+<!--
 	<group ns="ndt_3d_distributions">
 	  <param name="class"		    value="cslibs_mapping::publisher::DistributionsPublisher"/>
 	  <param name="base_class"	    value="cslibs_mapping::publisher::Publisher"/>
@@ -151,7 +161,7 @@
 	  <param name="topic"		    value="/cslibs_mapping/occ_ndt_3d/map/distributions"/>
 	  <param name="occupancy_ndt"	    value="true"/>
 	</group>
-
+-->
 	<group ns="ndt_3d_pointcloud">
 	  <param name="class"		    value="cslibs_mapping::publisher::PointcloudPublisher"/>
 	  <param name="base_class"	    value="cslibs_mapping::publisher::Publisher"/>
@@ -168,14 +178,14 @@
 	  <param name="topic"		    value="/cslibs_mapping/occ_ndt_3d/map/pointcloud"/>
 	  <param name="occupancy_ndt"	    value="true"/>
 	</group>
-
+<!--
 	<group ns="occ_3d_octomap">
 	  <param name="class"		    value="cslibs_mapping::publisher::OctomapPublisher"/>
 	  <param name="base_class"	    value="cslibs_mapping::publisher::Publisher"/>
 	  <param name="mapper"		    value="occ_3d"/>
 	  <param name="rate"		    value="10.0"/>
 	  <param name="topic"		    value="/cslibs_mapping/occ_3d/map"/>
-	</group>
+	</group>-->
     </group>
 
     <node name="rviz" pkg="rviz" type="rviz" args="-d $(find cslibs_mapping)/config/rawseeds.rviz" required="true"/>

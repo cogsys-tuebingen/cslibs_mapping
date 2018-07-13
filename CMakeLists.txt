@@ -69,6 +69,7 @@ if(PCL_FOUND)
         )
     endif()
     if(ndt_map_FOUND)
+        add_definitions("-DEIGEN_MAX_ALIGN_BYTES=16")
         include_directories(
             ${ndt_map_INCLUDE_DIRS}
         )

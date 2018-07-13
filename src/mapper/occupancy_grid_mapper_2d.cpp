@@ -53,17 +53,17 @@ void OccupancyGridMapper2D::process(const data_t::ConstPtr &data)
     assert (uses(data));
     assert (ivm_);
 
-    const cslibs_plugins_data::types::Laserscan &laser_data = data->as<cslibs_plugins_data::types::Laserscan>();
+    const cslibs_plugins_data::types::Laserscan laser_data = data->as<cslibs_plugins_data::types::Laserscan>();
 
     cslibs_math_2d::Transform2d o_T_d;
     if (tf_->lookupTransform(map_frame_,
                              laser_data.getFrame(),
-                             ros::Time(laser_data.getTimeFrame().end.seconds()),
+                             ros::Time(laser_data.getTimeFrame().start.seconds()),
                              o_T_d,
                              tf_timeout_)) {
 
         const cslibs_plugins_data::types::Laserscan::rays_t rays = laser_data.getRays();
-        const cslibs_gridmaps::dynamic_maps::ProbabilityGridmap::Ptr &map = map_->get();
+        const cslibs_gridmaps::dynamic_maps::ProbabilityGridmap::Ptr map = map_->get();
 
         for (const auto &ray : rays) {
             if (ray.valid() && ray.point.isNormal()) {

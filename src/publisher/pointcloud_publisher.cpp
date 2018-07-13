@@ -52,7 +52,7 @@ void PointcloudPublisher::publishNDTGridMap3D(const map_t::ConstPtr &map, const 
 {
     return;
     using local_map_t = cslibs_ndt_3d::dynamic_maps::Gridmap;
-    const local_map_t::Ptr &m = map->as<cslibs_mapping::maps::NDTGridMap3D>().get();
+    const local_map_t::Ptr m = map->as<cslibs_mapping::maps::NDTGridMap3D>().get();
     if (m) {
         pcl::PointCloud<pcl::PointXYZI>::Ptr cloud;
         cslibs_ndt_3d::conversion::from(m, cloud);
@@ -75,7 +75,7 @@ void PointcloudPublisher::publishOccupancyNDTGridMap3D(const map_t::ConstPtr &ma
 {
     if (ivm_) {
         using local_map_t = cslibs_ndt_3d::dynamic_maps::OccupancyGridmap;
-        const local_map_t::Ptr &m = map->as<cslibs_mapping::maps::OccupancyNDTGridMap3D>().get();
+        const local_map_t::Ptr m = map->as<cslibs_mapping::maps::OccupancyNDTGridMap3D>().get();
         if (m) {
             pcl::PointCloud<pcl::PointXYZI>::Ptr cloud;
             cslibs_ndt_3d::conversion::from(m, cloud, ivm_, occ_threshold_);

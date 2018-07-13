@@ -72,7 +72,7 @@ void OccupancyNDTGridMapper2D::process(const data_t::ConstPtr &data)
     cslibs_math_2d::Transform2d o_T_d;
     if (tf_->lookupTransform(map_frame_,
                              laser_data.getFrame(),
-                             ros::Time(laser_data.getTimeFrame().end.seconds()),
+                             ros::Time(laser_data.getTimeFrame().start.seconds()),
                              o_T_d,
                              tf_timeout_)) {
 

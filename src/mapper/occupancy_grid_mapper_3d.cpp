@@ -40,7 +40,7 @@ void OccupancyGridMapper3D::process(const data_t::ConstPtr &data)
     tf::Transform o_T_d_tmp;
     if (tf_->lookupTransform(map_frame_,
                              cloud_data.getFrame(),
-                             ros::Time(cloud_data.getTimeFrame().end.seconds()),
+                             ros::Time(cloud_data.getTimeFrame().start.seconds()),
                              o_T_d_tmp,
                              tf_timeout_)) {
         cslibs_math_3d::Transform3d o_T_d = cslibs_math_ros::tf::conversion_3d::from(o_T_d_tmp);
@@ -64,7 +64,7 @@ void OccupancyGridMapper3D::process(const data_t::ConstPtr &data)
             map_->get()->insertPointCloud(cloud, origin, -1, true, true);
             const double time = (cslibs_time::Time::now() - start).milliseconds();
             stats_ += time;
-            stats_print_ += "[NDTGridMapper3D]: N | current | mean | std | mem = " +
+            stats_print_ += "[OccupancyGridMapper3D]: N | current | mean | std | mem = " +
                     std::to_string(stats_.getN()) + " | " + std::to_string(time)
                     + " | " + std::to_string(stats_.getMean())
                     + " | " + std::to_string(stats_.getStandardDeviation())

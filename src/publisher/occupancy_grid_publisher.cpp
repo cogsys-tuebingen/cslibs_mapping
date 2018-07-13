@@ -54,7 +54,7 @@ void OccupancyGridPublisher::publish(const map_t::ConstPtr &map, const ros::Time
 void OccupancyGridPublisher::publishNDTGridMap2D(const map_t::ConstPtr &map, const ros::Time &time)
 {
     using local_map_t = cslibs_ndt_2d::dynamic_maps::Gridmap;
-    const local_map_t::Ptr &m = map->as<cslibs_mapping::maps::NDTGridMap2D>().get();
+    const local_map_t::Ptr m = map->as<cslibs_mapping::maps::NDTGridMap2D>().get();
     if (m) {
         cslibs_gridmaps::static_maps::ProbabilityGridmap::Ptr occ_map;
         cslibs_ndt_2d::conversion::from(m, occ_map, sampling_resolution_);
@@ -70,7 +70,7 @@ void OccupancyGridPublisher::publishOccupancyNDTGridMap2D(const map_t::ConstPtr 
 {
     if (ivm_) {
         using local_map_t = cslibs_ndt_2d::dynamic_maps::OccupancyGridmap;
-        const local_map_t::Ptr &m = map->as<cslibs_mapping::maps::OccupancyNDTGridMap2D>().get();
+        const local_map_t::Ptr m = map->as<cslibs_mapping::maps::OccupancyNDTGridMap2D>().get();
         if (m) {
             cslibs_gridmaps::static_maps::ProbabilityGridmap::Ptr occ_map;
             cslibs_ndt_2d::conversion::from(m, occ_map, sampling_resolution_, ivm_);
@@ -87,7 +87,7 @@ void OccupancyGridPublisher::publishOccupancyGridMap2D(const map_t::ConstPtr &ma
 {
     if (ivm_) {
         using local_map_t = cslibs_gridmaps::dynamic_maps::ProbabilityGridmap;
-        const local_map_t::Ptr &m = map->as<cslibs_mapping::maps::OccupancyGridMap2D>().get();
+        const local_map_t::Ptr m = map->as<cslibs_mapping::maps::OccupancyGridMap2D>().get();
         if (m) {
             cslibs_gridmaps::static_maps::ProbabilityGridmap::Ptr occ_map(
                         new cslibs_gridmaps::static_maps::ProbabilityGridmap(
