@@ -45,7 +45,7 @@ void OccupancyGridMapper3D::process(const data_t::ConstPtr &data)
                              tf_timeout_)) {
         cslibs_math_3d::Transform3d o_T_d = cslibs_math_ros::tf::conversion_3d::from(o_T_d_tmp);
 
-        const cslibs_math_3d::Pointcloud3d::Ptr points = cloud_data.getPoints();
+        const cslibs_math_3d::Pointcloud3d::Ptr &points = cloud_data.getPoints();
         if (points) {
             octomap::Pointcloud cloud;
 

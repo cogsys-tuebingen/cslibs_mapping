@@ -8,6 +8,7 @@ Panels:
         - /Status1
         - /TF1/Frames1
         - /TF1/Tree1
+        - /3D NDT Map1
       Splitter Ratio: 0.648255825
     Tree Height: 895
   - Class: rviz/Selection
@@ -28,7 +29,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: 3D Occupancy NDT Map
+    SyncSource: 3D NDT Map
 Visualization Manager:
   Class: ""
   Displays:
@@ -330,7 +331,7 @@ Visualization Manager:
       Size (Pixels): 3
       Size (m): 0.200000003
       Style: Spheres
-      Topic: /cslibs_mapping/ndt_3d/map/pointcloud
+      Topic: /cslibs_mapping/occ_ndt_3d_visibility/map/pointcloud
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: false
@@ -407,26 +408,21 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Class: rviz/Orbit
-      Distance: 50.7688637
+      Angle: 0.184999958
+      Class: rviz/TopDownOrtho
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
-      Focal Point:
-        X: 0
-        Y: 0
-        Z: 0
-      Focal Shape Fixed Size: false
-      Focal Shape Size: 0.0500000007
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 0.785398185
+      Scale: 7.74399996
       Target Frame: odom
-      Value: Orbit (rviz)
-      Yaw: 0.785398185
+      Value: TopDownOrtho (rviz)
+      X: 0
+      Y: 0
     Saved: ~
 Window Geometry:
   Displays:

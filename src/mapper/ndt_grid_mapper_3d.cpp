@@ -54,7 +54,7 @@ void NDTGridMapper3D::process(const data_t::ConstPtr &data)
                              o_T_d_tmp,
                              tf_timeout_)) {
         cslibs_math_3d::Transform3d o_T_d = cslibs_math_ros::tf::conversion_3d::from(o_T_d_tmp);
-        if (const cslibs_math_3d::Pointcloud3d::Ptr cloud = cloud_data.getPoints()) {
+        if (const cslibs_math_3d::Pointcloud3d::Ptr &cloud = cloud_data.getPoints()) {
             const cslibs_time::Time start = cslibs_time::Time::now();
             map_->get()->insert(o_T_d, cloud);
             const double time = (cslibs_time::Time::now() - start).milliseconds();

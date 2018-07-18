@@ -29,9 +29,9 @@ void OccupancyNDTGridMapper3D::setupVisibilityBasedUpdateParameters(ros::NodeHan
     ivm_.reset(new cslibs_gridmaps::utility::InverseModel(
                    prob_prior, prob_free, prob_occupied));
 
-    double visibility_threshold         = nh.param<double>("visibility_threshold", 0.4);
-    double prob_visible_if_occluded     = nh.param<double>("prob_visible_if_occluded", 0.2);
-    double prob_visible_if_not_occluded = nh.param<double>("prob_visible_if_not_occluded", 0.8);
+    double visibility_threshold         = nh.param<double>(param_name("visibility_threshold"), 0.4);
+    double prob_visible_if_occluded     = nh.param<double>(param_name("prob_visible_if_occluded"), 0.2);
+    double prob_visible_if_not_occluded = nh.param<double>(param_name("prob_visible_if_not_occluded"), 0.8);
     ivm_visibility_.reset(new cslibs_gridmaps::utility::InverseModel(
                               visibility_threshold, prob_visible_if_occluded, prob_visible_if_not_occluded));
 
@@ -75,7 +75,7 @@ void OccupancyNDTGridMapper3D::process(const data_t::ConstPtr &data)
                              o_T_d_tmp,
                              tf_timeout_)) {
         cslibs_math_3d::Transform3d o_T_d = cslibs_math_ros::tf::conversion_3d::from(o_T_d_tmp);
-        if (const cslibs_math_3d::Pointcloud3d::Ptr cloud = cloud_data.getPoints()) {
+        if (const cslibs_math_3d::Pointcloud3d::Ptr &cloud = cloud_data.getPoints()) {
             const cslibs_time::Time start = cslibs_time::Time::now();
             visibility_based_update_ ?
                         map_->get()->insertVisible(o_T_d, cloud, ivm_, ivm_visibility_) :

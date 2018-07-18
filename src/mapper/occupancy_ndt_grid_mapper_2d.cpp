@@ -76,7 +76,7 @@ void OccupancyNDTGridMapper2D::process(const data_t::ConstPtr &data)
                              o_T_d,
                              tf_timeout_)) {
 
-        const cslibs_plugins_data::types::Laserscan::rays_t rays = laser_data.getRays();
+        const cslibs_plugins_data::types::Laserscan::rays_t &rays = laser_data.getRays();
         cslibs_math_2d::Pointcloud2d::Ptr cloud(new cslibs_math_2d::Pointcloud2d);
 
         for (const auto &ray : rays)

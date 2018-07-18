@@ -57,6 +57,7 @@ include_directories(
     ${Boost_INCLUDE_DIRS}
 )
 if(PCL_FOUND)
+    add_definitions("-DEIGEN_MAX_ALIGN_BYTES=16")
     find_package(pcl_ros REQUIRED)
     include_directories(
         ${PCL_INCLUDE_DIRS}
@@ -69,7 +70,6 @@ if(PCL_FOUND)
         )
     endif()
     if(ndt_map_FOUND)
-        add_definitions("-DEIGEN_MAX_ALIGN_BYTES=16")
         include_directories(
             ${ndt_map_INCLUDE_DIRS}
         )
