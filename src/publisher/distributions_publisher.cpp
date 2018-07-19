@@ -32,7 +32,7 @@ void DistributionsPublisher::doAdvertise(ros::NodeHandle &nh, const std::string 
     publisher_ = nh.advertise<cslibs_ndt_3d::DistributionArray>(topic, 1);
 }
 
-void DistributionsPublisher::publish(const map_t::ConstPtr &map, const ros::Time &time)
+void DistributionsPublisher::doPublish(const map_t::ConstPtr &map, const ros::Time &time)
 {
     if (map->isType<cslibs_mapping::maps::NDTGridMap3D>())
         return publishNDTGridMap3D(map, time);

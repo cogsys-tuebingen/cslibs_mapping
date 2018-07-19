@@ -15,13 +15,14 @@ class OccupancyNDTGridMapper2D : public Mapper
 public:
     virtual const inline map_t::ConstPtr getMap() const override;
 
-private:
+protected:
     inline void setupVisibilityBasedUpdateParameters(ros::NodeHandle &nh);
     virtual inline bool setupMap(ros::NodeHandle &nh) override;
     virtual inline bool uses(const data_t::ConstPtr &type) override;
     virtual inline void process(const data_t::ConstPtr &data) override;
     virtual inline bool saveMap() override;
 
+private:
     maps::OccupancyNDTGridMap2D::Ptr map_;
 
     bool visibility_based_update_;

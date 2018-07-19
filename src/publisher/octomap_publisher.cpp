@@ -19,7 +19,7 @@ void OctomapPublisher::doAdvertise(ros::NodeHandle &nh, const std::string &topic
     publisher_ = nh.advertise<octomap_msgs::Octomap>(topic, 1);
 }
 
-void OctomapPublisher::publish(const map_t::ConstPtr &map, const ros::Time &time)
+void OctomapPublisher::doPublish(const map_t::ConstPtr &map, const ros::Time &time)
 {
     if (map->isType<cslibs_mapping::maps::OccupancyGridMap3D>()) {
         using local_map_t = octomap::OcTree;

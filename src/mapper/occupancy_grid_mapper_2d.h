@@ -17,12 +17,13 @@ class OccupancyGridMapper2D : public Mapper
 public:
     virtual const inline map_t::ConstPtr getMap() const override;
 
-private:
+protected:
     virtual inline bool setupMap(ros::NodeHandle &nh) override;
     virtual inline bool uses(const data_t::ConstPtr &type) override;
     virtual inline void process(const data_t::ConstPtr &data) override;
     virtual inline bool saveMap() override;
 
+private:
     maps::OccupancyGridMap2D::Ptr map_;
 
     double                                      resolution2_;

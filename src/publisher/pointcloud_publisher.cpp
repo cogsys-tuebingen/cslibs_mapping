@@ -39,7 +39,7 @@ void PointcloudPublisher::doAdvertise(ros::NodeHandle &nh, const std::string &to
     publisher_ = nh.advertise<sensor_msgs::PointCloud2>(topic, 1);
 }
 
-void PointcloudPublisher::publish(const map_t::ConstPtr &map, const ros::Time &time)
+void PointcloudPublisher::doPublish(const map_t::ConstPtr &map, const ros::Time &time)
 {
     if (map->isType<cslibs_mapping::maps::NDTGridMap3D>())
         return publishNDTGridMap3D(map, time);

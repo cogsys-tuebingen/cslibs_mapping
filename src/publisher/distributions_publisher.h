@@ -11,7 +11,7 @@ class DistributionsPublisher : public Publisher
 private:
     virtual inline bool uses(const map_t::ConstPtr &map) const;
     virtual inline void doAdvertise(ros::NodeHandle &nh, const std::string &topic);
-    virtual inline void publish(const map_t::ConstPtr &map, const ros::Time &time);
+    virtual inline void doPublish(const map_t::ConstPtr &map, const ros::Time &time);
 
     inline void publishNDTGridMap3D(const map_t::ConstPtr &map, const ros::Time &time);
     inline void publishOccupancyNDTGridMap3D(const map_t::ConstPtr &map, const ros::Time &time);
