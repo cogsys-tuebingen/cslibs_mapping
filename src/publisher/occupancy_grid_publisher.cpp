@@ -64,7 +64,9 @@ void OccupancyGridPublisher::publishNDTGridMap2D(const map_t::ConstPtr &map, con
         cslibs_gridmaps::static_maps::ProbabilityGridmap::Ptr occ_map;
 
         if(flattened_) {
+          std::cerr << "flattening" << std::endl;
           cslibs_ndt_2d::static_maps::flat::Gridmap::Ptr fm = cslibs_ndt_2d::conversion::flatten(m);
+          std::cerr << "flattened" << std::endl;
           cslibs_ndt_2d::conversion::from(fm, occ_map, sampling_resolution_);
         } else {
           cslibs_ndt_2d::conversion::from(m, occ_map, sampling_resolution_);

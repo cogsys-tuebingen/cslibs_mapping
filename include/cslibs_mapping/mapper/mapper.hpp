@@ -35,7 +35,7 @@ public:
     using lock_t  = std::unique_lock<mutex_t>;
 
     inline Mapper() = default;
-    inline ~Mapper()
+    inline virtual ~Mapper()
     {
         stop_ = true;
         notify_.notify_one();
@@ -60,7 +60,6 @@ public:
         auto param_name = [this](const std::string &name){return name_ + "/" + name;};
         auto callback = [this](const data_t::ConstPtr &data) {
             if (this->uses(data)) {
-                lock_t l(mutex_);
                 queue_.emplace(data);
                 notify_.notify_one();
             }
@@ -106,8 +105,8 @@ public:
               publishers_.emplace_back(publishers.at(p));
               ps += p + ",";
           }
-          ds.back() = ']';
-          std::cout << "[Mapper '" << name_ << "']: Using data providers '" << ds << "'." << "\n";
+          ps.back() = ']';
+          std::cout << "[Mapper '" << name_ << "']: Using publishers '" << ps << "'." << "\n";
         }
 
         // initialize map
@@ -130,22 +129,22 @@ public:
     virtual const map_t::ConstPtr getMap() const = 0;
 
 protected:
-    std::vector<typename publisher_t::Ptr> publishers_;
+    std::vector<typename publisher_t::Ptr>  publishers_;
 
-    std::thread                   thread_;
-    bool                          stop_;
+    std::thread                             thread_;
+    bool                                    stop_;
 
-    handle_vector_t               handles_;
-    data_queue_t                  queue_;
+    handle_vector_t                         handles_;
+    data_queue_t                            queue_;
 
-    mutable mutex_t               mutex_;
-    cond_t                        notify_;
+    mutable mutex_t                         mutex_;
+    cond_t                                  notify_;
 
-    std::string                   map_frame_;
-    std::string                   path_;
+    std::string                             map_frame_;
+    std::string                             path_;
 
-    tf_listener_t::Ptr            tf_;
-    ros::Duration                 tf_timeout_;
+    tf_listener_t::Ptr                      tf_;
+    ros::Duration                           tf_timeout_;
 
     inline void loop()
     {
@@ -160,8 +159,8 @@ protected:
                     break;
 
                 process(queue_.pop());
-                publish();
             }
+            publish();
         }
     }
 
