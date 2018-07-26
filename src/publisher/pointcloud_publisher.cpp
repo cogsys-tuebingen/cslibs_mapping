@@ -1,14 +1,9 @@
 #include "pointcloud_publisher.h"
 
-#include <pcl/pcl_config.h>
-
 #include <cslibs_mapping/maps/ndt_grid_map_3d.hpp>
 #include <cslibs_mapping/maps/occupancy_ndt_grid_map_3d.hpp>
 
-#include <cslibs_ndt_3d/conversion/pointcloud.hpp>
-
-#include <sensor_msgs/PointCloud2.h>
-#include <pcl_conversions/pcl_conversions.h>
+#include <cslibs_ndt_3d/conversion/sensor_msgs_pointcloud2.hpp>
 
 #include <class_loader/class_loader_register_macro.h>
 CLASS_LOADER_REGISTER_CLASS(cslibs_mapping::publisher::PointcloudPublisher, cslibs_mapping::publisher::Publisher)
@@ -54,19 +49,14 @@ void PointcloudPublisher::publishNDTGridMap3D(const map_t::ConstPtr &map, const 
     using local_map_t = cslibs_ndt_3d::dynamic_maps::Gridmap;
     const local_map_t::Ptr m = map->as<cslibs_mapping::maps::NDTGridMap3D>().get();
     if (m) {
-        pcl::PointCloud<pcl::PointXYZI>::Ptr cloud;
-        cslibs_ndt_3d::conversion::from(m, cloud);
+        sensor_msgs::PointCloud2 msg;
+        cslibs_ndt_3d::conversion::from(m, msg);
 
-        if (cloud) {
-            sensor_msgs::PointCloud2 msg;
-            pcl::toROSMsg(*cloud, msg);
+        msg.header.stamp    = time;
+        msg.header.frame_id = map->getFrame();
 
-            msg.header.stamp    = time;
-            msg.header.frame_id = map->getFrame();
-
-            publisher_.publish(msg);
-            return;
-        }
+        publisher_.publish(msg);
+        return;
     }
     std::cout << "[PointcloudPublisher '" << name_ << "']: Map could not be published!" << std::endl;
 }
@@ -77,19 +67,14 @@ void PointcloudPublisher::publishOccupancyNDTGridMap3D(const map_t::ConstPtr &ma
         using local_map_t = cslibs_ndt_3d::dynamic_maps::OccupancyGridmap;
         const local_map_t::Ptr m = map->as<cslibs_mapping::maps::OccupancyNDTGridMap3D>().get();
         if (m) {
-            pcl::PointCloud<pcl::PointXYZI>::Ptr cloud;
-            cslibs_ndt_3d::conversion::from(m, cloud, ivm_, occ_threshold_);
+            sensor_msgs::PointCloud2 msg;
+            cslibs_ndt_3d::conversion::from(m, msg, ivm_, occ_threshold_);
 
-            if (cloud) {
-                sensor_msgs::PointCloud2 msg;
-                pcl::toROSMsg(*cloud, msg);
+            msg.header.stamp    = time;
+            msg.header.frame_id = map->getFrame();
 
-                msg.header.stamp    = time;
-                msg.header.frame_id = map->getFrame();
-
-                publisher_.publish(msg);
-                return;
-            }
+            publisher_.publish(msg);
+            return;
         }
     }
     std::cout << "[PointcloudPublisher '" << name_ << "']: Map could not be published!" << std::endl;

@@ -40,7 +40,7 @@ public:
     inline void publish(const map_t::ConstPtr &map, const ros::Time &time)
     {
         ros::Time now = ros::Time::now();
-        if(last_publish_ + publish_period_ < now) {
+        if (last_publish_ + publish_period_ < now) {
             doPublish(map, time);
             last_publish_ = now;
         }

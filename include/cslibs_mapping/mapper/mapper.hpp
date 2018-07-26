@@ -171,9 +171,8 @@ protected:
 
     inline void publish()
     {
-      for(auto &p : publishers_) {
-        p->publish(getMap(), ros::Time::now());
-      }
+        for (auto &p : publishers_)
+            p->publish(getMap(), ros::Time::now());
     }
 
     inline bool checkPath() const
