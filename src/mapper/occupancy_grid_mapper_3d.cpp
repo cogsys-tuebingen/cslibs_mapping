@@ -60,15 +60,7 @@ void OccupancyGridMapper3D::process(const data_t::ConstPtr &data)
                                            o_T_d.translation()(1),
                                            o_T_d.translation()(2));
 
-            const cslibs_time::Time start = cslibs_time::Time::now();
             map_->get()->insertPointCloud(cloud, origin, -1, true, true);
-            const double time = (cslibs_time::Time::now() - start).milliseconds();
-            stats_ += time;
-            stats_print_ += "[OccupancyGridMapper3D]: N | current | mean | std | mem = " +
-                    std::to_string(stats_.getN()) + " | " + std::to_string(time)
-                    + " | " + std::to_string(stats_.getMean())
-                    + " | " + std::to_string(stats_.getStandardDeviation())
-                    + " | " + std::to_string(map_->get()->memoryUsage()) + "\n";
         }
     }
 }
@@ -90,10 +82,6 @@ bool OccupancyGridMapper3D::saveMap()
     path_t path_root(path_);
     if (!cslibs_ndt::common::serialization::create_directory(path_root))
         return false;
-
-    std::ofstream out((path_root / path_t("stats")).string(), std::fstream::trunc);
-    out << stats_print_ << std::endl;
-    out.close();
 
     std::string map_path_yaml = (path_ / boost::filesystem::path("map.ot")).string();
     {

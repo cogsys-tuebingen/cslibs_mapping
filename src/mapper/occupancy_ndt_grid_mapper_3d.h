@@ -8,8 +8,6 @@
 #include <cslibs_mapping/mapper/mapper.hpp>
 #include <cslibs_mapping/maps/occupancy_ndt_grid_map_3d.hpp>
 
-#include <cslibs_math/statistics/distribution.hpp>
-
 namespace cslibs_mapping {
 namespace mapper {
 class OccupancyNDTGridMapper3D : public Mapper
@@ -30,9 +28,6 @@ private:
     bool visibility_based_update_;
     cslibs_gridmaps::utility::InverseModel::Ptr ivm_;
     cslibs_gridmaps::utility::InverseModel::Ptr ivm_visibility_;
-
-    cslibs_math::statistics::Distribution<1,6> stats_;
-    std::string stats_print_;
 };
 }
 }

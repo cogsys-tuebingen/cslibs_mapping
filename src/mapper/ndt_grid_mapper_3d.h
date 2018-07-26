@@ -8,8 +8,6 @@
 #include <cslibs_mapping/mapper/mapper.hpp>
 #include <cslibs_mapping/maps/ndt_grid_map_3d.hpp>
 
-#include <cslibs_math/statistics/distribution.hpp>
-
 namespace cslibs_mapping {
 namespace mapper {
 class NDTGridMapper3D : public Mapper
@@ -25,9 +23,6 @@ protected:
 
 private:
     maps::NDTGridMap3D::Ptr map_;
-
-    cslibs_math::statistics::Distribution<1,6> stats_;
-    std::string stats_print_;
 };
 }
 }
