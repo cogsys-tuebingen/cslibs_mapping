@@ -152,7 +152,7 @@
 	<group ns="occ_ndt_2d_occ_grid">
 	  <param name="class"		    	value="cslibs_mapping::publisher::OccupancyGridPublisher"/>
 	  <param name="base_class"	    	value="cslibs_mapping::publisher::Publisher"/>
-	  <param name="rate"		    	value="1.0"/>
+	  <param name="rate"		    	value="10.0"/>
 	  <param name="topic"		    	value="/cslibs_mapping/occ_ndt_2d/map"/>
 	  <param name="sampling_resolution" value="0.025"/>
 	  <param name="occupancy"	    	value="true"/>
