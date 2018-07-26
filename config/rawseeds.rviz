@@ -28,7 +28,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: Laser SICK Rear
+    SyncSource: 3D Visibility Occupancy NDT Map
 Visualization Manager:
   Class: ""
   Displays:
@@ -365,6 +365,36 @@ Visualization Manager:
       Use Fixed Frame: true
       Use rainbow: false
       Value: true
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/PointCloud2
+      Color: 255; 255; 255
+      Color Transformer: Intensity
+      Decay Time: 0
+      Enabled: true
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 1
+      Min Color: 0; 0; 0
+      Min Intensity: 0
+      Name: 3D Visibility Occupancy NDT Map
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.200000003
+      Style: Spheres
+      Topic: /cslibs_mapping/occ_ndt_3d_visibility/map/pointcloud
+      Unreliable: false
+      Use Fixed Frame: true
+      Use rainbow: false
+      Value: true
     - Accumulate: true
       Alpha: 1
       Class: cslibs_ndt_3d/NDT
@@ -417,11 +447,11 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Scale: 6.89558077
+      Scale: 9.94596958
       Target Frame: odom
       Value: TopDownOrtho (rviz)
-      X: 82.5060043
-      Y: 24.141346
+      X: 34.3128929
+      Y: 2.40698647
     Saved: ~
 Window Geometry:
   Displays:
