@@ -5,6 +5,7 @@
 #include <cslibs_mapping/maps/occupancy_grid_map_2d.hpp>
 
 #include <cslibs_ndt_2d/conversion/probability_gridmap.hpp>
+#include <cslibs_ndt_2d/conversion/flatten.hpp>
 
 #include <cslibs_gridmaps/static_maps/conversion/convert_probability_gridmap.hpp>
 #include <cslibs_gridmaps/static_maps/algorithms/normalize.hpp>
@@ -36,11 +37,15 @@ void OccupancyGridPublisher::doAdvertise(ros::NodeHandle &nh, const std::string 
         ivm_.reset(new cslibs_gridmaps::utility::InverseModel(
                        prob_prior, prob_free, prob_occupied));
     }
+    flattened_ = nh.param<bool>(param_name("flatten"), false);
+    if(flattened_) {
+      ROS_WARN_STREAM("Publishing the flatttened map.");
+    }
 
     publisher_ = nh.advertise<nav_msgs::OccupancyGrid>(topic, 1);
 }
 
-void OccupancyGridPublisher::publish(const map_t::ConstPtr &map, const ros::Time &time)
+void OccupancyGridPublisher::doPublish(const map_t::ConstPtr &map, const ros::Time &time)
 {
     if (map->isType<cslibs_mapping::maps::NDTGridMap2D>())
         return publishNDTGridMap2D(map, time);
@@ -55,11 +60,19 @@ void OccupancyGridPublisher::publishNDTGridMap2D(const map_t::ConstPtr &map, con
 {
     using local_map_t = cslibs_ndt_2d::dynamic_maps::Gridmap;
     const local_map_t::Ptr m = map->as<cslibs_mapping::maps::NDTGridMap2D>().get();
-    if (m) {
+    if (m && !m->empty()) {
         cslibs_gridmaps::static_maps::ProbabilityGridmap::Ptr occ_map;
-        cslibs_ndt_2d::conversion::from(m, occ_map, sampling_resolution_);
+
+        if(flattened_) {
+          std::cerr << "flattening" << std::endl;
+          cslibs_ndt_2d::static_maps::flat::Gridmap::Ptr fm = cslibs_ndt_2d::conversion::flatten(m);
+          std::cerr << "flattened" << std::endl;
+          cslibs_ndt_2d::conversion::from(fm, occ_map, sampling_resolution_);
+        } else {
+          cslibs_ndt_2d::conversion::from(m, occ_map, sampling_resolution_);
+        }
         if (occ_map) {
-            publish(occ_map, time, map->getFrame());
+            doPublish(occ_map, time, map->getFrame());
             return;
         }
     }
@@ -71,11 +84,11 @@ void OccupancyGridPublisher::publishOccupancyNDTGridMap2D(const map_t::ConstPtr 
     if (ivm_) {
         using local_map_t = cslibs_ndt_2d::dynamic_maps::OccupancyGridmap;
         const local_map_t::Ptr m = map->as<cslibs_mapping::maps::OccupancyNDTGridMap2D>().get();
-        if (m) {
+        if (m && !m->empty()) {
             cslibs_gridmaps::static_maps::ProbabilityGridmap::Ptr occ_map;
             cslibs_ndt_2d::conversion::from(m, occ_map, sampling_resolution_, ivm_);
             if (occ_map) {
-                publish(occ_map, time, map->getFrame());
+                doPublish(occ_map, time, map->getFrame());
                 return;
             }
         }
@@ -113,7 +126,7 @@ void OccupancyGridPublisher::publishOccupancyGridMap2D(const map_t::ConstPtr &ma
 
             if (occ_map) {
                 cslibs_gridmaps::static_maps::conversion::LogOdds::from(occ_map, occ_map);
-                publish(occ_map, time, map->getFrame());
+                doPublish(occ_map, time, map->getFrame());
                 return;
             }
         }
@@ -121,7 +134,7 @@ void OccupancyGridPublisher::publishOccupancyGridMap2D(const map_t::ConstPtr &ma
     std::cout << "[OccupancyGridPublisher '" << name_ << "']: Map could not be published!" << std::endl;
 }
 
-void OccupancyGridPublisher::publish(const cslibs_gridmaps::static_maps::ProbabilityGridmap::Ptr &occ_map,
+void OccupancyGridPublisher::doPublish(const cslibs_gridmaps::static_maps::ProbabilityGridmap::Ptr &occ_map,
                                      const ros::Time &time,
                                      const std::string &frame)
 {

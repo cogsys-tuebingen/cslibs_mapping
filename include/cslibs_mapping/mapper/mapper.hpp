@@ -12,6 +12,7 @@
 
 #include <cslibs_mapping/maps/map.hpp>
 #include <cslibs_mapping/mapper/save_map.hpp>
+#include <cslibs_mapping/publisher/publisher.hpp>
 
 #include <condition_variable>
 
@@ -23,6 +24,7 @@ public:
     using Ptr             = std::shared_ptr<Mapper>;
     using data_t          = cslibs_plugins_data::Data;
     using data_provider_t = cslibs_plugins_data::DataProvider2D;
+    using publisher_t     = cslibs_mapping::publisher::Publisher;
     using map_t           = cslibs_mapping::maps::Map;
     using tf_listener_t   = cslibs_math_ros::tf::TFListener2d;
     using handle_vector_t = std::vector<typename data_provider_t::connection_t::Ptr>;
@@ -33,7 +35,7 @@ public:
     using lock_t  = std::unique_lock<mutex_t>;
 
     inline Mapper() = default;
-    inline ~Mapper()
+    inline virtual ~Mapper()
     {
         stop_ = true;
         notify_.notify_one();
@@ -52,12 +54,12 @@ public:
 
     inline void setup(const tf_listener_t::Ptr &tf,
                       ros::NodeHandle &nh,
-                      const std::map<std::string, data_provider_t::Ptr> &data_providers)
+                      const std::map<std::string, data_provider_t::Ptr> &data_providers,
+                      const std::map<std::string, typename publisher_t::Ptr> &publishers)
     {
         auto param_name = [this](const std::string &name){return name_ + "/" + name;};
         auto callback = [this](const data_t::ConstPtr &data) {
             if (this->uses(data)) {
-                lock_t l(mutex_);
                 queue_.emplace(data);
                 notify_.notify_one();
             }
@@ -65,8 +67,10 @@ public:
 
         tf_         = tf;
         map_frame_  = nh.param<std::string>(param_name("map_frame"), "/map");
+
         tf_timeout_ = ros::Duration(nh.param<double>(param_name("tf_timeout"), 0.1));
 
+        /// retrieve data providers
         std::vector<std::string> data_provider_names;
         nh.getParam(param_name("data_providers"), data_provider_names);
 
@@ -84,7 +88,26 @@ public:
             ds += d + ",";
         }
         ds.back() = ']';
-        std::cout << "[Mapper '" << name_ << "']: Using data providers '" << ds << "'." << std::endl;
+        std::cout << "[Mapper '" << name_ << "']: Using data providers '" << ds << "'." << "\n";
+
+        /// retrieve map publishers
+        std::vector<std::string> publisher_names;
+        nh.getParam(param_name("map_publishers"), publisher_names);
+
+        if(publisher_names.empty()) {
+            std::cerr << "[Mapper '" + name_ + "']: Using no publishers! \n";
+        } else {
+          std::string ps = "[";
+          for (auto p : publisher_names) {
+              if (publishers.find(p) == publishers.end())
+                  throw std::runtime_error("[Mapper '" + name_ + "']: Cannot find publisher '" + p + "'!");
+
+              publishers_.emplace_back(publishers.at(p));
+              ps += p + ",";
+          }
+          ps.back() = ']';
+          std::cout << "[Mapper '" << name_ << "']: Using publishers '" << ps << "'." << "\n";
+        }
 
         // initialize map
         if (!setupMap(nh))
@@ -105,7 +128,24 @@ public:
 
     virtual const map_t::ConstPtr getMap() const = 0;
 
-private:
+protected:
+    std::vector<typename publisher_t::Ptr>  publishers_;
+
+    std::thread                             thread_;
+    bool                                    stop_;
+
+    handle_vector_t                         handles_;
+    data_queue_t                            queue_;
+
+    mutable mutex_t                         mutex_;
+    cond_t                                  notify_;
+
+    std::string                             map_frame_;
+    std::string                             path_;
+
+    tf_listener_t::Ptr                      tf_;
+    ros::Duration                           tf_timeout_;
+
     inline void loop()
     {
         lock_t l(mutex_);
@@ -120,6 +160,7 @@ private:
 
                 process(queue_.pop());
             }
+            publish();
         }
     }
 
@@ -128,16 +169,13 @@ private:
     virtual void process(const data_t::ConstPtr &data) = 0;
     virtual bool saveMap() = 0;
 
-    std::thread     thread_;
-    bool            stop_;
+    inline void publish()
+    {
+      for(auto &p : publishers_) {
+        p->publish(getMap(), ros::Time::now());
+      }
+    }
 
-    handle_vector_t handles_;
-    data_queue_t    queue_;
-
-    mutable mutex_t mutex_;
-    cond_t          notify_;
-
-protected:
     inline bool checkPath() const
     {
         if (!boost::filesystem::is_directory(path_))
@@ -146,12 +184,6 @@ protected:
             return false;
         return true;
     }
-
-    std::string        map_frame_;
-    std::string        path_;
-
-    tf_listener_t::Ptr tf_;
-    ros::Duration      tf_timeout_;
 };
 }
 }

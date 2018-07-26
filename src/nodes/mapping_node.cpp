@@ -35,9 +35,18 @@ bool MappingNode::setup()
     }
 
     cslibs_plugins::PluginLoader loader("cslibs_mapping", nh_);
+    {// load publishers
+        loader.load<publisher_t, ros::NodeHandle&>(publishers_, nh_);
+          std::string publishers = "[";
+          for (auto &p : publishers_)
+              publishers += p.first + ",";
+          publishers.at(publishers.size() - 1) = ']';
+          ROS_INFO_STREAM("Loaded publishers: " + publishers);
+    }
+
     {// load mappers
-        loader.load<mapper_t, tf_listener_t::Ptr, ros::NodeHandle&, map_t<data_provider_t>>(
-                    mappers_, tf_, nh_, data_providers_);
+        loader.load<mapper_t, tf_listener_t::Ptr, ros::NodeHandle&, map_t<data_provider_t>, map_t<publisher_t>>(
+                    mappers_, tf_, nh_, data_providers_, publishers_);
         if (mappers_.empty()) {
             ROS_ERROR_STREAM("No mapper was found!");
             return false;
@@ -50,19 +59,6 @@ bool MappingNode::setup()
         ROS_INFO_STREAM("Loaded mappers: " + mappers);
     }
 
-    {// load publishers
-        loader.load<publisher_t, ros::NodeHandle&, map_t<mapper_t>>(
-                    publishers_, nh_, mappers_);
-        if (publishers_.empty())
-            ROS_ERROR_STREAM("No publisher was found!");
-        else {
-            std::string publishers = "[";
-            for (auto &p : publishers_)
-                publishers += p.first + ",";
-            publishers.at(publishers.size() - 1) = ']';
-            ROS_INFO_STREAM("Loaded publishers: " + publishers);
-        }
-    }
 
     // advertise service
     service_ = nh_.advertiseService(nh_.getNamespace() + "/save_maps", &MappingNode::saveMaps, this);
@@ -79,10 +75,6 @@ void MappingNode::start()
     for (auto &m : mappers_)
         if (m.second)
             m.second->start();
-
-    for (auto &p : publishers_)
-        if (p.second)
-            p.second->start();
 
     const double node_rate = nh_.param<double>("node_rate", 60.0);
     if (node_rate == 0.0) {
