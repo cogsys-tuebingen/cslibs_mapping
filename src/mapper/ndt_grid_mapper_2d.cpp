@@ -59,7 +59,7 @@ void NDTGridMapper2D::process(const data_t::ConstPtr &data)
             if (ray.valid() && ray.point.isNormal())
                 cloud->insert(ray.point);
 
-        map_->get()->insert(o_T_d, cloud);
+        map_->get()->insert(cloud, o_T_d);
     }
 }
 

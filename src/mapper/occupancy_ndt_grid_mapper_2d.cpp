@@ -85,7 +85,7 @@ void OccupancyNDTGridMapper2D::process(const data_t::ConstPtr &data)
 
         visibility_based_update_ ?
                     map_->get()->insertVisible(o_T_d, cloud, ivm_, ivm_visibility_) :
-                    map_->get()->insert(o_T_d, cloud);
+                    map_->get()->insert(cloud, o_T_d);
     }
 }
 
