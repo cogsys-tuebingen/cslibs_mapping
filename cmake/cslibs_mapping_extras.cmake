@@ -5,7 +5,7 @@ add_definitions(-W
                 -fno-strict-aliasing
                 -Wno-deprecated-register)
 
-if(${PROJECT_NAME}_USE_NATIVE)
+if(${${PROJECT_NAME}_USE_NATIVE} OR ${CS_USE_NATIVE})
     add_definitions(-march=native)
 endif()
 
