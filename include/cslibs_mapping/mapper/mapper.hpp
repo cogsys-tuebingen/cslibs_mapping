@@ -64,7 +64,7 @@ public:
             }
         };
 
-        tf_.reset(new tf_listener_t);
+        //tf_.reset(new tf_listener_t);
         map_frame_  = nh.param<std::string>(param_name("map_frame"), "/map");
 
         tf_timeout_ = ros::Duration(nh.param<double>(param_name("tf_timeout"), 0.1));
@@ -147,6 +147,9 @@ protected:
 
     inline void loop()
     {
+        tf_.reset(new tf_listener_t);
+        ros::Time::waitForValid();
+
         lock_t l(mutex_);
         while (!stop_) {
 
@@ -168,7 +171,7 @@ protected:
     virtual void process(const data_t::ConstPtr &data) = 0;
     virtual bool saveMap() = 0;
 
-    inline void publish()
+    virtual inline void publish()
     {
         for (auto &p : publishers_)
             p->publish(getMap(), ros::Time::now());
