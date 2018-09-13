@@ -52,8 +52,7 @@ public:
         return "cslibs_mapping::mapper::Mapper";
     }
 
-    inline void setup(const tf_listener_t::Ptr &tf,
-                      ros::NodeHandle &nh,
+    inline void setup(ros::NodeHandle &nh,
                       const std::map<std::string, data_provider_t::Ptr> &data_providers,
                       const std::map<std::string, typename publisher_t::Ptr> &publishers)
     {
@@ -65,7 +64,7 @@ public:
             }
         };
 
-        tf_         = tf;
+        tf_.reset(new tf_listener_t);
         map_frame_  = nh.param<std::string>(param_name("map_frame"), "/map");
 
         tf_timeout_ = ros::Duration(nh.param<double>(param_name("tf_timeout"), 0.1));
@@ -131,20 +130,20 @@ public:
 protected:
     std::vector<typename publisher_t::Ptr>  publishers_;
 
-    std::thread                             thread_;
-    bool                                    stop_;
+    std::thread        thread_;
+    bool               stop_;
 
-    handle_vector_t                         handles_;
-    data_queue_t                            queue_;
+    handle_vector_t    handles_;
+    data_queue_t       queue_;
 
-    mutable mutex_t                         mutex_;
-    cond_t                                  notify_;
+    mutable mutex_t    mutex_;
+    cond_t             notify_;
 
-    std::string                             map_frame_;
-    std::string                             path_;
+    std::string        map_frame_;
+    std::string        path_;
 
-    tf_listener_t::Ptr                      tf_;
-    ros::Duration                           tf_timeout_;
+    tf_listener_t::Ptr tf_;
+    ros::Duration      tf_timeout_;
 
     inline void loop()
     {
