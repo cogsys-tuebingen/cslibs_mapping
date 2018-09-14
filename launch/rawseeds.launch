@@ -136,7 +136,7 @@
                 ["occ_3d_octomap"]
           </rosparam>
 	  <param name="map_frame"	 	value="/odom"/>
-	  <param name="resolution" 	 	value="0.05"/>
+	  <param name="resolution" 	 	value="0.2"/>
 	</group>
 
 

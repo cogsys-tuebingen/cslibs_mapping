@@ -45,7 +45,6 @@ void PointcloudPublisher::doPublish(const map_t::ConstPtr &map, const ros::Time 
 
 void PointcloudPublisher::publishNDTGridMap3D(const map_t::ConstPtr &map, const ros::Time &time)
 {
-    return;
     using local_map_t = cslibs_ndt_3d::dynamic_maps::Gridmap;
     const local_map_t::Ptr m = map->as<cslibs_mapping::maps::NDTGridMap3D>().get();
     if (m) {

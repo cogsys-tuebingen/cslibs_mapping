@@ -27,6 +27,8 @@ void DistributionsPublisher::doAdvertise(ros::NodeHandle &nh, const std::string 
         const double prob_occupied = nh.param(param_name("prob_occupied"), 0.65);
         ivm_.reset(new cslibs_gridmaps::utility::InverseModel(
                        prob_prior, prob_free, prob_occupied));
+
+        occ_threshold_ = nh.param<double>(param_name("occ_threshold"), 0.169);
     }
 
     publisher_ = nh.advertise<cslibs_ndt_3d::DistributionArray>(topic, 1);
@@ -67,7 +69,7 @@ void DistributionsPublisher::publishOccupancyNDTGridMap3D(const map_t::ConstPtr 
         const local_map_t::Ptr m = map->as<cslibs_mapping::maps::OccupancyNDTGridMap3D>().get();
         if (m) {
             cslibs_ndt_3d::DistributionArray::Ptr distributions;
-            cslibs_ndt_3d::conversion::from(m, distributions, ivm_);
+            cslibs_ndt_3d::conversion::from(m, distributions, ivm_, occ_threshold_);
 
             if (distributions) {
                 distributions->header.stamp    = time;

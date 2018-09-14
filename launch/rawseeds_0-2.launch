@@ -2,8 +2,8 @@
 <launch>
     <param name="/use_sim_time" value="true"/>
     <arg name="bag_root"   value="/data/0/rawseeds/bagfiles/with_stereo"/>
-    <arg name="bag_file_0" value="Bicocca_2009-02-25b-static-artificial-light-groundtruth-cartographer-with-stereo_0.bag" />
-    <arg name="bag_file_1" value="Bicocca_2009-02-25b-static-artificial-light-groundtruth-cartographer-with-stereo_1.bag" />
+    <arg name="bag_file_0" value="Bicocca_2009-02-26b-dynamic-natural-light-groundtruth-cartographer-with-stereo_0.bag" />
+    <arg name="bag_file_1" value="Bicocca_2009-02-26b-dynamic-natural-light-groundtruth-cartographer-with-stereo_1.bag" />
     <arg name="bag_args"   value="--clock --rate 1.0 -s 9 -k --pause" />
 
     <include file="$(find rawseeds_ros)/launch/transforms_biccoca.launch"/>

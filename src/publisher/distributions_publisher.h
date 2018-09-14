@@ -16,6 +16,7 @@ private:
     inline void publishNDTGridMap3D(const map_t::ConstPtr &map, const ros::Time &time);
     inline void publishOccupancyNDTGridMap3D(const map_t::ConstPtr &map, const ros::Time &time);
 
+    double occ_threshold_;
     cslibs_gridmaps::utility::InverseModel::Ptr ivm_;
 };
 }
