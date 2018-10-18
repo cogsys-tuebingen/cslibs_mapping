@@ -3,6 +3,7 @@
 #include <cslibs_mapping/maps/ndt_grid_map_2d.hpp>
 #include <cslibs_mapping/maps/occupancy_ndt_grid_map_2d.hpp>
 #include <cslibs_mapping/maps/occupancy_grid_map_2d.hpp>
+#include <cslibs_mapping/maps/min_max_height_map_2d.hpp>
 
 #include <cslibs_ndt_2d/conversion/probability_gridmap.hpp>
 #include <cslibs_ndt_2d/conversion/flatten.hpp>
@@ -21,7 +22,8 @@ bool OccupancyGridPublisher::uses(const map_t::ConstPtr &map) const
 {
     return map->isType<cslibs_mapping::maps::NDTGridMap2D>() ||
            map->isType<cslibs_mapping::maps::OccupancyNDTGridMap2D>() ||
-           map->isType<cslibs_mapping::maps::OccupancyGridMap2D>();
+           map->isType<cslibs_mapping::maps::OccupancyGridMap2D>() ||
+           map->isType<cslibs_mapping::maps::MinMaxHeightMap2D>();
 }
 
 void OccupancyGridPublisher::doAdvertise(ros::NodeHandle &nh, const std::string &topic)
@@ -53,6 +55,8 @@ void OccupancyGridPublisher::doPublish(const map_t::ConstPtr &map, const ros::Ti
         return publishOccupancyNDTGridMap2D(map, time);
     if (map->isType<cslibs_mapping::maps::OccupancyGridMap2D>())
         return publishOccupancyGridMap2D(map, time);
+    if (map->isType<cslibs_mapping::maps::MinMaxHeightMap2D>())
+        return publishMinMaxHeightMap2D(map, time);
     std::cout << "[OccupancyGridPublisher '" << name_ << "']: Got wrong map type!" << std::endl;
 }
 
@@ -129,6 +133,42 @@ void OccupancyGridPublisher::publishOccupancyGridMap2D(const map_t::ConstPtr &ma
                 doPublish(occ_map, time, map->getFrame());
                 return;
             }
+        }
+    }
+    std::cout << "[OccupancyGridPublisher '" << name_ << "']: Map could not be published!" << std::endl;
+}
+
+void OccupancyGridPublisher::publishMinMaxHeightMap2D(const map_t::ConstPtr &map,
+                                                      const ros::Time &time)
+{
+    using local_map_t = cslibs_gridmaps::dynamic_maps::MinMaxHeightmap;
+    const local_map_t::Ptr m = map->as<cslibs_mapping::maps::MinMaxHeightMap2D>().get();
+    if (m) {
+        cslibs_gridmaps::static_maps::ProbabilityGridmap::Ptr occ_map(
+                    new cslibs_gridmaps::static_maps::ProbabilityGridmap(
+                        m->getOrigin(), m->getResolution(), m->getHeight(), m->getWidth(), ivm_->getLogOddsPrior()));
+
+        const std::size_t chunk_step = m->getChunkSize();
+        const local_map_t::index_t min_chunk_index = m->getMinChunkIndex();
+        const local_map_t::index_t max_chunk_index = m->getMaxChunkIndex();
+        for (int i = min_chunk_index[1] ; i <= max_chunk_index[1] ; ++ i) {
+            for (int j = min_chunk_index[0] ; j <= max_chunk_index[0] ; ++ j) {
+
+                local_map_t::chunk_t *chunk = m->getChunk({{j,i}});
+                if (chunk != nullptr) {
+                    const std::size_t cx = static_cast<std::size_t>((j - min_chunk_index[0]) * static_cast<int>(chunk_step));
+                    const std::size_t cy = static_cast<std::size_t>((i - min_chunk_index[1]) * static_cast<int>(chunk_step));
+
+                    for (std::size_t k = 0 ; k < chunk_step ; ++k)
+                        for (std::size_t l = 0 ; l < chunk_step ; ++l)
+                            occ_map->at(cx + l, cy + k) = chunk->at(l,k);
+                }
+            }
+        }
+
+        if (occ_map) {
+            doPublish(occ_map, time, map->getFrame());
+            return;
         }
     }
     std::cout << "[OccupancyGridPublisher '" << name_ << "']: Map could not be published!" << std::endl;
