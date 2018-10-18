@@ -72,7 +72,8 @@ if (octomap_FOUND)
         src/mapper/occupancy_grid_mapper_3d.cpp
         src/mapper/occupancy_ndt_grid_mapper_2d.cpp
         src/mapper/occupancy_ndt_grid_mapper_3d.cpp
-        src/mapper/min_max_height_mapper_2d.cpp
+        src/mapper/min_height_mapper_2d.cpp
+        src/mapper/distribution_height_mapper_2d.cpp
         src/publisher/distributions_publisher.cpp
         src/publisher/occupancy_grid_publisher.cpp
         src/publisher/octomap_publisher.cpp
@@ -91,7 +92,8 @@ else()
         src/mapper/occupancy_grid_mapper_2d.cpp
         src/mapper/occupancy_ndt_grid_mapper_2d.cpp
         src/mapper/occupancy_ndt_grid_mapper_3d.cpp
-        src/mapper/min_max_height_mapper_2d.cpp
+        src/mapper/min_height_mapper_2d.cpp
+        src/mapper/distribution_height_mapper_2d.cpp
         src/publisher/distributions_publisher.cpp
         src/publisher/occupancy_grid_publisher.cpp
         src/publisher/pointcloud_publisher.cpp

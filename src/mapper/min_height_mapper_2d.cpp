@@ -1,4 +1,4 @@
-#include "min_max_height_mapper_2d.h"
+#include "min_height_mapper_2d.h"
 
 #include <cslibs_plugins_data/types/pointcloud.hpp>
 #include <cslibs_math_3d/linear/pointcloud.hpp>
@@ -6,24 +6,25 @@
 
 #include <cslibs_gridmaps/static_maps/algorithms/normalize.hpp>
 #include <cslibs_gridmaps/static_maps/probability_gridmap.h>
-#include <cslibs_gridmaps/serialization/dynamic_maps/min_max_heightmap.hpp>
+#include <cslibs_gridmaps/serialization/dynamic_maps/min_heightmap.hpp>
 
 #include <class_loader/class_loader_register_macro.h>
-CLASS_LOADER_REGISTER_CLASS(cslibs_mapping::mapper::MinMaxHeightMapper2D, cslibs_mapping::mapper::Mapper)
+CLASS_LOADER_REGISTER_CLASS(cslibs_mapping::mapper::MinHeightMapper2D, cslibs_mapping::mapper::Mapper)
 
 namespace cslibs_mapping {
 namespace mapper {
-const MinMaxHeightMapper2D::map_t::ConstPtr MinMaxHeightMapper2D::getMap() const
+const MinHeightMapper2D::map_t::ConstPtr MinHeightMapper2D::getMap() const
 {
     return map_;
 }
 
-bool MinMaxHeightMapper2D::setupMap(ros::NodeHandle &nh)
+bool MinHeightMapper2D::setupMap(ros::NodeHandle &nh)
 {
     auto param_name = [this](const std::string &name){return name_ + "/" + name;};
 
     const double resolution       = nh.param<double>(param_name("resolution"), 0.05);
     const double chunk_resolution = nh.param<double>(param_name("chunk_resolution"), 5.0);
+    const double max_height       = nh.param<double>(param_name("max_height"), 1.0);
 
     std::vector<double> origin = {0.0, 0.0, 0.0};
     nh.param<std::vector<double>>(param_name("origin"), origin);
@@ -31,20 +32,21 @@ bool MinMaxHeightMapper2D::setupMap(ros::NodeHandle &nh)
         return false;
 
     const cslibs_math_2d::Pose2d origin_pose(origin[0], origin[1], origin[2]);
-    map_.reset(new maps::MinMaxHeightMap2D(map_frame_, origin_pose, resolution, chunk_resolution));
+    map_.reset(new maps::MinHeightMap2D(map_frame_, origin_pose, resolution, chunk_resolution, max_height));
     return true;
 }
 
-bool MinMaxHeightMapper2D::uses(const data_t::ConstPtr &type)
+bool MinHeightMapper2D::uses(const data_t::ConstPtr &type)
 {
     return type->isType<cslibs_plugins_data::types::Pointcloud>();
 }
 
-void MinMaxHeightMapper2D::process(const data_t::ConstPtr &data)
+void MinHeightMapper2D::process(const data_t::ConstPtr &data)
 {
     assert (uses(data));
 
     const cslibs_plugins_data::types::Pointcloud &cloud_data = data->as<cslibs_plugins_data::types::Pointcloud>();
+    const cslibs_gridmaps::dynamic_maps::MinHeightmap::Ptr &map = map_->get();
 
     tf::Transform o_T_d_tmp;
     if (tf_->lookupTransform(map_frame_,
@@ -61,26 +63,25 @@ void MinMaxHeightMapper2D::process(const data_t::ConstPtr &data)
             for (const auto &point : *points) {
                 if (point.isNormal()) {
                     const cslibs_math_3d::Point3d map_point = o_T_d * point;
-                    if (map_point.isNormal()) {
-                        const cslibs_math_2d::Point2d point_xy(map_point(0), map_point(1));
-                        map_->get()->insert(sensor_xy, sensor_z, point_xy, map_point(2));
-                    }
+                    if (map_point.isNormal())
+                        map->insert(sensor_xy, sensor_z,
+                                    cslibs_math_2d::Point2d(map_point(0), map_point(1)), map_point(2));
                 }
             }
         }
     }
 }
 
-bool MinMaxHeightMapper2D::saveMap()
+bool MinHeightMapper2D::saveMap()
 {
     if (!map_) {
-        std::cout << "[MinMaxHeightMapper2D '" << name_ << "']: No Map." << std::endl;
+        std::cout << "[MinHeightMapper2D '" << name_ << "']: No Map." << std::endl;
         return true;
     }
 
-    std::cout << "[MinMaxHeightMapper2D '" << name_ << "']: Saving Map..." << std::endl;
+    std::cout << "[MinHeightMapper2D '" << name_ << "']: Saving Map..." << std::endl;
     if (!checkPath()) {
-        std::cout << "[MinMaxHeightMapper2D '" << name_ << "']: '" << path_ << "' is not a directory." << std::endl;
+        std::cout << "[MinHeightMapper2D '" << name_ << "']: '" << path_ << "' is not a directory." << std::endl;
         return false;
     }
 
@@ -88,7 +89,7 @@ bool MinMaxHeightMapper2D::saveMap()
     {
         std::ofstream map_out_yaml(map_path_yaml);
         if (!map_out_yaml.is_open()) {
-            std::cout << "[MinMaxHeightMapper2D '" << name_ << "']: Could not open file '" << map_path_yaml << "'." << std::endl;
+            std::cout << "[MinHeightMapper2D '" << name_ << "']: Could not open file '" << map_path_yaml << "'." << std::endl;
             return false;
         }
         map_out_yaml << YAML::Node(map_->get());
@@ -97,7 +98,7 @@ bool MinMaxHeightMapper2D::saveMap()
 
     cslibs_gridmaps::static_maps::ProbabilityGridmap::Ptr tmp;
     {
-        const cslibs_gridmaps::dynamic_maps::MinMaxHeightmap::Ptr &map = map_->get();
+        const cslibs_gridmaps::dynamic_maps::MinHeightmap::Ptr &map = map_->get();
         tmp.reset(new cslibs_gridmaps::static_maps::ProbabilityGridmap(map->getOrigin(),
                                                                        map->getResolution(),
                                                                        map->getHeight(),
@@ -105,26 +106,29 @@ bool MinMaxHeightMapper2D::saveMap()
         const std::size_t chunk_step = map->getChunkSize();
         const std::array<int, 2> min_chunk_index = map->getMinChunkIndex();
         const std::array<int, 2> max_chunk_index = map->getMaxChunkIndex();
+
         for(int i = min_chunk_index[1] ; i <= max_chunk_index[1] ; ++ i) {
             for(int j = min_chunk_index[0] ; j <= max_chunk_index[0] ; ++ j) {
-                cslibs_gridmaps::dynamic_maps::MinMaxHeightmap::chunk_t *chunk = map->getChunk({{j,i}});
+                cslibs_gridmaps::dynamic_maps::MinHeightmap::chunk_t *chunk = map->getChunk({{j,i}});
                 if (chunk != nullptr) {
                     const std::size_t cx = static_cast<std::size_t>((j - min_chunk_index[0]) * static_cast<int>(chunk_step));
                     const std::size_t cy = static_cast<std::size_t>((i - min_chunk_index[1]) * static_cast<int>(chunk_step));
-                    for (std::size_t k = 0 ; k < chunk_step ; ++ k)
-                        for (std::size_t l = 0 ; l < chunk_step ; ++ l)
-                            tmp->at(cx + l, cy + k) = chunk->at(l,k);
+                    for (std::size_t k = 0 ; k < chunk_step ; ++ k) {
+                        for (std::size_t l = 0 ; l < chunk_step ; ++ l){
+                            const double &val = chunk->at(l, k);
+                            tmp->at(cx + l, cy + k) = std::isnormal(val) ? val : 0.5;
+                        }
+                    }
                 }
             }
         }
     }
 
     if (tmp) {
-        cslibs_gridmaps::static_maps::algorithms::normalize<double>(*tmp);
         if (cslibs_mapping::mapper::saveMap(path_, nullptr, tmp->getData(), tmp->getHeight(),
                                             tmp->getWidth(), tmp->getOrigin(), tmp->getResolution())) {
 
-            std::cout << "[MinMaxHeightMapper2D '" << name_ << "']: Saved Map successfully." << std::endl;
+            std::cout << "[MinHeightMapper2D '" << name_ << "']: Saved Map successfully." << std::endl;
             return true;
         }
     }

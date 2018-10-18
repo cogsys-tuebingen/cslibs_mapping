@@ -18,9 +18,10 @@ private:
     inline void publishNDTGridMap2D(const map_t::ConstPtr &map, const ros::Time &time);
     inline void publishOccupancyNDTGridMap2D(const map_t::ConstPtr &map, const ros::Time &time);
     inline void publishOccupancyGridMap2D(const map_t::ConstPtr &map, const ros::Time &time);
-    inline void publishMinMaxHeightMap2D(const map_t::ConstPtr &map, const ros::Time &time);
+    inline void publishMinHeightMap2D(const map_t::ConstPtr &map, const ros::Time &time);
+    inline void publishDistributionHeightMap2D(const map_t::ConstPtr &map, const ros::Time &time);
     inline void doPublish(const cslibs_gridmaps::static_maps::ProbabilityGridmap::Ptr &occ_map,
-                        const ros::Time &time, const std::string &frame);
+                          const ros::Time &time, const std::string &frame, const bool &normalize = false);
 
     double sampling_resolution_;
     cslibs_gridmaps::utility::InverseModel::Ptr ivm_;
