@@ -1,5 +1,5 @@
 # CS - Library: Mapping
-This library contains a plugin-based mapping framework which allows to build 2D gridmaps, 2D and 3D NDT maps and OctoMaps. The code is open-source ([BSD License](LICENSE)) and has been tested under Ubuntu 16.04 with ROS Kinetic. Please note that this project is part of ongoing research and that there will be changes in the future.
+This library contains a plugin-based mapping framework which allows to build 2D occupancy gridmaps, 2D height maps, 2D and 3D NDT maps and OctoMaps. The code is open-source ([BSD License](LICENSE)) and has been tested under Ubuntu 16.04 with ROS Kinetic. Please note that this project is part of ongoing research and that there will be changes in the future.
 
 ## Structure
 This package consists of the following subfolders:
