@@ -23,6 +23,7 @@ protected:
 
 private:
     maps::DistributionHeightMap2D::Ptr map_;
+    bool save_all_;
 };
 }
 }

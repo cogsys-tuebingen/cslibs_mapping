@@ -32,6 +32,7 @@ bool DistributionHeightMapper2D::setupMap(ros::NodeHandle &nh)
         return false;
 
     const cslibs_math_2d::Pose2d origin_pose(origin[0], origin[1], origin[2]);
+    save_all_ = nh.param<bool>(param_name("save_all"), false);
     map_.reset(new maps::DistributionHeightMap2D(map_frame_, origin_pose, resolution, chunk_resolution, max_height));
     return true;
 }
@@ -85,15 +86,17 @@ bool DistributionHeightMapper2D::saveMap()
         return false;
     }
 
-    std::string map_path_yaml = (path_ / boost::filesystem::path("map.yaml")).string();
-    {
-        std::ofstream map_out_yaml(map_path_yaml);
-        if (!map_out_yaml.is_open()) {
-            std::cout << "[DistributionHeightMapper2D '" << name_ << "']: Could not open file '" << map_path_yaml << "'." << std::endl;
-            return false;
+    if (save_all_) {
+        std::string map_path_yaml = (path_ / boost::filesystem::path("map.yaml")).string();
+        {
+            std::ofstream map_out_yaml(map_path_yaml);
+            if (!map_out_yaml.is_open()) {
+                std::cout << "[DistributionHeightMapper2D '" << name_ << "']: Could not open file '" << map_path_yaml << "'." << std::endl;
+                return false;
+            }
+            map_out_yaml << YAML::Node(map_->get());
+            map_out_yaml.close();
         }
-        map_out_yaml << YAML::Node(map_->get());
-        map_out_yaml.close();
     }
 
     cslibs_gridmaps::static_maps::ProbabilityGridmap::Ptr tmp;
