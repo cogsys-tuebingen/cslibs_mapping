@@ -7,7 +7,7 @@
 #include <cslibs_mapping/maps/distribution_height_map_2d.hpp>
 
 #include <cslibs_ndt_2d/conversion/probability_gridmap.hpp>
-#include <cslibs_ndt_2d/conversion/flatten.hpp>
+#include <cslibs_ndt_2d/conversion/merge.hpp>
 
 #include <cslibs_gridmaps/static_maps/conversion/convert_probability_gridmap.hpp>
 #include <cslibs_gridmaps/static_maps/algorithms/normalize.hpp>
@@ -73,7 +73,7 @@ void OccupancyGridPublisher::publishNDTGridMap2D(const map_t::ConstPtr &map, con
 
         if(flattened_) {
           std::cerr << "flattening" << std::endl;
-          cslibs_ndt_2d::static_maps::flat::Gridmap::Ptr fm = cslibs_ndt_2d::conversion::flatten(m);
+          cslibs_ndt_2d::static_maps::mono::Gridmap::Ptr fm = cslibs_ndt_2d::conversion::merge(m);
           std::cerr << "flattened" << std::endl;
           cslibs_ndt_2d::conversion::from(fm, occ_map, sampling_resolution_);
         } else {
