@@ -26,7 +26,7 @@ private:
     using data_provider_t = cslibs_plugins_data::DataProvider2D;
     using mapper_t        = cslibs_mapping::mapper::Mapper;
     using publisher_t     = cslibs_mapping::publisher::Publisher;
-    using tf_listener_t   = cslibs_math_ros::tf::TFListener2d;
+    using tf_listener_t   = cslibs_math_ros::tf::TFListener;
 
     ros::NodeHandle        nh_;
     ros::ServiceServer     service_;

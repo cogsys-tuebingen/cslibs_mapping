@@ -8,7 +8,7 @@
 #include <cslibs_plugins_data/data_provider_2d.hpp>
 
 #include <cslibs_utility/synchronized/synchronized_queue.hpp>
-#include <cslibs_math_ros/tf/tf_listener_2d.hpp>
+#include <cslibs_math_ros/tf/tf_listener.hpp>
 
 #include <cslibs_mapping/maps/map.hpp>
 #include <cslibs_mapping/mapper/save_map.hpp>
@@ -26,7 +26,7 @@ public:
     using data_provider_t = cslibs_plugins_data::DataProvider2D;
     using publisher_t     = cslibs_mapping::publisher::Publisher;
     using map_t           = cslibs_mapping::maps::Map;
-    using tf_listener_t   = cslibs_math_ros::tf::TFListener2d;
+    using tf_listener_t   = cslibs_math_ros::tf::TFListener;
     using handle_vector_t = std::vector<typename data_provider_t::connection_t::Ptr>;
     using data_queue_t    = cslibs_utility::synchronized::queue<data_t::ConstPtr>;
 
