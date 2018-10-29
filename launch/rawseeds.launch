@@ -14,8 +14,8 @@
 
 	<!-- data providers -->
         <group ns="front_laser">
-	  <param name="class"                    value="cslibs_plugins_data::LaserProvider2D"/>
-	  <param name="base_class"               value="cslibs_plugins_data::DataProvider2D"/>
+	  <param name="class"                    value="cslibs_plugins_data::LaserProvider"/>
+	  <param name="base_class"               value="cslibs_plugins_data::DataProvider"/>
 	  <param name="topic"                    value="/sick/front"/>
 	  <param name="undistortion"             value="true"/>
 	  <param name="undistortion_fixed_frame" value="/odom"/>
@@ -26,8 +26,8 @@
 	  <param name="rate"                     value="0.0"/>
         </group>
         <group ns="rear_laser">
-          <param name="class"                    value="cslibs_plugins_data::LaserProvider2D"/>
-          <param name="base_class"               value="cslibs_plugins_data::DataProvider2D"/>
+          <param name="class"                    value="cslibs_plugins_data::LaserProvider"/>
+          <param name="base_class"               value="cslibs_plugins_data::DataProvider"/>
           <param name="topic"                    value="/sick/rear"/>
           <param name="undistortion"             value="true"/>
           <param name="undistortion_fixed_frame" value="/odom"/>
@@ -38,8 +38,8 @@
           <param name="rate"                     value="0.0"/>
         </group>
         <group ns="stereo">
-          <param name="class"                    value="cslibs_plugins_data::PointcloudProvider2D"/>
-          <param name="base_class"               value="cslibs_plugins_data::DataProvider2D"/>
+          <param name="class"                    value="cslibs_plugins_data::Pointcloud3dProvider"/>
+          <param name="base_class"               value="cslibs_plugins_data::DataProvider"/>
           <param name="topic"                    value="/svs_l/filtered_points"/>
           <param name="queue_size"               value="10"/>
           <param name="rate"                     value="0.0"/>

@@ -5,7 +5,7 @@
 #include <cslibs_mapping/publisher/publisher.hpp>
 #include <cslibs_mapping/SaveMap.h>
 
-#include <cslibs_plugins_data/data_provider_2d.hpp>
+#include <cslibs_plugins_data/data_provider.hpp>
 
 namespace cslibs_mapping {
 class MappingNode
@@ -23,7 +23,7 @@ private:
     template <typename T>
     using map_t           = std::map<std::string, typename T::Ptr>;
 
-    using data_provider_t = cslibs_plugins_data::DataProvider2D;
+    using data_provider_t = cslibs_plugins_data::DataProvider;
     using mapper_t        = cslibs_mapping::mapper::Mapper;
     using publisher_t     = cslibs_mapping::publisher::Publisher;
     using tf_listener_t   = cslibs_math_ros::tf::TFListener;

@@ -5,7 +5,7 @@
 #include <ros/ros.h>
 
 #include <cslibs_plugins/plugin.hpp>
-#include <cslibs_plugins_data/data_provider_2d.hpp>
+#include <cslibs_plugins_data/data_provider.hpp>
 
 #include <cslibs_utility/synchronized/synchronized_queue.hpp>
 #include <cslibs_math_ros/tf/tf_listener.hpp>
@@ -23,7 +23,7 @@ class Mapper : public cslibs_plugins::Plugin
 public:
     using Ptr             = std::shared_ptr<Mapper>;
     using data_t          = cslibs_plugins_data::Data;
-    using data_provider_t = cslibs_plugins_data::DataProvider2D;
+    using data_provider_t = cslibs_plugins_data::DataProvider;
     using publisher_t     = cslibs_mapping::publisher::Publisher;
     using map_t           = cslibs_mapping::maps::Map;
     using tf_listener_t   = cslibs_math_ros::tf::TFListener;

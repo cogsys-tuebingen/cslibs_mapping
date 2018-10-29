@@ -1,6 +1,6 @@
 #include "occupancy_ndt_grid_mapper_3d.h"
 
-#include <cslibs_plugins_data/types/pointcloud.hpp>
+#include <cslibs_plugins_data/types/pointcloud_3d.hpp>
 #include <cslibs_math_3d/linear/pointcloud.hpp>
 #include <cslibs_math_ros/tf/conversion_3d.hpp>
 
@@ -59,14 +59,14 @@ bool OccupancyNDTGridMapper3D::setupMap(ros::NodeHandle &nh)
 
 bool OccupancyNDTGridMapper3D::uses(const data_t::ConstPtr &type)
 {
-    return type->isType<cslibs_plugins_data::types::Pointcloud>();
+    return type->isType<cslibs_plugins_data::types::Pointcloud3d>();
 }
 
 void OccupancyNDTGridMapper3D::process(const data_t::ConstPtr &data)
 {
     assert (uses(data));
 
-    const cslibs_plugins_data::types::Pointcloud &cloud_data = data->as<cslibs_plugins_data::types::Pointcloud>();
+    const cslibs_plugins_data::types::Pointcloud3d &cloud_data = data->as<cslibs_plugins_data::types::Pointcloud3d>();
 
     tf::Transform o_T_d_tmp;
     if (tf_->lookupTransform(map_frame_,
@@ -75,7 +75,7 @@ void OccupancyNDTGridMapper3D::process(const data_t::ConstPtr &data)
                              o_T_d_tmp,
                              tf_timeout_)) {
         cslibs_math_3d::Transform3d o_T_d = cslibs_math_ros::tf::conversion_3d::from(o_T_d_tmp);
-        if (const cslibs_math_3d::Pointcloud3d::Ptr &cloud = cloud_data.getPoints())
+        if (const cslibs_math_3d::Pointcloud3d::ConstPtr &cloud = cloud_data.points())
             visibility_based_update_ ?
                         map_->get()->insertVisible(cloud, ivm_, ivm_visibility_, o_T_d) :
                         map_->get()->insert(cloud, o_T_d);

@@ -1,6 +1,6 @@
 #include "min_height_mapper_2d.h"
 
-#include <cslibs_plugins_data/types/pointcloud.hpp>
+#include <cslibs_plugins_data/types/pointcloud_3d.hpp>
 #include <cslibs_math_3d/linear/pointcloud.hpp>
 #include <cslibs_math_ros/tf/conversion_3d.hpp>
 
@@ -38,14 +38,14 @@ bool MinHeightMapper2D::setupMap(ros::NodeHandle &nh)
 
 bool MinHeightMapper2D::uses(const data_t::ConstPtr &type)
 {
-    return type->isType<cslibs_plugins_data::types::Pointcloud>();
+    return type->isType<cslibs_plugins_data::types::Pointcloud3d>();
 }
 
 void MinHeightMapper2D::process(const data_t::ConstPtr &data)
 {
     assert (uses(data));
 
-    const cslibs_plugins_data::types::Pointcloud &cloud_data = data->as<cslibs_plugins_data::types::Pointcloud>();
+    const cslibs_plugins_data::types::Pointcloud3d &cloud_data = data->as<cslibs_plugins_data::types::Pointcloud3d>();
     const cslibs_gridmaps::dynamic_maps::MinHeightmap::Ptr &map = map_->get();
 
     tf::Transform o_T_d_tmp;
@@ -58,7 +58,7 @@ void MinHeightMapper2D::process(const data_t::ConstPtr &data)
         const cslibs_math_2d::Point2d sensor_xy(o_T_d.tx(), o_T_d.ty());
         const double &sensor_z = o_T_d.tz();
 
-        const cslibs_math_3d::Pointcloud3d::Ptr &points = cloud_data.getPoints();
+        const cslibs_math_3d::Pointcloud3d::ConstPtr &points = cloud_data.points();
         if (points) {
             for (const auto &point : *points) {
                 if (point.isNormal()) {
