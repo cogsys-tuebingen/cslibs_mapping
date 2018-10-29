@@ -80,8 +80,8 @@ void OccupancyNDTGridMapper2D::process(const data_t::ConstPtr &data)
         cslibs_math_2d::Pointcloud2d::Ptr cloud(new cslibs_math_2d::Pointcloud2d);
 
         for (const auto &ray : rays)
-            if (ray.valid() && ray.point.isNormal())
-                cloud->insert(ray.point);
+            if (ray.valid() && ray.end_point.isNormal())
+                cloud->insert(ray.end_point);
 
         visibility_based_update_ ?
                     map_->get()->insertVisible(o_T_d, cloud, ivm_, ivm_visibility_) :

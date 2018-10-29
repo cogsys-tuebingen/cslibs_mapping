@@ -66,8 +66,8 @@ void OccupancyGridMapper2D::process(const data_t::ConstPtr &data)
         const cslibs_gridmaps::dynamic_maps::ProbabilityGridmap::Ptr &map = map_->get();
 
         for (const auto &ray : rays) {
-            if (ray.valid() && ray.point.isNormal()) {
-                const cslibs_math_2d::Point2d map_point = o_T_d * ray.point;
+            if (ray.valid() && ray.end_point.isNormal()) {
+                const cslibs_math_2d::Point2d map_point = o_T_d * ray.end_point;
                 if (map_point.isNormal()) {
                     auto it = map->getLineIterator(o_T_d.translation(), map_point);
                     while(!it.done()) {
