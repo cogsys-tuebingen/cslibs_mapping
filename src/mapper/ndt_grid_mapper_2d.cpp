@@ -47,8 +47,8 @@ void NDTGridMapper2D::process(const data_t::ConstPtr &data)
 
     cslibs_math_2d::Transform2d o_T_d;
     if (tf_->lookupTransform(map_frame_,
-                             laser_data.getFrame(),
-                             ros::Time(laser_data.getTimeFrame().start.seconds()),
+                             laser_data.frame(),
+                             ros::Time(laser_data.timeFrame().start.seconds()),
                              o_T_d,
                              tf_timeout_)) {
 
