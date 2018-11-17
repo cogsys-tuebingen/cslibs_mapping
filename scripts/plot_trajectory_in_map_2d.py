@@ -68,7 +68,7 @@ def main(args):
     ax.imshow(img, cmap='gray', origin='upper')
 
     ax.plot(xs, ys, '-', linewidth=1, color='blue')
-    plt.scatter(xs, ys, s=2, facecolors='none', edgecolors='blue')
+    plt.scatter(xs, ys, s=1, facecolors='none', edgecolors='blue',linewidth='1')
 
 
 
