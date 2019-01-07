@@ -107,7 +107,7 @@ bool OccupancyNDTGridMapper2D::saveMap()
         if (!cslibs_ndt_2d::dynamic_maps::saveBinary(map_->get(), (path_ / boost::filesystem::path("map")).string()))
             return false;
 
-        cslibs_gridmaps::utility::InverseModel::Ptr ivm(new cslibs_gridmaps::utility::InverseModel(0.65, 0.45, 0.196));
+        cslibs_gridmaps::utility::InverseModel::Ptr ivm(new cslibs_gridmaps::utility::InverseModel(0.65, 0.45, 0.169));
         cslibs_ndt_2d::conversion::from(map_->get(), tmp, map_->get()->getResolution() / 10.0, ivm);
         if (!tmp)
             return false;

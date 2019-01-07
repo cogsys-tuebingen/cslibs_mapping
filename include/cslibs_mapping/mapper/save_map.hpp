@@ -24,7 +24,7 @@ inline bool saveMap(
         const std::size_t            &occ_width,
         const cslibs_math_2d::Pose2d &occ_origin,
         const double                 &occ_resolution,
-        const double                 &occ_free_threshold     = 0.196,
+        const double                 &occ_free_threshold     = 0.169,
         const double                 &occ_occupied_threshold = 0.65)
 {
     const std::string occ_path_yaml        = (path / boost::filesystem::path("occ.map.yaml")).       string();
