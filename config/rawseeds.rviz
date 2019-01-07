@@ -8,6 +8,8 @@ Panels:
         - /Status1
         - /TF1/Frames1
         - /TF1/Tree1
+        - /Map1
+        - /Map1/Status1
       Splitter Ratio: 0.648255825
     Tree Height: 895
   - Class: rviz/Selection
@@ -28,7 +30,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: 3D Visibility Occupancy NDT Map
+    SyncSource: ""
 Visualization Manager:
   Class: ""
   Displays:
@@ -413,6 +415,16 @@ Visualization Manager:
       Topic: /cslibs_mapping/occ_ndt_3d/map/distributions
       Unreliable: false
       Value: true
+    - Alpha: 0.699999988
+      Class: rviz/Map
+      Color Scheme: map
+      Draw Behind: false
+      Enabled: true
+      Name: Map
+      Topic: /cslibs_mapping/occ_ndt_2d/map_received
+      Unreliable: false
+      Use Timestamp: false
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 255; 255; 255
@@ -447,11 +459,11 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Scale: 9.94596958
+      Scale: 20.4492188
       Target Frame: odom
       Value: TopDownOrtho (rviz)
-      X: 34.3128929
-      Y: 2.40698647
+      X: 17.4232101
+      Y: 5.17372227
     Saved: ~
 Window Geometry:
   Displays:

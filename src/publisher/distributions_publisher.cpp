@@ -28,7 +28,7 @@ void DistributionsPublisher::doAdvertise(ros::NodeHandle &nh, const std::string 
         ivm_.reset(new cslibs_gridmaps::utility::InverseModel(
                        prob_prior, prob_free, prob_occupied));
 
-        occ_threshold_ = nh.param<double>(param_name("occ_threshold"), 0.169);
+        occ_threshold_ = nh.param<double>(param_name("occ_threshold"), 0.196);
     }
 
     publisher_ = nh.advertise<cslibs_ndt_3d::DistributionArray>(topic, 1);
