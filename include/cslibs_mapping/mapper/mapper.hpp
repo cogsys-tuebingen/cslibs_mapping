@@ -154,7 +154,7 @@ protected:
         tf_.reset(new tf_listener_t);
         ros::Time::waitForValid();
         cslibs_time::Time start = cslibs_time::Time::now();
-        cslibs_time::Time publish = start + publish_period_;
+        cslibs_time::Time pub = start + publish_period_;
 
         lock_t l(mutex_);
         while (!stop_) {
@@ -168,10 +168,10 @@ protected:
 
                 process(queue_.pop());
                 cslibs_time::Time now = cslibs_time::Time::now();
-                if (now >= publish) {
+                if (now >= pub) {
                     publish();
                     start = now;
-                    publish = now + publish_period_;
+                    pub = now + publish_period_;
                 }
             }
             publish();
