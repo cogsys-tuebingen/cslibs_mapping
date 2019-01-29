@@ -66,6 +66,8 @@ public:
 
         //tf_.reset(new tf_listener_t);
         map_frame_  = nh.param<std::string>(param_name("map_frame"), "/map");
+        double rate = nh.param<double>(param_name("publish_rate"), 10.0);
+        publish_period_ = cslibs_time::Duration(rate == 0.0 ? 0.0 : (1.0 / rate));
 
         tf_timeout_ = ros::Duration(nh.param<double>(param_name("tf_timeout"), 0.1));
 
@@ -145,10 +147,14 @@ protected:
     tf_listener_t::Ptr tf_;
     ros::Duration      tf_timeout_;
 
+    cslibs_time::Duration publish_period_;
+
     inline void loop()
     {
         tf_.reset(new tf_listener_t);
         ros::Time::waitForValid();
+        cslibs_time::Time start = cslibs_time::Time::now();
+        cslibs_time::Time publish = start + publish_period_;
 
         lock_t l(mutex_);
         while (!stop_) {
@@ -161,6 +167,12 @@ protected:
                     break;
 
                 process(queue_.pop());
+                cslibs_time::Time now = cslibs_time::Time::now();
+                if (now >= publish) {
+                    publish();
+                    start = now;
+                    publish = now + publish_period_;
+                }
             }
             publish();
         }
