@@ -149,7 +149,7 @@ protected:
 
     cslibs_time::Duration publish_period_;
 
-    inline void loop()
+    virtual inline void loop()
     {
         tf_.reset(new tf_listener_t);
         ros::Time::waitForValid();
