@@ -155,12 +155,13 @@ protected:
         ros::Time::waitForValid();
         cslibs_time::Time start = cslibs_time::Time::now();
         cslibs_time::Time pub = start + publish_period_;
+        const std::chrono::nanoseconds pd(int(publish_period_.seconds() * 1e9));
 
         lock_t l(mutex_);
         while (!stop_) {
 
             if (queue_.empty())
-                notify_.wait(l);
+                notify_.wait_for(l, pd);
 
             while (queue_.hasElements()) {
                 if (stop_)
@@ -174,7 +175,6 @@ protected:
                     pub = now + publish_period_;
                 }
             }
-            publish();
         }
     }
 
