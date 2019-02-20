@@ -43,6 +43,7 @@ bool OccupancyNDTGridMapper2D::setupMap(ros::NodeHandle &nh)
     auto param_name = [this](const std::string &name){return name_ + "/" + name;};
 
     const double resolution = nh.param<double>(param_name("resolution"), 1.0);
+    sampling_resolution_ = nh.param<double>(param_name("sampling_resolution"), (resolution / 40.0));
     std::vector<double> origin = {0.0, 0.0, 0.0};
     origin = nh.param<std::vector<double>>(param_name("origin"), origin);
 
@@ -108,12 +109,12 @@ bool OccupancyNDTGridMapper2D::saveMap()
             return false;
 
         cslibs_gridmaps::utility::InverseModel::Ptr ivm(new cslibs_gridmaps::utility::InverseModel(0.65, 0.45, 0.169));
-        cslibs_ndt_2d::conversion::from(map_->get(), tmp, map_->get()->getResolution() / 10.0, ivm);
+        cslibs_ndt_2d::conversion::from(map_->get(), tmp, sampling_resolution_, ivm);
         if (!tmp)
             return false;
     }
 
-    cslibs_gridmaps::static_maps::algorithms::normalize<double>(*tmp);
+    //cslibs_gridmaps::static_maps::algorithms::normalize<double>(*tmp);
     if (cslibs_mapping::mapper::saveMap(path_, nullptr, tmp->getData(), tmp->getHeight(),
                                         tmp->getWidth(), tmp->getOrigin(), tmp->getResolution())) {
 

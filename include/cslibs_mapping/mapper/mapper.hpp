@@ -70,6 +70,7 @@ public:
         publish_period_ = cslibs_time::Duration(rate == 0.0 ? 0.0 : (1.0 / rate));
 
         tf_timeout_ = ros::Duration(nh.param<double>(param_name("tf_timeout"), 0.1));
+        pub_n_           = nh.param<int>(param_name("pub_n"), 10);
 
         /// retrieve data providers
         std::vector<std::string> data_provider_names;
@@ -148,6 +149,7 @@ protected:
     ros::Duration      tf_timeout_;
 
     cslibs_time::Duration publish_period_;
+    int                   pub_n_;
 
     virtual inline void loop()
     {
@@ -157,6 +159,7 @@ protected:
         cslibs_time::Time pub = start + publish_period_;
         const std::chrono::nanoseconds pd(int(publish_period_.seconds() * 1e9));
 
+        int n = 0;
         lock_t l(mutex_);
         while (!stop_) {
 
@@ -168,9 +171,11 @@ protected:
                     break;
 
                 process(queue_.pop());
+                ++n;
                 cslibs_time::Time now = cslibs_time::Time::now();
                 if (now >= pub) {
                     publish();
+                    n = 0;
                     start = now;
                     pub = now + publish_period_;
                 }

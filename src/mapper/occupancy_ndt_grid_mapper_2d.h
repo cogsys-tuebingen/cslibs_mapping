@@ -26,6 +26,7 @@ private:
     maps::OccupancyNDTGridMap2D::Ptr map_;
 
     bool visibility_based_update_;
+    double sampling_resolution_;
     cslibs_gridmaps::utility::InverseModel::Ptr ivm_;
     cslibs_gridmaps::utility::InverseModel::Ptr ivm_visibility_;
 };

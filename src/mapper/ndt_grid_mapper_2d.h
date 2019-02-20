@@ -23,6 +23,7 @@ protected:
 
 private:
     maps::NDTGridMap2D::Ptr map_;
+    double sampling_resolution_;
 };
 }
 }
