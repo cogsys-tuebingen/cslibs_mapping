@@ -6,13 +6,14 @@
 
 namespace cslibs_mapping {
 namespace maps {
+template <typename T>
 class OccupancyNDTGridMap3D : public Map
 {
 public:
-    using Ptr      = std::shared_ptr<OccupancyNDTGridMap3D>;
-    using ConstPtr = std::shared_ptr<const OccupancyNDTGridMap3D>;
+    using Ptr      = std::shared_ptr<OccupancyNDTGridMap3D<T>>;
+    using ConstPtr = std::shared_ptr<const OccupancyNDTGridMap3D<T>>;
 
-    using map_t    = cslibs_ndt_3d::dynamic_maps::OccupancyGridmap;
+    using map_t    = cslibs_ndt_3d::dynamic_maps::OccupancyGridmap<T>;
     template <typename ... args_t>
     inline OccupancyNDTGridMap3D(const std::string &frame,
                                  const args_t &...args) :
@@ -21,13 +22,13 @@ public:
     {
     }
 
-    const inline map_t::Ptr get() const
+    const inline typename map_t::Ptr get() const
     {
         return map_;
     }
 
 private:
-    const map_t::Ptr map_;
+    const typename map_t::Ptr map_;
 };
 }
 }

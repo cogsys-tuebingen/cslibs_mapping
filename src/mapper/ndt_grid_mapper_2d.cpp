@@ -1,11 +1,5 @@
 #include "ndt_grid_mapper_2d.h"
 
-#include <cslibs_plugins_data/types/laserscan.hpp>
-#include <cslibs_math_2d/linear/pointcloud.hpp>
-#include <cslibs_gridmaps/static_maps/algorithms/normalize.hpp>
-
-#include <cslibs_ndt_2d/serialization/dynamic_maps/gridmap.hpp>
-#include <cslibs_ndt_2d/conversion/probability_gridmap.hpp>
 
 #include <class_loader/class_loader_register_macro.h>
 CLASS_LOADER_REGISTER_CLASS(cslibs_mapping::mapper::NDTGridMapper2D, cslibs_mapping::mapper::Mapper)
