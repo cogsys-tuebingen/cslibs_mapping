@@ -148,7 +148,7 @@ protected:
         }
 
         if (tmp) {
-            cslibs_gridmaps::static_maps::conversion::LogOdds<Tp,T>::from(tmp, tmp);
+            cslibs_gridmaps::static_maps::conversion::LogOdds::from<Tp,T>(tmp, tmp);
             if (cslibs_mapping::mapper::saveMap(path_, nullptr, tmp->getData(), tmp->getHeight(),
                                                 tmp->getWidth(), tmp->getOrigin(), tmp->getResolution())) {
 

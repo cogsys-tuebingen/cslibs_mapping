@@ -88,7 +88,7 @@ protected:
         if (!cslibs_ndt::common::serialization::create_directory(path_root))
             return false;
 
-        if (cslibs_ndt_3d::dynamic_maps::saveBinary(map_->get(), (path_ / boost::filesystem::path("map")).string())) {
+        if (cslibs_ndt_3d::dynamic_maps::saveBinary<T>(map_->get(), (path_ / boost::filesystem::path("map")).string())) {
             std::cout << "[NDTGridMapper3D '" << name_ << "']: Saved Map successfully." << std::endl;
             return true;
         }
@@ -99,9 +99,9 @@ private:
     typename rep_t::Ptr map_;
 };
 
-using NDTGridMapper3D   = NDTGridMapper3D<double>;
-using NDTGridMapper3D_d = NDTGridMapper3D<double>;
-using NDTGridMapper3D_f = NDTGridMapper3D<float>;
+using NDTGridMapper3D   = NDTGridMapper3DBase<double>;
+using NDTGridMapper3D_d = NDTGridMapper3DBase<double>;
+using NDTGridMapper3D_f = NDTGridMapper3DBase<float>;
 }
 }
 

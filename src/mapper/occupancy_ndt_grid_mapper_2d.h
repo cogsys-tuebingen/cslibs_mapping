@@ -91,7 +91,7 @@ protected:
                                  o_T_d,
                                  tf_timeout_)) {
 
-            const cslibs_plugins_data::types::Laserscan<T>::rays_t &rays = laser_data.getRays();
+            const typename cslibs_plugins_data::types::Laserscan<T>::rays_t &rays = laser_data.getRays();
             typename cslibs_math_2d::Pointcloud2d<T>::Ptr cloud(new cslibs_math_2d::Pointcloud2d<T>);
 
             for (const auto &ray : rays)
@@ -119,7 +119,7 @@ protected:
 
         typename cslibs_gridmaps::static_maps::ProbabilityGridmap<T,T>::Ptr tmp;
         {
-            if (!cslibs_ndt_2d::dynamic_maps::saveBinary(map_->get(), (path_ / boost::filesystem::path("map")).string()))
+            if (!cslibs_ndt_2d::dynamic_maps::saveBinary<T>(map_->get(), (path_ / boost::filesystem::path("map")).string()))
                 return false;
 
             cslibs_ndt_2d::conversion::from(map_->get(), tmp, sampling_resolution_, ivm_);

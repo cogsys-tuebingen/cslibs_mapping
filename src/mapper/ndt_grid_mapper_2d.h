@@ -8,6 +8,13 @@
 #include <cslibs_mapping/mapper/mapper.hpp>
 #include <cslibs_mapping/maps/ndt_grid_map_2d.hpp>
 
+#include <cslibs_plugins_data/types/laserscan.hpp>
+#include <cslibs_math_2d/linear/pointcloud.hpp>
+#include <cslibs_gridmaps/static_maps/algorithms/normalize.hpp>
+
+#include <cslibs_ndt_2d/serialization/dynamic_maps/gridmap.hpp>
+#include <cslibs_ndt_2d/conversion/probability_gridmap.hpp>
+
 namespace cslibs_mapping {
 namespace mapper {
 template <typename T>
@@ -81,9 +88,9 @@ protected:
             return false;
         }
 
-        typename cslibs_gridmaps::static_maps::ProbabilityGridmap<T>::Ptr tmp;
+        typename cslibs_gridmaps::static_maps::ProbabilityGridmap<T,T>::Ptr tmp;
         {
-            if (!cslibs_ndt_2d::dynamic_maps::saveBinary(map_->get(), (path_ / boost::filesystem::path("map")).string()))
+            if (!cslibs_ndt_2d::dynamic_maps::saveBinary<T>(map_->get(), (path_ / boost::filesystem::path("map")).string()))
                 return false;
 
             cslibs_ndt_2d::conversion::from(map_->get(), tmp, sampling_resolution_);

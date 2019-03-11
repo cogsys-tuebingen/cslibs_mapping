@@ -113,7 +113,7 @@ protected:
         if (!cslibs_ndt::common::serialization::create_directory(path_root))
             return false;
 
-        if (cslibs_ndt_3d::dynamic_maps::saveBinary(map_->get(), (path_ / boost::filesystem::path("map")).string())) {
+        if (cslibs_ndt_3d::dynamic_maps::saveBinary<T>(map_->get(), (path_ / boost::filesystem::path("map")).string())) {
             std::cout << "[OccupancyNDTGridMapper3D '" << name_ << "']: Saved Map successfully." << std::endl;
             return true;
         }
