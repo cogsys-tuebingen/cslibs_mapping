@@ -22,7 +22,7 @@ public:
     {
     }
 
-    const inline map_t::Ptr get() const
+    const inline typename map_t::Ptr get() const
     {
         return map_;
     }
