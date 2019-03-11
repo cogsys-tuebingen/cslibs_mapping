@@ -68,10 +68,10 @@
   <class type="cslibs_mapping::publisher::OccupancyGridPublisher" base_class_type="cslibs_mapping::publisher::Publisher">
     <description> </description>
   </class>
-  <class type="cslibs_mapping::publisher::OccupancyGridPublisher_d" base_class_type="cslibs_mapping::publisher::Publisher">
+  <class type="cslibs_mapping::publisher::OccupancyGridPublisher_dd" base_class_type="cslibs_mapping::publisher::Publisher">
     <description> </description>
   </class>
-  <class type="cslibs_mapping::publisher::OccupancyGridPublisher_f" base_class_type="cslibs_mapping::publisher::Publisher">
+  <class type="cslibs_mapping::publisher::OccupancyGridPublisher_df" base_class_type="cslibs_mapping::publisher::Publisher">
     <description> </description>
   </class>
   <class type="cslibs_mapping::publisher::OctomapPublisher" base_class_type="cslibs_mapping::publisher::Publisher">

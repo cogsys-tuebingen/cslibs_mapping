@@ -89,7 +89,7 @@ private:
               cslibs_ndt_2d::conversion::from(m, occ_map, sampling_resolution_);
             }
             if (occ_map) {
-                doPublish(occ_map, time, map->getFrame());
+                doPublish<T,T>(occ_map, time, map->getFrame());
                 return;
             }
         }
@@ -105,7 +105,7 @@ private:
                 typename cslibs_gridmaps::static_maps::ProbabilityGridmap<T,T>::Ptr occ_map;
                 cslibs_ndt_2d::conversion::from(m, occ_map, sampling_resolution_, ivm_);
                 if (occ_map) {
-                    doPublish(occ_map, time, map->getFrame());
+                    doPublish<T,T>(occ_map, time, map->getFrame());
                     return;
                 }
             }
@@ -229,12 +229,13 @@ private:
         std::cout << "[OccupancyGridPublisher '" << name_ << "']: Map could not be published!" << std::endl;
     }
 
-    inline void doPublish(const typename cslibs_gridmaps::static_maps::ProbabilityGridmap<Tp,T>::Ptr &occ_map,
+    template <typename TTp = Tp, typename TT = T>
+    inline void doPublish(const typename cslibs_gridmaps::static_maps::ProbabilityGridmap<TTp,TT>::Ptr &occ_map,
                           const ros::Time &time, const std::string &frame, const bool &normalize = false)
     {
         if (occ_map) {
             if (normalize)
-                cslibs_gridmaps::static_maps::algorithms::normalize<T>(*occ_map);
+                cslibs_gridmaps::static_maps::algorithms::normalize<TTp,TT>(*occ_map);
 
             nav_msgs::OccupancyGrid::Ptr msg;
             cslibs_gridmaps::static_maps::conversion::from(*occ_map, msg);
