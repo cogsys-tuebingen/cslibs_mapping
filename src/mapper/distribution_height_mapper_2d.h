@@ -19,7 +19,7 @@
 namespace cslibs_mapping {
 namespace mapper {
 template <typename Tp = double, typename T = double>
-class DistributionHeightMapper2D : public Mapper
+class DistributionHeightMapper2DBase : public Mapper
 {
 public:
     using rep_t = maps::DistributionHeightMap2D<Tp,T>;
@@ -152,6 +152,8 @@ private:
     typename rep_t::Ptr map_;
     bool                save_all_;
 };
+
+using DistributionHeightMapper2D = DistributionHeightMapper2DBase<double,double>;
 }
 }
 

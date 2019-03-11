@@ -1,7 +1,5 @@
 #include "occupancy_grid_mapper_3d.h"
 
-#include <cslibs_plugins_data/types/pointcloud_3d.hpp>
-#include <cslibs_math_3d/linear/pointcloud.hpp>
 #include <cslibs_math_ros/tf/conversion_3d.hpp>
 #include <cslibs_time/time.hpp>
 #include <cslibs_ndt/serialization/filesystem.hpp>
@@ -28,41 +26,17 @@ bool OccupancyGridMapper3D::setupMap(ros::NodeHandle &nh)
 
 bool OccupancyGridMapper3D::uses(const data_t::ConstPtr &type)
 {
-    return type->isType<cslibs_plugins_data::types::Pointcloud3d>();
+    return type->isType<cslibs_plugins_data::types::Pointcloud3d<double>>() ||
+           type->isType<cslibs_plugins_data::types::Pointcloud3d<float>>();
 }
 
 void OccupancyGridMapper3D::process(const data_t::ConstPtr &data)
 {
     assert (uses(data));
-
-    const cslibs_plugins_data::types::Pointcloud3d &cloud_data = data->as<cslibs_plugins_data::types::Pointcloud3d>();
-
-    tf::Transform o_T_d_tmp;
-    if (tf_->lookupTransform(map_frame_,
-                             cloud_data.frame(),
-                             ros::Time(cloud_data.timeFrame().start.seconds()),
-                             o_T_d_tmp,
-                             tf_timeout_)) {
-        cslibs_math_3d::Transform3d o_T_d = cslibs_math_ros::tf::conversion_3d::from(o_T_d_tmp);
-
-        const cslibs_math_3d::Pointcloud3d::ConstPtr &points = cloud_data.points();
-        if (points) {
-            octomap::Pointcloud cloud;
-
-            for (const auto &point : *points) {
-                if (point.isNormal()) {
-                    const cslibs_math_3d::Point3d map_point = o_T_d * point;
-                    if (map_point.isNormal())
-                        cloud.push_back(map_point(0), map_point(1), map_point(2));
-                }
-            }
-            const octomath::Vector3 origin(o_T_d.translation()(0),
-                                           o_T_d.translation()(1),
-                                           o_T_d.translation()(2));
-
-            map_->get()->insertPointCloud(cloud, origin, -1, true, true);
-        }
-    }
+    if (data->isType<cslibs_plugins_data::types::Pointcloud3d<double>>())
+        doProcess<double>(data);
+    else
+        doProcess<float>(data);
 }
 
 bool OccupancyGridMapper3D::saveMap()

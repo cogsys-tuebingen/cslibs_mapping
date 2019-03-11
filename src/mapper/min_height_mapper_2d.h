@@ -19,7 +19,7 @@
 namespace cslibs_mapping {
 namespace mapper {
 template <typename Tp = double, typename T = double>
-class MinHeightMapper2D : public Mapper
+class MinHeightMapper2DBase : public Mapper
 {
 public:
     using rep_t = maps::MinHeightMap2D<Tp, T>;
@@ -148,6 +148,8 @@ protected:
 private:
     typename rep_t::Ptr map_;
 };
+
+using MinHeightMapper2D = MinHeightMapper2DBase<double,double>;
 }
 }
 
