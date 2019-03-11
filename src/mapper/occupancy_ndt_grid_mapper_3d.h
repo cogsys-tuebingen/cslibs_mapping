@@ -8,27 +8,129 @@
 #include <cslibs_mapping/mapper/mapper.hpp>
 #include <cslibs_mapping/maps/occupancy_ndt_grid_map_3d.hpp>
 
+#include <cslibs_plugins_data/types/pointcloud_3d.hpp>
+#include <cslibs_math_3d/linear/pointcloud.hpp>
+#include <cslibs_math_ros/tf/conversion_3d.hpp>
+
+#include <cslibs_ndt_3d/serialization/dynamic_maps/occupancy_gridmap.hpp>
+
 namespace cslibs_mapping {
 namespace mapper {
-class OccupancyNDTGridMapper3D : public Mapper
+template <typename T = double>
+class OccupancyNDTGridMapper3DBase : public Mapper
 {
 public:
-    virtual const inline map_t::ConstPtr getMap() const override;
+    using rep_t = maps::OccupancyNDTGridMap3D<T>;
+    using ivm_t = cslibs_gridmaps::utility::InverseModel<T>;
+
+    virtual const inline map_t::ConstPtr getMap() const override
+    {
+        return map_;
+    }
 
 protected:
-    inline void setupVisibilityBasedUpdateParameters(ros::NodeHandle &nh);
-    virtual inline bool setupMap(ros::NodeHandle &nh) override;
-    virtual inline bool uses(const data_t::ConstPtr &type) override;
-    virtual inline void process(const data_t::ConstPtr &data) override;
-    virtual inline bool saveMap() override;
+    inline void setupVisibilityBasedUpdateParameters(ros::NodeHandle &nh)
+    {
+        auto param_name = [this](const std::string &name){return name_ + "/" + name;};
+        visibility_based_update_ = nh.param<bool>(param_name("visibility_based_update"), false);
+
+        const double prob_prior    = nh.param(param_name("prob_prior"),    0.5);
+        const double prob_free     = nh.param(param_name("prob_free"),     0.45);
+        const double prob_occupied = nh.param(param_name("prob_occupied"), 0.65);
+        ivm_.reset(new ivm_t(
+                       prob_prior, prob_free, prob_occupied));
+
+        if (!visibility_based_update_)
+            return;
+        double visibility_threshold         = nh.param<double>(param_name("visibility_threshold"), 0.4);
+        double prob_visible_if_occluded     = nh.param<double>(param_name("prob_visible_if_occluded"), 0.2);
+        double prob_visible_if_not_occluded = nh.param<double>(param_name("prob_visible_if_not_occluded"), 0.8);
+        ivm_visibility_.reset(new ivm_t(
+                                  visibility_threshold, prob_visible_if_occluded, prob_visible_if_not_occluded));
+
+    }
+
+    virtual inline bool setupMap(ros::NodeHandle &nh) override
+    {
+        auto param_name = [this](const std::string &name){return name_ + "/" + name;};
+
+        const T resolution = static_cast<T>(nh.param<double>(param_name("resolution"), 1.0));
+        std::vector<double> origin = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+        origin = nh.param<std::vector<double>>(param_name("origin"), origin);
+
+        if (origin.size() != 6)
+            return false;
+
+        setupVisibilityBasedUpdateParameters(nh);
+        map_.reset(new rep_t(
+                       map_frame_,
+                       cslibs_math_3d::Pose3d<T>(
+                            cslibs_math_3d::Vector3d<T>(origin[0], origin[1], origin[2]),
+                            cslibs_math_3d::Quaternion<T>(origin[3], origin[4], origin[5])),
+                       resolution));
+        return true;
+    }
+
+    virtual inline bool uses(const data_t::ConstPtr &type) override
+    {
+        return type->isType<cslibs_plugins_data::types::Pointcloud3d<T>>();
+    }
+
+    virtual inline void process(const data_t::ConstPtr &data) override
+    {
+        assert (uses(data));
+
+        const cslibs_plugins_data::types::Pointcloud3d<T> &cloud_data = data->as<cslibs_plugins_data::types::Pointcloud3d<T>>();
+
+        cslibs_math_3d::Transform3d<T> o_T_d;
+        if (tf_->lookupTransform(map_frame_,
+                                 cloud_data.frame(),
+                                 ros::Time(cloud_data.timeFrame().start.seconds()),
+                                 o_T_d,
+                                 tf_timeout_)) {
+            if (const typename cslibs_math_3d::Pointcloud3d<T>::ConstPtr &cloud = cloud_data.points())
+                visibility_based_update_ ?
+                            map_->get()->insertVisible(cloud, ivm_, ivm_visibility_, o_T_d) :
+                            map_->get()->insert(cloud, o_T_d);
+        }
+    }
+
+    virtual inline bool saveMap() override
+    {
+        if (!map_) {
+            std::cout << "[OccupancyNDTGridMapper3D '" << name_ << "']: No Map." << std::endl;
+            return true;
+        }
+
+        std::cout << "[OccupancyNDTGridMapper3D '" << name_ << "']: Saving Map..." << std::endl;
+        if (!checkPath()) {
+            std::cout << "[OccupancyNDTGridMapper3D '" << name_ << "']: '" << path_ << "' is not a directory." << std::endl;
+            return false;
+        }
+
+        using path_t = boost::filesystem::path;
+        path_t path_root(path_);
+        if (!cslibs_ndt::common::serialization::create_directory(path_root))
+            return false;
+
+        if (cslibs_ndt_3d::dynamic_maps::saveBinary(map_->get(), (path_ / boost::filesystem::path("map")).string())) {
+            std::cout << "[OccupancyNDTGridMapper3D '" << name_ << "']: Saved Map successfully." << std::endl;
+            return true;
+        }
+        return false;
+    }
 
 private:
-    maps::OccupancyNDTGridMap3D::Ptr map_;
+    typename rep_t::Ptr map_;
 
-    bool visibility_based_update_;
-    cslibs_gridmaps::utility::InverseModel::Ptr ivm_;
-    cslibs_gridmaps::utility::InverseModel::Ptr ivm_visibility_;
+    typename ivm_t::Ptr ivm_;
+    typename ivm_t::Ptr ivm_visibility_;
+    bool                visibility_based_update_;
 };
+
+using OccupancyNDTGridMapper3D   = OccupancyNDTGridMapper3DBase<double>;
+using OccupancyNDTGridMapper3D_d = OccupancyNDTGridMapper3DBase<double>;
+using OccupancyNDTGridMapper3D_f = OccupancyNDTGridMapper3DBase<float>;
 }
 }
 

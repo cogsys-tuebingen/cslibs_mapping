@@ -24,6 +24,9 @@ template <typename Tp = double, typename T = double>
 class OccupancyGridMapper2DBase : public Mapper
 {
 public:
+    using rep_t = maps::OccupancyGridMap2D<Tp,T>;
+    using ivm_t = cslibs_gridmaps::utility::InverseModel<T>;
+
     virtual const inline map_t::ConstPtr getMap() const override
     {
         return map_;
@@ -44,17 +47,16 @@ protected:
         const double prob_prior     = nh.param(param_name("prob_prior"),    0.5);
         const double prob_free      = nh.param(param_name("prob_free"),     0.45);
         const double prob_occupied  = nh.param(param_name("prob_occupied"), 0.65);
-        ivm_.reset(new cslibs_gridmaps::utility::InverseModel<T>(prob_prior, prob_free, prob_occupied));
+        ivm_.reset(new ivm_t(prob_prior, prob_free, prob_occupied));
 
         if (origin.size() != 3 || !ivm_)
             return false;
 
-        map_.reset(new maps::OccupancyGridMap2D<Tp,T>(
+        map_.reset(new rep_t(
                        map_frame_,
                        cslibs_math_2d::Pose2d<Tp>(origin[0], origin[1], origin[2]), resolution, chunk_resolution));
         return true;
     }
-
 
     virtual inline bool uses(const data_t::ConstPtr &type) override
     {
@@ -76,7 +78,7 @@ protected:
                                  tf_timeout_)) {
 
             const typename cslibs_plugins_data::types::Laserscan<Tp>::rays_t &rays = laser_data.getRays();
-            const cslibs_gridmaps::dynamic_maps::ProbabilityGridmap<Tp,T>::Ptr &map = map_->get();
+            const typename cslibs_gridmaps::dynamic_maps::ProbabilityGridmap<Tp,T>::Ptr &map = map_->get();
 
             for (const auto &ray : rays) {
                 if (ray.valid() && ray.end_point.isNormal()) {
@@ -120,9 +122,9 @@ protected:
             map_out_yaml.close();
         }
 
-        cslibs_gridmaps::static_maps::ProbabilityGridmap<Tp,T>::Ptr tmp;
+        typename cslibs_gridmaps::static_maps::ProbabilityGridmap<Tp,T>::Ptr tmp;
         {
-            const cslibs_gridmaps::dynamic_maps::ProbabilityGridmap<Tp,T>::Ptr &map = map_->get();
+            const typename cslibs_gridmaps::dynamic_maps::ProbabilityGridmap<Tp,T>::Ptr &map = map_->get();
             tmp.reset(new cslibs_gridmaps::static_maps::ProbabilityGridmap<Tp,T>(map->getOrigin(),
                                                                                  map->getResolution(),
                                                                                  map->getHeight(),
@@ -158,15 +160,15 @@ protected:
     }
 
 private:
-    typename maps::OccupancyGridMap2D<Tp,T>::Ptr    map_;
+    typename rep_t::Ptr map_;
 
-    Tp                                              resolution2_;
-    cslibs_gridmaps::utility::InverseModel<T>::Ptr  ivm_;
+    typename ivm_t::Ptr ivm_;
+    Tp                  resolution2_;
 };
 
-using OccupancyGridMapper2D       = OccupancyGridMapper2DBase<double,double>;
-using OccupancyGridMapper2DDouble = OccupancyGridMapper2DBase<double,double>;
-using OccupancyGridMapper2DFloat  = OccupancyGridMapper2DBase<double,float>;
+using OccupancyGridMapper2D    = OccupancyGridMapper2DBase<double,double>; // for backwards compatibility
+using OccupancyGridMapper2D_dd = OccupancyGridMapper2DBase<double,double>;
+using OccupancyGridMapper2D_df = OccupancyGridMapper2DBase<double,float>;
 }
 }
 
