@@ -90,7 +90,7 @@ protected:
                                  tf_timeout_)) {
             if (const typename cslibs_math_3d::Pointcloud3d<T>::ConstPtr &cloud = cloud_data.points())
                 visibility_based_update_ ?
-                            map_->get()->insertVisible(cloud, ivm_, ivm_visibility_, o_T_d) :
+                            map_->get()->insertVisible(cloud, o_T_d, ivm_, ivm_visibility_) :
                             map_->get()->insert(cloud, o_T_d);
         }
     }

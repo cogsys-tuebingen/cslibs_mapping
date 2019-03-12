@@ -99,7 +99,7 @@ protected:
                     cloud->insert(ray.end_point);
 
             visibility_based_update_ ?
-                        map_->get()->insertVisible(o_T_d, cloud, ivm_, ivm_visibility_) :
+                        map_->get()->insertVisible(cloud, o_T_d, ivm_, ivm_visibility_) :
                         map_->get()->insert(cloud, o_T_d);
         }
     }
