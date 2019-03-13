@@ -41,8 +41,8 @@ protected:
 
         map_.reset(new rep_t(
                        map_frame_,
-                       cslibs_math_3d::Pose3d<T>(
-                            cslibs_math_3d::Vector3d<T>(origin[0], origin[1], origin[2]),
+                       cslibs_math_3d::Pose3<T>(
+                            cslibs_math_3d::Vector3<T>(origin[0], origin[1], origin[2]),
                             cslibs_math_3d::Quaternion<T>(origin[3], origin[4], origin[5])),
                        resolution));
         return true;
@@ -50,22 +50,22 @@ protected:
 
     virtual inline bool uses(const data_t::ConstPtr &type) override
     {
-        return type->isType<cslibs_plugins_data::types::Pointcloud3d<T>>();
+        return type->isType<cslibs_plugins_data::types::Pointcloud3<T>>();
     }
 
     virtual inline void process(const data_t::ConstPtr &data) override
     {
         assert (uses(data));
 
-        const cslibs_plugins_data::types::Pointcloud3d<T> &cloud_data = data->as<cslibs_plugins_data::types::Pointcloud3d<T>>();
+        const cslibs_plugins_data::types::Pointcloud3<T> &cloud_data = data->as<cslibs_plugins_data::types::Pointcloud3<T>>();
 
-        cslibs_math_3d::Transform3d<T> o_T_d;
+        cslibs_math_3d::Transform3<T> o_T_d;
         if (tf_->lookupTransform(map_frame_,
                                  cloud_data.frame(),
                                  ros::Time(cloud_data.timeFrame().start.seconds()),
                                  o_T_d,
                                  tf_timeout_)) {
-            if (const typename cslibs_math_3d::Pointcloud3d<T>::ConstPtr &cloud = cloud_data.points())
+            if (const typename cslibs_math_3d::Pointcloud3<T>::ConstPtr &cloud = cloud_data.points())
                 map_->get()->insert(cloud, o_T_d);
         }
     }

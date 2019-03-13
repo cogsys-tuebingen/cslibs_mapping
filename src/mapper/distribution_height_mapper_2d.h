@@ -42,7 +42,7 @@ protected:
         if (origin.size() != 3)
             return false;
 
-        const cslibs_math_2d::Pose2d<Tp> origin_pose(origin[0], origin[1], origin[2]);
+        const cslibs_math_2d::Pose2<Tp> origin_pose(origin[0], origin[1], origin[2]);
         save_all_ = nh.param<bool>(param_name("save_all"), false);
         map_.reset(new rep_t(map_frame_, origin_pose, resolution, chunk_resolution, max_height));
         return true;
@@ -50,33 +50,33 @@ protected:
 
     virtual inline bool uses(const data_t::ConstPtr &type) override
     {
-        return type->isType<cslibs_plugins_data::types::Pointcloud3d<Tp>>();
+        return type->isType<cslibs_plugins_data::types::Pointcloud3<Tp>>();
     }
 
     virtual inline void process(const data_t::ConstPtr &data) override
     {
         assert (uses(data));
 
-        const cslibs_plugins_data::types::Pointcloud3d<Tp> &cloud_data = data->as<cslibs_plugins_data::types::Pointcloud3d<Tp>>();
+        const cslibs_plugins_data::types::Pointcloud3<Tp> &cloud_data = data->as<cslibs_plugins_data::types::Pointcloud3<Tp>>();
         const typename cslibs_gridmaps::dynamic_maps::DistributionHeightmap<Tp,T>::Ptr &map = map_->get();
 
-        cslibs_math_3d::Transform3d<Tp> o_T_d;
+        cslibs_math_3d::Transform3<Tp> o_T_d;
         if (tf_->lookupTransform(map_frame_,
                                  cloud_data.frame(),
                                  ros::Time(cloud_data.timeFrame().start.seconds()),
                                  o_T_d,
                                  tf_timeout_)) {
-            const cslibs_math_2d::Point2d<Tp> sensor_xy(o_T_d.tx(), o_T_d.ty());
+            const cslibs_math_2d::Point2<Tp> sensor_xy(o_T_d.tx(), o_T_d.ty());
             const double &sensor_z = o_T_d.tz();
 
-            const typename cslibs_math_3d::Pointcloud3d<Tp>::ConstPtr &points = cloud_data.points();
+            const typename cslibs_math_3d::Pointcloud3<Tp>::ConstPtr &points = cloud_data.points();
             if (points) {
                 for (const auto &point : *points) {
                     if (point.isNormal()) {
-                        const cslibs_math_3d::Point3d<Tp> map_point = o_T_d * point;
+                        const cslibs_math_3d::Point3<Tp> map_point = o_T_d * point;
                         if (map_point.isNormal())
                             map->insert(sensor_xy, sensor_z,
-                                        cslibs_math_2d::Point2d<Tp>(map_point(0), map_point(1)), map_point(2));
+                                        cslibs_math_2d::Point2<Tp>(map_point(0), map_point(1)), map_point(2));
                     }
                 }
             }

@@ -26,14 +26,14 @@ bool OccupancyGridMapper3D::setupMap(ros::NodeHandle &nh)
 
 bool OccupancyGridMapper3D::uses(const data_t::ConstPtr &type)
 {
-    return type->isType<cslibs_plugins_data::types::Pointcloud3d<double>>() ||
-           type->isType<cslibs_plugins_data::types::Pointcloud3d<float>>();
+    return type->isType<cslibs_plugins_data::types::Pointcloud3d>() ||
+           type->isType<cslibs_plugins_data::types::Pointcloud3f>();
 }
 
 void OccupancyGridMapper3D::process(const data_t::ConstPtr &data)
 {
     assert (uses(data));
-    if (data->isType<cslibs_plugins_data::types::Pointcloud3d<double>>())
+    if (data->isType<cslibs_plugins_data::types::Pointcloud3d>())
         doProcess<double>(data);
     else
         doProcess<float>(data);

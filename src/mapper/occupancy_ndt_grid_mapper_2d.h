@@ -67,13 +67,13 @@ protected:
         setupVisibilityBasedUpdateParameters(nh);
         map_.reset(new rep_t(
                        map_frame_,
-                       cslibs_math_2d::Pose2d<T>(origin[0], origin[1], origin[2]), resolution));
+                       cslibs_math_2d::Pose2<T>(origin[0], origin[1], origin[2]), resolution));
         return true;
     }
 
     virtual inline bool uses(const data_t::ConstPtr &type) override
     {
-        return type->isType<cslibs_plugins_data::types::Laserscan<T>>();
+        return type->isType<cslibs_plugins_data::types::Laserscan2<T>>();
     }
 
     virtual inline void process(const data_t::ConstPtr &data) override
@@ -82,17 +82,17 @@ protected:
         assert (!visibility_based_update_ || ivm_);
         assert (!visibility_based_update_ || ivm_visibility_);
 
-        const cslibs_plugins_data::types::Laserscan<T> &laser_data = data->as<cslibs_plugins_data::types::Laserscan<T>>();
+        const cslibs_plugins_data::types::Laserscan2<T> &laser_data = data->as<cslibs_plugins_data::types::Laserscan2<T>>();
 
-        cslibs_math_2d::Transform2d<T> o_T_d;
+        cslibs_math_2d::Transform2<T> o_T_d;
         if (tf_->lookupTransform(map_frame_,
                                  laser_data.frame(),
                                  ros::Time(laser_data.timeFrame().start.seconds()),
                                  o_T_d,
                                  tf_timeout_)) {
 
-            const typename cslibs_plugins_data::types::Laserscan<T>::rays_t &rays = laser_data.getRays();
-            typename cslibs_math_2d::Pointcloud2d<T>::Ptr cloud(new cslibs_math_2d::Pointcloud2d<T>);
+            const typename cslibs_plugins_data::types::Laserscan2<T>::rays_t &rays = laser_data.getRays();
+            typename cslibs_math_2d::Pointcloud2<T>::Ptr cloud(new cslibs_math_2d::Pointcloud2<T>);
 
             for (const auto &ray : rays)
                 if (ray.valid() && ray.end_point.isNormal())

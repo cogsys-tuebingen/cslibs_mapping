@@ -54,13 +54,13 @@ protected:
 
         map_.reset(new rep_t(
                        map_frame_,
-                       cslibs_math_2d::Pose2d<Tp>(origin[0], origin[1], origin[2]), resolution, chunk_resolution));
+                       cslibs_math_2d::Pose2<Tp>(origin[0], origin[1], origin[2]), resolution, chunk_resolution));
         return true;
     }
 
     virtual inline bool uses(const data_t::ConstPtr &type) override
     {
-        return type->isType<cslibs_plugins_data::types::Laserscan<Tp>>();
+        return type->isType<cslibs_plugins_data::types::Laserscan2<Tp>>();
     }
 
     virtual inline void process(const data_t::ConstPtr &data) override
@@ -68,21 +68,21 @@ protected:
         assert (uses(data));
         assert (ivm_);
 
-        const cslibs_plugins_data::types::Laserscan<Tp> laser_data = data->as<cslibs_plugins_data::types::Laserscan<Tp>>();
+        const cslibs_plugins_data::types::Laserscan2<Tp> laser_data = data->as<cslibs_plugins_data::types::Laserscan2<Tp>>();
 
-        cslibs_math_2d::Transform2d<Tp> o_T_d;
+        cslibs_math_2d::Transform2<Tp> o_T_d;
         if (tf_->lookupTransform(map_frame_,
                                  laser_data.frame(),
                                  ros::Time(laser_data.timeFrame().start.seconds()),
                                  o_T_d,
                                  tf_timeout_)) {
 
-            const typename cslibs_plugins_data::types::Laserscan<Tp>::rays_t &rays = laser_data.getRays();
+            const typename cslibs_plugins_data::types::Laserscan2<Tp>::rays_t &rays = laser_data.getRays();
             const typename cslibs_gridmaps::dynamic_maps::ProbabilityGridmap<Tp,T>::Ptr &map = map_->get();
 
             for (const auto &ray : rays) {
                 if (ray.valid() && ray.end_point.isNormal()) {
-                    const cslibs_math_2d::Point2d<Tp> map_point = o_T_d * ray.end_point;
+                    const cslibs_math_2d::Point2<Tp> map_point = o_T_d * ray.end_point;
                     if (map_point.isNormal()) {
                         auto it = map->getLineIterator(o_T_d.translation(), map_point);
                         while(!it.done()) {

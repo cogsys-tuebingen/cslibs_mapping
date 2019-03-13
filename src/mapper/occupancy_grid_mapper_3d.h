@@ -26,21 +26,21 @@ protected:
     template <typename T>
     inline void doProcess(const data_t::ConstPtr &data)
     {
-        const cslibs_plugins_data::types::Pointcloud3d<T> &cloud_data = data->as<cslibs_plugins_data::types::Pointcloud3d<T>>();
+        const cslibs_plugins_data::types::Pointcloud3<T> &cloud_data = data->as<cslibs_plugins_data::types::Pointcloud3<T>>();
 
-        cslibs_math_3d::Transform3d<T> o_T_d;
+        cslibs_math_3d::Transform3<T> o_T_d;
         if (tf_->lookupTransform(map_frame_,
                                  cloud_data.frame(),
                                  ros::Time(cloud_data.timeFrame().start.seconds()),
                                  o_T_d,
                                  tf_timeout_)) {
-            const typename cslibs_math_3d::Pointcloud3d<T>::ConstPtr &points = cloud_data.points();
+            const typename cslibs_math_3d::Pointcloud3<T>::ConstPtr &points = cloud_data.points();
             if (points) {
                 octomap::Pointcloud cloud;
 
                 for (const auto &point : *points) {
                     if (point.isNormal()) {
-                        const cslibs_math_3d::Point3d<T> map_point = o_T_d * point;
+                        const cslibs_math_3d::Point3<T> map_point = o_T_d * point;
                         if (map_point.isNormal())
                             cloud.push_back(map_point(0), map_point(1), map_point(2));
                     }

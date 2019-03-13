@@ -22,7 +22,7 @@ inline bool saveMap(
         const std::vector<T>             &occ_data,
         const std::size_t                &occ_height,
         const std::size_t                &occ_width,
-        const cslibs_math_2d::Pose2d<Tp> &occ_origin,
+        const cslibs_math_2d::Pose2<Tp> &occ_origin,
         const double                     &occ_resolution,
         const double                     &occ_free_threshold     = 0.169,
         const double                     &occ_occupied_threshold = 0.65)
@@ -138,7 +138,7 @@ inline bool saveMap(
     // map data
     {
         const double occ_inv_resolution = 1.0 / occ_resolution;
-        const cslibs_math_2d::Transform2d<Tp> m_t_w = occ_origin.inverse();
+        const cslibs_math_2d::Transform2<Tp> m_t_w = occ_origin.inverse();
 
         std::ofstream poses_out_yaml(poses_path_yaml);
         if (!poses_out_yaml.is_open()) {
@@ -150,7 +150,7 @@ inline bool saveMap(
             YAML::Emitter poses_yaml(poses_out_yaml);
             poses_yaml << YAML::BeginSeq;
             for (const auto &p_w : poses->poses) {
-                const cslibs_math_2d::Transform2d<Tp> p_m = m_t_w * cslibs_math_ros::geometry_msgs::conversion_2d::from<Tp>(p_w.pose);
+                const cslibs_math_2d::Transform2<Tp> p_m = m_t_w * cslibs_math_ros::geometry_msgs::conversion_2d::from<Tp>(p_w.pose);
                 poses_yaml << YAML::Flow << YAML::BeginSeq << p_m.tx() * occ_inv_resolution << p_m.ty() * occ_inv_resolution << YAML::EndSeq;
             }
             poses_yaml << YAML::EndSeq;
