@@ -64,13 +64,18 @@ public:
             }
         };
 
-        //tf_.reset(new tf_listener_t);
+        // map frame
         map_frame_  = nh.param<std::string>(param_name("map_frame"), "/map");
+
+        // tf listener and lookup timeout
+        tf_.reset(new tf_listener_t);
+        tf_timeout_ = ros::Duration(nh.param<double>(param_name("tf_timeout"), 0.1));
+
+        // publication parameters
+        force_publish_  = nh.param<bool>(param_name("force_publish"), false);
         double rate = nh.param<double>(param_name("publish_rate"), 10.0);
         publish_period_ = cslibs_time::Duration(rate == 0.0 ? 0.0 : (1.0 / rate));
-
-        tf_timeout_ = ros::Duration(nh.param<double>(param_name("tf_timeout"), 0.1));
-        pub_n_           = nh.param<int>(param_name("pub_n"), 10);
+        publish_number_ = nh.param<int>(param_name("publish_every_n"), std::numeric_limits<int>::infinity());
 
         /// retrieve data providers
         std::vector<std::string> data_provider_names;
@@ -149,7 +154,8 @@ protected:
     ros::Duration      tf_timeout_;
 
     cslibs_time::Duration publish_period_;
-    int                   pub_n_;
+    int                   publish_number_;
+    bool                  force_publish_;
 
     virtual inline void loop()
     {
@@ -173,13 +179,18 @@ protected:
                 process(queue_.pop());
                 ++n;
                 cslibs_time::Time now = cslibs_time::Time::now();
-                if (now >= pub) {
+                // if publication is forced, check if timeout or n_out is reached
+                if (force_publish_ && (now >= pub || n >= publish_number_)) {
                     publish();
                     n = 0;
                     start = now;
                     pub = now + publish_period_;
                 }
             }
+
+            // if publication is not forced, publish if there is time left
+            if (!force_publish_)
+                publish();
         }
     }
 

@@ -4,3 +4,5 @@
 CLASS_LOADER_REGISTER_CLASS(cslibs_mapping::mapper::OccupancyGridMapper2D,    cslibs_mapping::mapper::Mapper)
 CLASS_LOADER_REGISTER_CLASS(cslibs_mapping::mapper::OccupancyGridMapper2D_dd, cslibs_mapping::mapper::Mapper)
 CLASS_LOADER_REGISTER_CLASS(cslibs_mapping::mapper::OccupancyGridMapper2D_df, cslibs_mapping::mapper::Mapper)
+CLASS_LOADER_REGISTER_CLASS(cslibs_mapping::mapper::OccupancyGridMapper2D_ff, cslibs_mapping::mapper::Mapper)
+CLASS_LOADER_REGISTER_CLASS(cslibs_mapping::mapper::OccupancyGridMapper2D_fd, cslibs_mapping::mapper::Mapper)

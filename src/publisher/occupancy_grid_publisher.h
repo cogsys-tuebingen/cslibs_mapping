@@ -114,7 +114,7 @@ private:
     }
 
     inline void publishOccupancyGridMap2D(const map_t::ConstPtr &map, const ros::Time &time)
-    {std::cout << "pub occ gridmap" << std::endl;
+    {
         if (ivm_) {
             using local_map_t = cslibs_gridmaps::dynamic_maps::ProbabilityGridmap<Tp,T>;
             const typename local_map_t::Ptr m = map->as<cslibs_mapping::maps::OccupancyGridMap2D<Tp,T>>().get();
@@ -258,6 +258,8 @@ private:
 using OccupancyGridPublisher    = OccupancyGridPublisherBase<double,double>;
 using OccupancyGridPublisher_dd = OccupancyGridPublisherBase<double,double>;
 using OccupancyGridPublisher_df = OccupancyGridPublisherBase<double,float>;
+using OccupancyGridPublisher_ff = OccupancyGridPublisherBase<float,float>;
+using OccupancyGridPublisher_fd = OccupancyGridPublisherBase<float,double>;
 }
 }
 

@@ -72,6 +72,7 @@ protected:
                     cloud->insert(ray.end_point);
 
             map_->get()->insert(cloud, o_T_d);
+            std::cout << "NDT2d: " << map_->get()->getInitialOrigin() << ", " << map_->get()->getOrigin() << std::endl;
         }
     }
 

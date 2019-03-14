@@ -95,6 +95,7 @@ protected:
                     }
                 }
             }
+            std::cout << "Occ2d: " << map_->get()->getOrigin() << std::endl;
         }
     }
 
@@ -168,6 +169,8 @@ private:
 using OccupancyGridMapper2D    = OccupancyGridMapper2DBase<double,double>; // for backwards compatibility
 using OccupancyGridMapper2D_dd = OccupancyGridMapper2DBase<double,double>;
 using OccupancyGridMapper2D_df = OccupancyGridMapper2DBase<double,float>;
+using OccupancyGridMapper2D_ff = OccupancyGridMapper2DBase<float,float>;
+using OccupancyGridMapper2D_fd = OccupancyGridMapper2DBase<float,double>;
 }
 }
 

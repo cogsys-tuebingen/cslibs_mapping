@@ -27,6 +27,12 @@
   <class type="cslibs_mapping::mapper::OccupancyGridMapper2D_df" base_class_type="cslibs_mapping::mapper::Mapper">
     <description> </description>
   </class>
+  <class type="cslibs_mapping::mapper::OccupancyGridMapper2D_ff" base_class_type="cslibs_mapping::mapper::Mapper">
+    <description> </description>
+  </class>
+  <class type="cslibs_mapping::mapper::OccupancyGridMapper2D_fd" base_class_type="cslibs_mapping::mapper::Mapper">
+    <description> </description>
+  </class>
   <class type="cslibs_mapping::mapper::OccupancyGridMapper3D" base_class_type="cslibs_mapping::mapper::Mapper">
     <description> </description>
   </class>
@@ -72,6 +78,12 @@
     <description> </description>
   </class>
   <class type="cslibs_mapping::publisher::OccupancyGridPublisher_df" base_class_type="cslibs_mapping::publisher::Publisher">
+    <description> </description>
+  </class>
+  <class type="cslibs_mapping::publisher::OccupancyGridPublisher_ff" base_class_type="cslibs_mapping::publisher::Publisher">
+    <description> </description>
+  </class>
+  <class type="cslibs_mapping::publisher::OccupancyGridPublisher_fd" base_class_type="cslibs_mapping::publisher::Publisher">
     <description> </description>
   </class>
   <class type="cslibs_mapping::publisher::OctomapPublisher" base_class_type="cslibs_mapping::publisher::Publisher">
