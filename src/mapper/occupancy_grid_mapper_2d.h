@@ -95,7 +95,6 @@ protected:
                     }
                 }
             }
-            std::cout << "Occ2d: " << map_->get()->getOrigin() << std::endl;
         }
     }
 
