@@ -41,12 +41,12 @@ private:
     {
         auto param_name = [this](const std::string &name){return name_ + "/" + name;};
 
-        sampling_resolution_ = nh.param<double>(param_name("sampling_resolution"), 0.025);
+        sampling_resolution_ = static_cast<T>(nh.param<double>(param_name("sampling_resolution"), 0.025));
         const bool occupancy = nh.param<bool>(param_name("occupancy"), false);
         if (occupancy) {
-            const double prob_prior    = nh.param(param_name("prob_prior"),    0.5);
-            const double prob_free     = nh.param(param_name("prob_free"),     0.45);
-            const double prob_occupied = nh.param(param_name("prob_occupied"), 0.65);
+            const T prob_prior    = static_cast<T>(nh.param<double>(param_name("prob_prior"),    0.5));
+            const T prob_free     = static_cast<T>(nh.param<double>(param_name("prob_free"),     0.45));
+            const T prob_occupied = static_cast<T>(nh.param<double>(param_name("prob_occupied"), 0.65));
             ivm_.reset(new ivm_t(
                            prob_prior, prob_free, prob_occupied));
         }
@@ -114,7 +114,7 @@ private:
     }
 
     inline void publishOccupancyGridMap2D(const map_t::ConstPtr &map, const ros::Time &time)
-    {
+    {std::cout << "pub occ gridmap" << std::endl;
         if (ivm_) {
             using local_map_t = cslibs_gridmaps::dynamic_maps::ProbabilityGridmap<Tp,T>;
             const typename local_map_t::Ptr m = map->as<cslibs_mapping::maps::OccupancyGridMap2D<Tp,T>>().get();
@@ -238,7 +238,7 @@ private:
                 cslibs_gridmaps::static_maps::algorithms::normalize<TTp,TT>(*occ_map);
 
             nav_msgs::OccupancyGrid::Ptr msg;
-            cslibs_gridmaps::static_maps::conversion::from(*occ_map, msg);
+            cslibs_gridmaps::static_maps::conversion::from<TTp,TT>(*occ_map, msg);
             if (msg) {
                 msg->header.stamp    = time;
                 msg->header.frame_id = frame;

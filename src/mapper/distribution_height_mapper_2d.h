@@ -140,7 +140,6 @@ protected:
         if (tmp) {
             if (cslibs_mapping::mapper::saveMap(path_, nullptr, tmp->getData(), tmp->getHeight(),
                                                 tmp->getWidth(), tmp->getOrigin(), tmp->getResolution())) {
-
                 std::cout << "[DistributionHeightMapper2D '" << name_ << "']: Saved Map successfully." << std::endl;
                 return true;
             }

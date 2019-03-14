@@ -22,10 +22,10 @@ inline bool saveMap(
         const std::vector<T>             &occ_data,
         const std::size_t                &occ_height,
         const std::size_t                &occ_width,
-        const cslibs_math_2d::Pose2<Tp> &occ_origin,
-        const double                     &occ_resolution,
-        const double                     &occ_free_threshold     = 0.169,
-        const double                     &occ_occupied_threshold = 0.65)
+        const cslibs_math_2d::Pose2<Tp>  &occ_origin,
+        const Tp                         &occ_resolution,
+        const T                          &occ_free_threshold     = 0.169,
+        const T                          &occ_occupied_threshold = 0.65)
 {
     const std::string occ_path_yaml        = (path / boost::filesystem::path("occ.map.yaml")).       string();
     const std::string occ_path_pgm_rel     = "occ.map.pgm";
@@ -112,20 +112,20 @@ inline bool saveMap(
         occ_out_raw_pgm << occ_width << " " << occ_height << "\n";
         occ_out_raw_pgm << 255 << "\n";
 
-        auto convert_ros = [&occ_free_threshold, &occ_occupied_threshold](const double p) {
+        auto convert_ros = [&occ_free_threshold, &occ_occupied_threshold](const T p) {
             if (cslibs_math::common::le(p, occ_free_threshold))
                 return static_cast<uint8_t>(254);
             if (cslibs_math::common::le(p,occ_occupied_threshold))
                 return static_cast<uint8_t>(0);
             return static_cast<uint8_t>(205);
         };
-        auto convert_raw = [](const double p) {
+        auto convert_raw = [](const T p) {
             return static_cast<uint8_t>((1.0 - p) * 255);
         };
 
         for (std::size_t i = occ_height ; i > 0 ; --i) {
             for (std::size_t j = 0 ; j < occ_width ; ++j) {
-                const double & data = occ_data[(i - 1) * occ_width + j];
+                const T & data = occ_data[(i - 1) * occ_width + j];
                 occ_out_pgm << convert_ros(data);
                 occ_out_raw_pgm << convert_raw(data);
             }
@@ -137,7 +137,7 @@ inline bool saveMap(
 
     // map data
     {
-        const double occ_inv_resolution = 1.0 / occ_resolution;
+        const Tp occ_inv_resolution = 1.0 / occ_resolution;
         const cslibs_math_2d::Transform2<Tp> m_t_w = occ_origin.inverse();
 
         std::ofstream poses_out_yaml(poses_path_yaml);

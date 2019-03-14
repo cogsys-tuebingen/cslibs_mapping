@@ -42,8 +42,8 @@ protected:
         if (origin.size() != 3)
             return false;
 
-        const cslibs_math_2d::Pose2<Tp> origin_pose(origin[0], origin[1], origin[2]);
-        map_.reset(new rep_t(map_frame_, origin_pose, resolution, chunk_resolution, max_height));
+        const cslibs_math_2d::Pose2<Tp> origin_pose(static_cast<Tp>(origin[0]), static_cast<Tp>(origin[1]), static_cast<Tp>(origin[2]));
+        map_.reset(new rep_t(map_frame_, origin_pose, static_cast<Tp>(resolution), static_cast<Tp>(chunk_resolution), static_cast<T>(max_height)));
         return true;
     }
 
@@ -137,7 +137,6 @@ protected:
         if (tmp) {
             if (cslibs_mapping::mapper::saveMap(path_, nullptr, tmp->getData(), tmp->getHeight(),
                                                 tmp->getWidth(), tmp->getOrigin(), tmp->getResolution())) {
-
                 std::cout << "[MinHeightMapper2D '" << name_ << "']: Saved Map successfully." << std::endl;
                 return true;
             }

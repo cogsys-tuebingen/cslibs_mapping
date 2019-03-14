@@ -42,7 +42,7 @@ protected:
 
         map_.reset(new rep_t(
                        map_frame_,
-                       cslibs_math_2d::Pose2<T>(origin[0], origin[1], origin[2]), resolution));
+                       cslibs_math_2d::Pose2<T>(static_cast<T>(origin[0]), static_cast<T>(origin[1]), static_cast<T>(origin[2])), resolution));
         return true;
     }
 
@@ -101,7 +101,6 @@ protected:
         //cslibs_gridmaps::static_maps::algorithms::normalize<double>(*tmp);
         if (cslibs_mapping::mapper::saveMap(path_, nullptr, tmp->getData(), tmp->getHeight(),
                                             tmp->getWidth(), tmp->getOrigin(), tmp->getResolution())) {
-
             std::cout << "[NDTGridMapper2D '" << name_ << "']: Saved Map successfully." << std::endl;
             return true;
         }

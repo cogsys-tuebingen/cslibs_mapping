@@ -28,9 +28,9 @@ private:
 
         const bool occupancy_ndt = nh.param<bool>(param_name("occupancy_ndt"), false);
         if (occupancy_ndt) {
-            const double prob_prior    = nh.param(param_name("prob_prior"),    0.5);
-            const double prob_free     = nh.param(param_name("prob_free"),     0.45);
-            const double prob_occupied = nh.param(param_name("prob_occupied"), 0.65);
+            const T prob_prior    = static_cast<T>(nh.param<double>(param_name("prob_prior"),    0.5));
+            const T prob_free     = static_cast<T>(nh.param<double>(param_name("prob_free"),     0.45));
+            const T prob_occupied = static_cast<T>(nh.param<double>(param_name("prob_occupied"), 0.65));
             ivm_.reset(new ivm_t(
                            prob_prior, prob_free, prob_occupied));
 

@@ -44,9 +44,9 @@ protected:
         std::vector<double> origin = {0.0, 0.0, 0.0};
         nh.param<std::vector<double>>(param_name("origin"), origin);
 
-        const double prob_prior     = nh.param(param_name("prob_prior"),    0.5);
-        const double prob_free      = nh.param(param_name("prob_free"),     0.45);
-        const double prob_occupied  = nh.param(param_name("prob_occupied"), 0.65);
+        const T prob_prior     = static_cast<T>(nh.param(param_name("prob_prior"),    0.5));
+        const T prob_free      = static_cast<T>(nh.param(param_name("prob_free"),     0.45));
+        const T prob_occupied  = static_cast<T>(nh.param(param_name("prob_occupied"), 0.65));
         ivm_.reset(new ivm_t(prob_prior, prob_free, prob_occupied));
 
         if (origin.size() != 3 || !ivm_)
@@ -54,7 +54,7 @@ protected:
 
         map_.reset(new rep_t(
                        map_frame_,
-                       cslibs_math_2d::Pose2<Tp>(origin[0], origin[1], origin[2]), resolution, chunk_resolution));
+                       cslibs_math_2d::Pose2<Tp>(static_cast<Tp>(origin[0]), static_cast<Tp>(origin[1]), static_cast<Tp>(origin[2])), resolution, chunk_resolution));
         return true;
     }
 
@@ -151,7 +151,6 @@ protected:
             cslibs_gridmaps::static_maps::conversion::LogOdds::from<Tp,T>(tmp, tmp);
             if (cslibs_mapping::mapper::saveMap(path_, nullptr, tmp->getData(), tmp->getHeight(),
                                                 tmp->getWidth(), tmp->getOrigin(), tmp->getResolution())) {
-
                 std::cout << "[OccupancyGridMapper2D '" << name_ << "']: Saved Map successfully." << std::endl;
                 return true;
             }

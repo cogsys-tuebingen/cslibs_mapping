@@ -42,8 +42,8 @@ protected:
         map_.reset(new rep_t(
                        map_frame_,
                        cslibs_math_3d::Pose3<T>(
-                            cslibs_math_3d::Vector3<T>(origin[0], origin[1], origin[2]),
-                            cslibs_math_3d::Quaternion<T>(origin[3], origin[4], origin[5])),
+                            cslibs_math_3d::Vector3<T>(static_cast<T>(origin[0]), static_cast<T>(origin[1]), static_cast<T>(origin[2])),
+                            cslibs_math_3d::Quaternion<T>(static_cast<T>(origin[3]), static_cast<T>(origin[4]), static_cast<T>(origin[5]))),
                        resolution));
         return true;
     }
