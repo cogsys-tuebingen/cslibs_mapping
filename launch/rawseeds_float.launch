@@ -14,7 +14,7 @@
 
 	<!-- data providers -->
         <group ns="front_laser">
-	  <param name="class"                    value="cslibs_plugins_data::LaserProvider"/>
+	  <param name="class"                    value="cslibs_plugins_data::LaserProvider_f"/>
 	  <param name="base_class"               value="cslibs_plugins_data::DataProvider"/>
 	  <param name="topic"                    value="/sick/front"/>
 	  <param name="undistortion"             value="false"/>
@@ -26,7 +26,7 @@
 	  <param name="rate"                     value="0.0"/>
         </group>
         <group ns="rear_laser">
-          <param name="class"                    value="cslibs_plugins_data::LaserProvider"/>
+          <param name="class"                    value="cslibs_plugins_data::LaserProvider_f"/>
           <param name="base_class"               value="cslibs_plugins_data::DataProvider"/>
           <param name="topic"                    value="/sick/rear"/>
           <param name="undistortion"             value="false"/>
@@ -38,7 +38,7 @@
           <param name="rate"                     value="0.0"/>
         </group>
         <group ns="stereo">
-          <param name="class"                    value="cslibs_plugins_data::Pointcloud3dProvider"/>
+          <param name="class"                    value="cslibs_plugins_data::Pointcloud3dProvider_f"/>
           <param name="base_class"               value="cslibs_plugins_data::DataProvider"/>
           <param name="topic"                    value="/svs_l/filtered_points"/>
           <param name="queue_size"               value="10"/>
@@ -48,7 +48,7 @@
 
 	<!-- 2D mappers -->
 	<group ns="ndt_2d">
-          <param name="class"      	 value="cslibs_mapping::mapper::NDTGridMapper2D"/>
+          <param name="class"      	 value="cslibs_mapping::mapper::NDTGridMapper2D_f"/>
           <param name="base_class" 	 value="cslibs_mapping::mapper::Mapper"/>	
           <rosparam param="data_providers">
                 ["front_laser", "rear_laser"]
@@ -63,7 +63,7 @@
           <param name="publish_every_n"  value="1000.0"/>
 	</group>
 	<group ns="occ_ndt_2d">
-          <param name="class"      	 value="cslibs_mapping::mapper::OccupancyNDTGridMapper2D"/>
+          <param name="class"      	 value="cslibs_mapping::mapper::OccupancyNDTGridMapper2D_f"/>
           <param name="base_class" 	 value="cslibs_mapping::mapper::Mapper"/>  	
           <rosparam param="data_providers">
                 ["front_laser", "rear_laser"]
@@ -78,7 +78,7 @@
           <param name="publish_every_n"  value="1000.0"/>
 	</group>
 	<group ns="occ_2d">
-          <param name="class"      	 value="cslibs_mapping::mapper::OccupancyGridMapper2D"/>
+          <param name="class"      	 value="cslibs_mapping::mapper::OccupancyGridMapper2D_ff"/>
           <param name="base_class" 	 value="cslibs_mapping::mapper::Mapper"/>  	
           <rosparam param="data_providers">
                 ["front_laser", "rear_laser"]
@@ -96,7 +96,7 @@
 
 	<!-- 3D mappers -->
 	<group ns="ndt_3d">
-          <param name="class"      	 value="cslibs_mapping::mapper::NDTGridMapper3D"/>
+          <param name="class"      	 value="cslibs_mapping::mapper::NDTGridMapper3D_f"/>
           <param name="base_class" 	 value="cslibs_mapping::mapper::Mapper"/>	
           <rosparam param="data_providers">
                 ["stereo"]
@@ -111,7 +111,7 @@
           <param name="publish_every_n"  value="1000.0"/>
 	</group>
 	<group ns="occ_ndt_3d">
-          <param name="class"      	 value="cslibs_mapping::mapper::OccupancyNDTGridMapper3D"/>
+          <param name="class"      	 value="cslibs_mapping::mapper::OccupancyNDTGridMapper3D_f"/>
           <param name="base_class" 	 value="cslibs_mapping::mapper::Mapper"/>	
           <rosparam param="data_providers">
                 ["stereo"]
@@ -126,7 +126,7 @@
           <param name="publish_every_n"  value="1000.0"/>
 	</group>
 	<group ns="occ_ndt_3d_visibility">
-          <param name="class"      	 value="cslibs_mapping::mapper::OccupancyNDTGridMapper3D"/>
+          <param name="class"      	 value="cslibs_mapping::mapper::OccupancyNDTGridMapper3D_f"/>
           <param name="base_class" 	 value="cslibs_mapping::mapper::Mapper"/>	
           <rosparam param="data_providers">
                 ["stereo"]
@@ -163,57 +163,60 @@
 
 	<!-- publishers -->
 	<group ns="ndt_2d_occ_grid">
-	  <param name="class"		    	value="cslibs_mapping::publisher::OccupancyGridPublisher"/>
+	  <param name="class"		    	value="cslibs_mapping::publisher::OccupancyGridPublisher_df"/>
 	  <param name="base_class"	    	value="cslibs_mapping::publisher::Publisher"/>
 	  <param name="topic"		    	value="/cslibs_mapping/ndt_2d/map"/>
 	  <param name="sampling_resolution" value="0.025"/>
 	  <param name="occupancy"	    	value="false"/>
 	</group>
 	<group ns="occ_ndt_2d_occ_grid">
-	  <param name="class"		    	value="cslibs_mapping::publisher::OccupancyGridPublisher"/>
+	  <param name="class"		    	value="cslibs_mapping::publisher::OccupancyGridPublisher_df"/>
 	  <param name="base_class"	    	value="cslibs_mapping::publisher::Publisher"/>
 	  <param name="topic"		    	value="/cslibs_mapping/occ_ndt_2d/map"/>
-	  <param name="sampling_resolution" value="0.025"/>
+	  <param name="sampling_resolution" 	value="0.025"/>
 	  <param name="occupancy"	    	value="true"/>
 	</group>
 	<group ns="occ_2d_occ_grid">
-	  <param name="class"		    	value="cslibs_mapping::publisher::OccupancyGridPublisher"/>
+	  <param name="class"		    	value="cslibs_mapping::publisher::OccupancyGridPublisher_ff"/>
 	  <param name="base_class"	    	value="cslibs_mapping::publisher::Publisher"/>
 	  <param name="topic"		    	value="/cslibs_mapping/occ_2d/map"/>
-	  <param name="sampling_resolution" value="0.025"/>
+	  <param name="sampling_resolution" 	value="0.025"/>
 	  <param name="occupancy"	    	value="true"/>
 	</group>
 <!--
 	<group ns="ndt_3d_distributions">
-	  <param name="class"		    	value="cslibs_mapping::publisher::DistributionsPublisher"/>
+	  <param name="class"		    	value="cslibs_mapping::publisher::DistributionsPublisher_f"/>
 	  <param name="base_class"	    	value="cslibs_mapping::publisher::Publisher"/>
 	  <param name="topic"		    	value="/cslibs_mapping/ndt_3d/map/distributions"/>
 	  <param name="occupancy_ndt"		value="false"/>
 	</group>
 	<group ns="occ_ndt_3d_distributions">
-	  <param name="class"		    	value="cslibs_mapping::publisher::DistributionsPublisher"/>
+	  <param name="class"		    	value="cslibs_mapping::publisher::DistributionsPublisher_f"/>
 	  <param name="base_class"	    	value="cslibs_mapping::publisher::Publisher"/>
 	  <param name="topic"		    	value="/cslibs_mapping/occ_ndt_3d/map/distributions"/>
 	  <param name="occupancy_ndt"		value="true"/>
 	</group>-->
 
 	<group ns="ndt_3d_pointcloud">
-	  <param name="class"		    	value="cslibs_mapping::publisher::PointcloudPublisher"/>
+	  <param name="class"		    	value="cslibs_mapping::publisher::PointcloudPublisher_f"/>
 	  <param name="base_class"	    	value="cslibs_mapping::publisher::Publisher"/>
 	  <param name="topic"		    	value="/cslibs_mapping/ndt_3d/map/pointcloud"/>
 	  <param name="occupancy_ndt"		value="false"/>
+	  <param name="occ_threshold"           value="0.1"/>
 	</group>
 	<group ns="occ_ndt_3d_pointcloud">
-	  <param name="class"		    	value="cslibs_mapping::publisher::PointcloudPublisher"/>
+	  <param name="class"		    	value="cslibs_mapping::publisher::PointcloudPublisher_f"/>
 	  <param name="base_class"	    	value="cslibs_mapping::publisher::Publisher"/>
 	  <param name="topic"		    	value="/cslibs_mapping/occ_ndt_3d/map/pointcloud"/>
 	  <param name="occupancy_ndt"		value="true"/>
+	  <param name="occ_threshold"           value="0.1"/>
 	</group>
 	<group ns="occ_ndt_3d_visibility_pointcloud">
-	  <param name="class"		    	value="cslibs_mapping::publisher::PointcloudPublisher"/>
+	  <param name="class"		    	value="cslibs_mapping::publisher::PointcloudPublisher_f"/>
 	  <param name="base_class"	    	value="cslibs_mapping::publisher::Publisher"/>
 	  <param name="topic"		    	value="/cslibs_mapping/occ_ndt_3d_visibility/map/pointcloud"/>
 	  <param name="occupancy_ndt"		value="true"/>
+	  <param name="occ_threshold"           value="0.1"/>
 	</group>
 	<group ns="occ_3d_octomap">
 	  <param name="class"		    	value="cslibs_mapping::publisher::OctomapPublisher"/>

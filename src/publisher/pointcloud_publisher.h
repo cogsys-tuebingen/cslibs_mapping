@@ -8,6 +8,7 @@
 #include <cslibs_mapping/maps/occupancy_ndt_grid_map_3d.hpp>
 
 #include <cslibs_ndt_3d/conversion/sensor_msgs_pointcloud2.hpp>
+#include <cslibs_ndt_3d/conversion/sensor_msgs_pointcloud2_rgb.hpp>
 
 namespace cslibs_mapping {
 namespace publisher {
@@ -37,6 +38,9 @@ private:
 
             occ_threshold_ = static_cast<T>(nh.param<double>(param_name("occ_threshold"), 0.169));
         }
+        publish_sampled_ = nh.param<bool>(param_name("sample"), true);
+        allocate_all_ = nh.param<bool>(param_name("allocate_all"), false);
+        sampling_resolution_ = static_cast<T>(nh.param<double>(param_name("sampling_resolution"), 0.1));
 
         publisher_ = nh.advertise<sensor_msgs::PointCloud2>(topic, 1);
     }
@@ -56,7 +60,11 @@ private:
         const typename local_map_t::Ptr m = map->as<cslibs_mapping::maps::NDTGridMap3D<T>>().get();
         if (m) {
             sensor_msgs::PointCloud2 msg;
-            cslibs_ndt_3d::conversion::from<T>(m, msg);
+
+            if (publish_sampled_)
+                cslibs_ndt_3d::conversion::rgbFrom<T>(m, msg, sampling_resolution_, occ_threshold_, allocate_all_);
+            else
+                cslibs_ndt_3d::conversion::from<T>(m, msg);
 
             msg.header.stamp    = time;
             msg.header.frame_id = map->getFrame();
@@ -74,7 +82,11 @@ private:
             const typename local_map_t::Ptr m = map->as<cslibs_mapping::maps::OccupancyNDTGridMap3D<T>>().get();
             if (m) {
                 sensor_msgs::PointCloud2 msg;
-                cslibs_ndt_3d::conversion::from<T>(m, msg, ivm_, occ_threshold_);
+
+                if (publish_sampled_)
+                    cslibs_ndt_3d::conversion::rgbFrom<T>(m, msg, ivm_, sampling_resolution_, occ_threshold_, allocate_all_);
+                else
+                    cslibs_ndt_3d::conversion::from<T>(m, msg, ivm_, occ_threshold_);
 
                 msg.header.stamp    = time;
                 msg.header.frame_id = map->getFrame();
@@ -88,6 +100,10 @@ private:
 
     T                   occ_threshold_;
     typename ivm_t::Ptr ivm_;
+
+    bool publish_sampled_;
+    bool allocate_all_;
+    T    sampling_resolution_;
 };
 
 using PointcloudPublisher   = PointcloudPublisherBase<double>;
