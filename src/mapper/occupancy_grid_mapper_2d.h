@@ -39,7 +39,7 @@ protected:
 
         const Tp resolution       = static_cast<Tp>(nh.param<double>(param_name("resolution"), 0.05));
         const Tp chunk_resolution = static_cast<Tp>(nh.param<double>(param_name("chunk_resolution"), 5.0));
-        resolution2_ = resolution * resolution;
+        resolution_ = resolution;
 
         std::vector<double> origin = {0.0, 0.0, 0.0};
         nh.param<std::vector<double>>(param_name("origin"), origin);
@@ -80,15 +80,20 @@ protected:
             const typename cslibs_plugins_data::types::Laserscan2<Tp>::rays_t &rays = laser_data.getRays();
             const typename cslibs_gridmaps::dynamic_maps::ProbabilityGridmap<Tp,T>::Ptr &map = map_->get();
 
+            const auto m_T_w = map->getInitialOrigin().inverse();
+            const cslibs_math_2d::Point2<Tp> start = m_T_w * o_T_d.translation();
             for (const auto &ray : rays) {
                 if (ray.valid() && ray.end_point.isNormal()) {
                     const cslibs_math_2d::Point2<Tp> map_point = o_T_d * ray.end_point;
                     if (map_point.isNormal()) {
+                        const Tp& range = (m_T_w * map_point - start).length();
+
                         auto it = map->getLineIterator(o_T_d.translation(), map_point);
                         while(!it.done()) {
-                            double l = it.distance2() > resolution2_ ?
-                                        ivm_->updateFree(*it) : ivm_->updateOccupied(*it);
-                            *it = l;
+                            const cslibs_math_2d::Point2<Tp> mid((static_cast<Tp>(it.x())+0.5) * resolution_,
+                                                                 (static_cast<Tp>(it.y())+0.5) * resolution_);
+                            *it = (2.0*std::fabs(range - (mid-start).length()) > resolution_) ?
+                                       ivm_->updateFree(*it) : ivm_->updateOccupied(*it);
                             ++it;
                         }
                         *it = ivm_->updateOccupied(*it);
@@ -164,7 +169,7 @@ private:
     typename rep_t::Ptr map_;
 
     typename ivm_t::Ptr ivm_;
-    Tp                  resolution2_;
+    Tp                  resolution_;
 };
 
 using OccupancyGridMapper2D    = OccupancyGridMapper2DBase<double,double>; // for backwards compatibility
