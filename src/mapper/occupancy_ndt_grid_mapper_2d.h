@@ -76,7 +76,7 @@ protected:
         return type->isType<cslibs_plugins_data::types::Laserscan2<T>>();
     }
 
-    virtual inline void process(const data_t::ConstPtr &data) override
+    virtual inline bool process(const data_t::ConstPtr &data) override
     {
         assert (uses(data));
         assert (!visibility_based_update_ || ivm_);
@@ -101,7 +101,9 @@ protected:
             visibility_based_update_ ?
                         map_->get()->insertVisible(cloud, o_T_d, ivm_, ivm_visibility_) :
                         map_->get()->insert(cloud, o_T_d);
+            return true;
         }
+        return false;
     }
 
     virtual inline bool saveMap() override

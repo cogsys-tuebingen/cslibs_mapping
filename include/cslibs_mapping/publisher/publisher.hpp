@@ -7,6 +7,7 @@
 
 #include <cslibs_utility/signals/signals.hpp>
 #include <cslibs_utility/common/delegate.hpp>
+#include <cslibs_time/time.hpp>
 
 #include <cslibs_plugins/plugin.hpp>
 
@@ -33,16 +34,17 @@ public:
         const double publish_rate = nh.param<double>(param_name("rate"), 10.0);
         const std::string topic = nh.param<std::string>(param_name("topic"), "/cslibs_mapping/" + name_);
 
-        publish_period_ = ros::Duration(publish_rate > 0.0 ? 1.0 / publish_rate : 0.0);
+        publish_period_ = cslibs_time::Duration(publish_rate > 0.0 ? 1.0 / publish_rate : 0.0);
+        next_publish_   = cslibs_time::Time::now();
         doAdvertise(nh, topic);
     }
 
-    inline void publish(const map_t::ConstPtr &map, const ros::Time &time)
+    inline void publish(const map_t::ConstPtr &map, const cslibs_time::Time &time)
     {
-        ros::Time now = ros::Time::now();
-        if (last_publish_ + publish_period_ < now) {
-            doPublish(map, time);
-            last_publish_ = now;
+        cslibs_time::Time now = cslibs_time::Time::now();
+        if (next_publish_ <= now) {
+            doPublish(map, ros::Time::now());
+            next_publish_ = now + publish_period_;
         }
     }
 
@@ -51,9 +53,9 @@ protected:
     virtual void doAdvertise(ros::NodeHandle &nh, const std::string &topic) = 0;
     virtual void doPublish(const map_t::ConstPtr &map, const ros::Time &time) = 0;
 
-    ros::Publisher  publisher_;
-    ros::Time       last_publish_;
-    ros::Duration   publish_period_;
+    ros::Publisher          publisher_;
+    cslibs_time::Time       next_publish_;
+    cslibs_time::Duration   publish_period_;
 };
 }
 }

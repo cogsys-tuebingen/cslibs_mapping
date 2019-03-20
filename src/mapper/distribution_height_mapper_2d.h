@@ -53,7 +53,7 @@ protected:
         return type->isType<cslibs_plugins_data::types::Pointcloud3<Tp>>();
     }
 
-    virtual inline void process(const data_t::ConstPtr &data) override
+    virtual inline bool process(const data_t::ConstPtr &data) override
     {
         assert (uses(data));
 
@@ -80,7 +80,9 @@ protected:
                     }
                 }
             }
+            return true;
         }
+        return false;
     }
 
     virtual inline bool saveMap() override

@@ -66,6 +66,7 @@ public:
 
         // map frame
         map_frame_  = nh.param<std::string>(param_name("map_frame"), "/map");
+        queue_size_ = static_cast<std::size_t>(nh.param<int>(param_name("queue_size"), 10));
 
         // tf listener and lookup timeout
         tf_.reset(new tf_listener_t);
@@ -143,6 +144,7 @@ protected:
 
     handle_vector_t    handles_;
     data_queue_t       queue_;
+    std::size_t        queue_size_;
 
     mutable mutex_t    mutex_;
     cond_t             notify_;
@@ -161,48 +163,51 @@ protected:
     {
         tf_.reset(new tf_listener_t);
         ros::Time::waitForValid();
-        cslibs_time::Time start = cslibs_time::Time::now();
-        cslibs_time::Time pub = start + publish_period_;
+        cslibs_time::Time pub = cslibs_time::Time::now();
         const std::chrono::nanoseconds pd(int(publish_period_.seconds() * 1e9));
 
         int n = 0;
         lock_t l(mutex_);
         while (!stop_) {
-
             if (queue_.empty())
                 notify_.wait_for(l, pd);
 
-            while (queue_.hasElements()) {
+            if (queue_.hasElements()) {
                 if (stop_)
                     break;
 
-                process(queue_.pop());
-                ++n;
-                cslibs_time::Time now = cslibs_time::Time::now();
-                // if publication is forced, check if timeout or n_out is reached
-                if (force_publish_ && (now >= pub || n >= publish_number_)) {
-                    publish();
-                    n = 0;
-                    start = now;
-                    pub = now + publish_period_;
+                if (queue_size_ > 0) { // queue_size = 0 stands for infty
+                    while (queue_.size() > queue_size_)
+                        queue_.pop();
+                }
+
+                if (process(queue_.pop())) {
+                    ++n;
+                    cslibs_time::Time now = cslibs_time::Time::now();
+                    // if publication is forced, check if timeout or n_out is reached
+                    if (force_publish_ && (now >= pub || n >= publish_number_)) {
+                        publish();
+                        n = 0;
+                        pub = now + publish_period_;
+                    }
                 }
             }
 
             // if publication is not forced, publish if there is time left
-            if (!force_publish_)
+            if (queue_.empty() && !force_publish_)
                 publish();
         }
     }
 
     virtual bool setupMap(ros::NodeHandle &nh) = 0;
     virtual bool uses(const data_t::ConstPtr &type) = 0;
-    virtual void process(const data_t::ConstPtr &data) = 0;
+    virtual bool process(const data_t::ConstPtr &data) = 0;
     virtual bool saveMap() = 0;
 
     virtual inline void publish()
     {
         for (auto &p : publishers_)
-            p->publish(getMap(), ros::Time::now());
+            p->publish(getMap(), cslibs_time::Time::now());
     }
 
     inline bool checkPath() const

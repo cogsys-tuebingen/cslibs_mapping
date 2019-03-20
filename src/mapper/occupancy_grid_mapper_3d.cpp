@@ -30,13 +30,13 @@ bool OccupancyGridMapper3D::uses(const data_t::ConstPtr &type)
            type->isType<cslibs_plugins_data::types::Pointcloud3f>();
 }
 
-void OccupancyGridMapper3D::process(const data_t::ConstPtr &data)
+bool OccupancyGridMapper3D::process(const data_t::ConstPtr &data)
 {
     assert (uses(data));
     if (data->isType<cslibs_plugins_data::types::Pointcloud3d>())
-        doProcess<double>(data);
+        return doProcess<double>(data);
     else
-        doProcess<float>(data);
+        return doProcess<float>(data);
 }
 
 bool OccupancyGridMapper3D::saveMap()

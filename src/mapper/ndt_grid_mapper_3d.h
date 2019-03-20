@@ -53,7 +53,7 @@ protected:
         return type->isType<cslibs_plugins_data::types::Pointcloud3<T>>();
     }
 
-    virtual inline void process(const data_t::ConstPtr &data) override
+    virtual inline bool process(const data_t::ConstPtr &data) override
     {
         assert (uses(data));
 
@@ -67,7 +67,9 @@ protected:
                                  tf_timeout_)) {
             if (const typename cslibs_math_3d::Pointcloud3<T>::ConstPtr &cloud = cloud_data.points())
                 map_->get()->insert(cloud, o_T_d);
+            return true;
         }
+        return false;
     }
 
     virtual inline bool saveMap() override

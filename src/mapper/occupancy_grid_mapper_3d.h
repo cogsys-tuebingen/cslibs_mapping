@@ -21,10 +21,10 @@ public:
 protected:
     virtual inline bool setupMap(ros::NodeHandle &nh) override;
     virtual inline bool uses(const data_t::ConstPtr &type) override;
-    virtual inline void process(const data_t::ConstPtr &data) override;
+    virtual inline bool process(const data_t::ConstPtr &data) override;
 
     template <typename T>
-    inline void doProcess(const data_t::ConstPtr &data)
+    inline bool doProcess(const data_t::ConstPtr &data)
     {
         const cslibs_plugins_data::types::Pointcloud3<T> &cloud_data = data->as<cslibs_plugins_data::types::Pointcloud3<T>>();
 
@@ -51,7 +51,9 @@ protected:
 
                 map_->get()->insertPointCloud(cloud, origin, -1, true, true);
             }
+            return true;
         }
+        return false;
     }
 
     virtual inline bool saveMap() override;
