@@ -170,9 +170,9 @@ protected:
         lock_t l(mutex_);
         while (!stop_) {
             if (queue_.empty())
-                notify_.wait_for(l, pd);
+                notify_.wait(l);//_for(l, pd);
 
-            if (queue_.hasElements()) {
+            while (queue_.hasElements()) {
                 if (stop_)
                     break;
 
