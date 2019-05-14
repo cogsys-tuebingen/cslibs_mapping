@@ -84,7 +84,7 @@ private:
               std::cerr << "flattening" << std::endl;
               typename cslibs_ndt_2d::static_maps::mono::Gridmap<T>::Ptr fm = cslibs_ndt_2d::conversion::merge<T>(m);
               std::cerr << "flattened" << std::endl;
-              cslibs_ndt_2d::conversion::from(fm, occ_map, sampling_resolution_);
+              cslibs_ndt_2d::conversion::from(*fm, occ_map, sampling_resolution_);
             } else {
               cslibs_ndt_2d::conversion::from(m, occ_map, sampling_resolution_);
             }
