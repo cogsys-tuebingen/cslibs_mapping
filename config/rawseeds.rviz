@@ -37,7 +37,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: 3D Occupancy NDT Map
+    SyncSource: Stereo
 Toolbars:
   toolButtonStyle: 2
 Visualization Manager:
@@ -254,8 +254,8 @@ Visualization Manager:
       Channel Name: intensity
       Class: rviz/PointCloud2
       Color: 0; 0; 255
-      Color Transformer: FlatColor
-      Decay Time: 50
+      Color Transformer: RGB8
+      Decay Time: 0
       Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
@@ -269,7 +269,7 @@ Visualization Manager:
       Size (Pixels): 3
       Size (m): 0.150000006
       Style: Flat Squares
-      Topic: /cslibs_mapping/debug
+      Topic: /svs_l/filtered_points
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
@@ -360,7 +360,7 @@ Visualization Manager:
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
         Max Value: 3.95681119
-        Min Value: 0.0116417976
+        Min Value: 0.0147717213
         Value: true
       Axis: Z
       Channel Name: intensity
@@ -368,7 +368,7 @@ Visualization Manager:
       Color: 255; 170; 0
       Color Transformer: AxisColor
       Decay Time: 0
-      Enabled: true
+      Enabled: false
       Invert Rainbow: false
       Max Color: 255; 255; 255
       Max Intensity: 0.706349015
@@ -385,23 +385,23 @@ Visualization Manager:
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: false
-      Value: true
+      Value: false
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
-        Max Value: 10
-        Min Value: -10
+        Max Value: 2.68666482
+        Min Value: 0.0084031038
         Value: true
       Axis: Z
       Channel Name: intensity
       Class: rviz/PointCloud2
       Color: 255; 255; 255
-      Color Transformer: Intensity
+      Color Transformer: AxisColor
       Decay Time: 0
       Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 0
+      Max Intensity: 1
       Min Color: 0; 0; 0
       Min Intensity: 0
       Name: 3D Visibility Occupancy NDT Map
@@ -485,25 +485,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 40.8968582
+      Distance: 54.7356567
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 9.5539341
-        Y: -11.4372492
-        Z: 0.7799927
-      Focal Shape Fixed Size: true
+        X: 14.4627886
+        Y: -12.7048368
+        Z: 4.92467594
+      Focal Shape Fixed Size: false
       Focal Shape Size: 0.0500000007
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 0.104797259
+      Pitch: 1.41039801
       Target Frame: odom
       Value: Orbit (rviz)
-      Yaw: 1.95681512
+      Yaw: 4.91540098
     Saved: ~
 Window Geometry:
   Displays:
