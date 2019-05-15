@@ -42,7 +42,7 @@ protected:
 
         if (!visibility_based_update_)
             return;
-        T visibility_threshold         = static_cast<T>(nh.param<double>(param_name("visibility_threshold"), 0.4));
+        T visibility_threshold         = static_cast<T>(nh.param<double>(param_name("visibility_threshold"), 0.05));
         T prob_visible_if_occluded     = static_cast<T>(nh.param<double>(param_name("prob_visible_if_occluded"), 0.2));
         T prob_visible_if_not_occluded = static_cast<T>(nh.param<double>(param_name("prob_visible_if_not_occluded"), 0.8));
         ivm_visibility_.reset(new ivm_t(
