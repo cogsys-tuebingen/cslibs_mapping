@@ -24,6 +24,7 @@ This library depends on the following packages of our research group:
 
 ### Examples
 For usage, have a look at the provided [example launch file](launch/example.launch).
+
 To get the required bag file, go to the [bag](bag) folder and execute the provided script with ``./wget.sh``.
 
 ## Contributing
