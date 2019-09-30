@@ -23,7 +23,8 @@ This library depends on the following packages of our research group:
 * [cslibs\_utility](https://github.com/cogsys-tuebingen/cslibs_utility)
 
 ### Examples
-For usage, have a look at the provided [launch file](launch/rawseeds.launch).
+For usage, have a look at the provided [example launch file](launch/example.launch).
+To get the required bag file, go to the [bag](bag) folder and execute the provided script with ``./wget.sh``.
 
 ## Contributing
 [Contribution guidelines for this project](CONTRIBUTING.md)
