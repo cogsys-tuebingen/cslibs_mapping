@@ -101,7 +101,7 @@ if(${_vendor_id} STREQUAL "GenuineIntel")
 
         if(${_cpu_model} EQUAL 60)
             message("[cslibs_mapping]: Found Xeon E3 v3, enabling O1, but no idea why it's ncecessary.")
-             if(${CMAKE_BUILD_TYPE} STREQUAL Debug)
+             if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
                  add_definitions(-O1)
              endif()
         endif()

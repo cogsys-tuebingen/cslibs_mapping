@@ -75,7 +75,7 @@ private:
 
     inline void publishNDTGridMap2D(const map_t::ConstPtr &map, const ros::Time &time)
     {
-        using local_map_t = cslibs_ndt_2d::dynamic_maps::Gridmap<T>;
+        using local_map_t = typename cslibs_mapping::maps::NDTGridMap2D<T>::map_t;//cslibs_ndt_2d::dynamic_maps::Gridmap<T>;
         const typename local_map_t::Ptr m = map->as<cslibs_mapping::maps::NDTGridMap2D<T>>().get();
         if (m && !m->empty()) {
             typename cslibs_gridmaps::static_maps::ProbabilityGridmap<T,T>::Ptr occ_map;
@@ -99,11 +99,11 @@ private:
     inline void publishOccupancyNDTGridMap2D(const map_t::ConstPtr &map, const ros::Time &time)
     {
         if (ivm_) {
-            using local_map_t = cslibs_ndt_2d::dynamic_maps::OccupancyGridmap<T>;
+            using local_map_t = typename cslibs_mapping::maps::OccupancyNDTGridMap2D<T>::map_t;//cslibs_ndt_2d::dynamic_maps::OccupancyGridmap<T>;
             const typename local_map_t::Ptr m = map->as<cslibs_mapping::maps::OccupancyNDTGridMap2D<T>>().get();
             if (m && !m->empty()) {
                 typename cslibs_gridmaps::static_maps::ProbabilityGridmap<T,T>::Ptr occ_map;
-                cslibs_ndt_2d::conversion::from(m, occ_map, sampling_resolution_, ivm_);
+                cslibs_ndt_2d::conversion::from(*m, occ_map, sampling_resolution_, ivm_);
                 if (occ_map) {
                     doPublish<T,T>(occ_map, time, map->getFrame());
                     return;
@@ -116,7 +116,7 @@ private:
     inline void publishOccupancyGridMap2D(const map_t::ConstPtr &map, const ros::Time &time)
     {
         if (ivm_) {
-            using local_map_t = cslibs_gridmaps::dynamic_maps::ProbabilityGridmap<Tp,T>;
+            using local_map_t = typename cslibs_mapping::maps::OccupancyGridMap2D<Tp,T>::map_t;//cslibs_gridmaps::dynamic_maps::ProbabilityGridmap<Tp,T>;
             const typename local_map_t::Ptr m = map->as<cslibs_mapping::maps::OccupancyGridMap2D<Tp,T>>().get();
             if (m) {
                 typename cslibs_gridmaps::static_maps::ProbabilityGridmap<Tp,T>::Ptr occ_map(
@@ -153,7 +153,7 @@ private:
 
     inline void publishMinHeightMap2D(const map_t::ConstPtr &map, const ros::Time &time)
     {
-        using local_map_t = cslibs_gridmaps::dynamic_maps::MinHeightmap<Tp,T>;
+        using local_map_t = typename cslibs_mapping::maps::MinHeightMap2D<Tp,T>::map_t;//cslibs_gridmaps::dynamic_maps::MinHeightmap<Tp,T>;
         const typename local_map_t::Ptr m = map->as<cslibs_mapping::maps::MinHeightMap2D<Tp,T>>().get();
         if (m) {
             typename cslibs_gridmaps::static_maps::ProbabilityGridmap<Tp,T>::Ptr occ_map(
@@ -192,7 +192,7 @@ private:
 
     inline void publishDistributionHeightMap2D(const map_t::ConstPtr &map, const ros::Time &time)
     {
-        using local_map_t = cslibs_gridmaps::dynamic_maps::DistributionHeightmap<Tp,T>;
+        using local_map_t = typename cslibs_mapping::maps::DistributionHeightMap2D<Tp,T>::map_t;//cslibs_gridmaps::dynamic_maps::DistributionHeightmap<Tp,T>;
         const typename local_map_t::Ptr m = map->as<cslibs_mapping::maps::DistributionHeightMap2D<Tp,T>>().get();
         if (m) {
             typename cslibs_gridmaps::static_maps::ProbabilityGridmap<Tp,T>::Ptr occ_map(

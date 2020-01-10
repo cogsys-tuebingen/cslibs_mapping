@@ -6,8 +6,12 @@
 
 #include <cslibs_mapping/maps/ndt_grid_map_3d.hpp>
 #include <cslibs_mapping/maps/occupancy_ndt_grid_map_3d.hpp>
+#include <cslibs_mapping/maps/ndt_grid_map_2d.hpp>
+#include <cslibs_mapping/maps/occupancy_ndt_grid_map_2d.hpp>
 
 #include <cslibs_ndt_3d/conversion/distributions.hpp>
+//#include <cslibs_ndt_2d/conversion/distributions.hpp>
+#include <visualization_msgs/MarkerArray.h>
 
 namespace cslibs_mapping {
 namespace publisher {
@@ -20,7 +24,9 @@ private:
     virtual inline bool uses(const map_t::ConstPtr &map) const
     {
         return map->isType<cslibs_mapping::maps::NDTGridMap3D<T>>() ||
-               map->isType<cslibs_mapping::maps::OccupancyNDTGridMap3D<T>>();
+               map->isType<cslibs_mapping::maps::OccupancyNDTGridMap3D<T>>() ||
+               map->isType<cslibs_mapping::maps::NDTGridMap2D<T>>() ||
+               map->isType<cslibs_mapping::maps::OccupancyNDTGridMap2D<T>>();              ;
     }
     virtual inline void doAdvertise(ros::NodeHandle &nh, const std::string &topic)
     {
@@ -37,7 +43,7 @@ private:
             occ_threshold_ = static_cast<T>(nh.param<double>(param_name("occ_threshold"), 0.169));
         }
 
-        publisher_ = nh.advertise<cslibs_ndt_3d::DistributionArray>(topic, 1);
+        publisher_ = nh.advertise<visualization_msgs::MarkerArray>(topic, 1);
     }
 
     virtual inline void doPublish(const map_t::ConstPtr &map, const ros::Time &time)
@@ -46,22 +52,23 @@ private:
             return publishNDTGridMap3D(map, time);
         if (map->isType<cslibs_mapping::maps::OccupancyNDTGridMap3D<T>>())
             return publishOccupancyNDTGridMap3D(map, time);
+        if (map->isType<cslibs_mapping::maps::NDTGridMap2D<T>>())
+            return publishNDTGridMap2D(map, time);
+        if (map->isType<cslibs_mapping::maps::OccupancyNDTGridMap2D<T>>())
+            return publishOccupancyNDTGridMap2D(map, time);
         std::cout << "[DistributionsPublisher '" << name_ << "']: Got wrong map type!" << std::endl;
     }
 
     inline void publishNDTGridMap3D(const map_t::ConstPtr &map, const ros::Time &time)
     {
-        using local_map_t = cslibs_ndt_3d::dynamic_maps::Gridmap<T>;
+        using local_map_t = typename cslibs_mapping::maps::NDTGridMap3D<T>::map_t;//cslibs_ndt_3d::dynamic_maps::Gridmap<T>;
         const typename local_map_t::Ptr m = map->as<cslibs_mapping::maps::NDTGridMap3D<T>>().get();
         if (m) {
-            cslibs_ndt_3d::DistributionArray::Ptr distributions;
-            cslibs_ndt_3d::conversion::from<T>(m, distributions);
+            visualization_msgs::MarkerArray::Ptr markers;
+            //cslibs_ndt_3d::conversion::from<T>(m, markers, time, map->getFrame());
 
-            if (distributions) {
-                distributions->header.stamp    = time;
-                distributions->header.frame_id = map->getFrame();
-
-                publisher_.publish(distributions);
+            if (markers) {
+                publisher_.publish(markers);
                 return;
             }
         }
@@ -71,17 +78,48 @@ private:
     inline void publishOccupancyNDTGridMap3D(const map_t::ConstPtr &map, const ros::Time &time)
     {
         if (ivm_) {
-            using local_map_t = cslibs_ndt_3d::dynamic_maps::OccupancyGridmap<T>;
+            using local_map_t = typename cslibs_mapping::maps::OccupancyNDTGridMap3D<T>::map_t;//cslibs_ndt_3d::dynamic_maps::OccupancyGridmap<T>;
             const typename local_map_t::Ptr m = map->as<cslibs_mapping::maps::OccupancyNDTGridMap3D<T>>().get();
             if (m) {
-                cslibs_ndt_3d::DistributionArray::Ptr distributions;
-                cslibs_ndt_3d::conversion::from<T>(m, distributions, ivm_, occ_threshold_);
+                visualization_msgs::MarkerArray::Ptr markers;
+                //cslibs_ndt_3d::conversion::from<T>(m, markers, time, map->getFrame(), ivm_);
 
-                if (distributions) {
-                    distributions->header.stamp    = time;
-                    distributions->header.frame_id = map->getFrame();
+                if (markers) {
+                    publisher_.publish(markers);
+                    return;
+                }
+            }
+        }
+        std::cout << "[DistributionsPublisher '" << name_ << "']: Map could not be published!" << std::endl;
+    }
 
-                    publisher_.publish(distributions);
+    inline void publishNDTGridMap2D(const map_t::ConstPtr &map, const ros::Time &time)
+    {
+        using local_map_t = typename cslibs_mapping::maps::NDTGridMap2D<T>::map_t;//cslibs_ndt_2d::dynamic_maps::Gridmap<T>;
+        const typename local_map_t::Ptr m = map->as<cslibs_mapping::maps::NDTGridMap2D<T>>().get();
+        if (m) {
+            visualization_msgs::MarkerArray::Ptr markers;
+           // cslibs_ndt_3d::conversion::from<T>(m, markers, time, map->getFrame());
+
+            if (markers) {
+                publisher_.publish(markers);
+                return;
+            }
+        }
+        std::cout << "[DistributionsPublisher '" << name_ << "']: Map could not be published!" << std::endl;
+    }
+
+    inline void publishOccupancyNDTGridMap2D(const map_t::ConstPtr &map, const ros::Time &time)
+    {
+        if (ivm_) {
+            using local_map_t = typename cslibs_mapping::maps::OccupancyNDTGridMap2D<T>::map_t;//cslibs_ndt_2d::dynamic_maps::OccupancyGridmap<T>;
+            const typename local_map_t::Ptr m = map->as<cslibs_mapping::maps::OccupancyNDTGridMap2D<T>>().get();
+            if (m) {
+                visualization_msgs::MarkerArray::Ptr markers;
+               // cslibs_ndt_3d::conversion::from<T>(m, markers, time, map->getFrame(), ivm_);
+
+                if (markers) {
+                    publisher_.publish(markers);
                     return;
                 }
             }

@@ -21,7 +21,7 @@ public:
     using request_t    = cslibs_utility::common::delegate<const map_t::ConstPtr&()>;
 
     inline Publisher() = default;
-    inline virtual ~Publisher() = default;
+    virtual ~Publisher() = default;
 
     inline const static std::string Type()
     {

@@ -35,7 +35,7 @@ public:
     using lock_t  = std::unique_lock<mutex_t>;
 
     inline Mapper() = default;
-    inline virtual ~Mapper()
+    virtual ~Mapper()
     {
         stop_ = true;
         notify_.notify_one();
@@ -52,9 +52,9 @@ public:
         return "cslibs_mapping::mapper::Mapper";
     }
 
-    inline void setup(ros::NodeHandle &nh,
-                      const std::map<std::string, data_provider_t::Ptr> &data_providers,
-                      const std::map<std::string, typename publisher_t::Ptr> &publishers)
+    inline void setup(const std::map<std::string, data_provider_t::Ptr> &data_providers,
+                      const std::map<std::string, typename publisher_t::Ptr> &publishers,
+                      ros::NodeHandle &nh)
     {
         auto param_name = [this](const std::string &name){return name_ + "/" + name;};
         auto callback = [this](const data_t::ConstPtr &data) {

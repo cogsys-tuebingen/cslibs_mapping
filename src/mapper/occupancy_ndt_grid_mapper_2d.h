@@ -12,6 +12,7 @@
 #include <cslibs_math_2d/linear/pointcloud.hpp>
 #include <cslibs_gridmaps/static_maps/algorithms/normalize.hpp>
 
+#include <cslibs_ndt_2d/serialization/serialization.hpp>
 #include <cslibs_ndt_2d/serialization/dynamic_maps/occupancy_gridmap.hpp>
 #include <cslibs_ndt_2d/conversion/probability_gridmap.hpp>
 
@@ -121,10 +122,10 @@ protected:
 
         typename cslibs_gridmaps::static_maps::ProbabilityGridmap<T,T>::Ptr tmp;
         {
-            if (!cslibs_ndt_2d::dynamic_maps::saveBinary<T>(map_->get(), (path_ / boost::filesystem::path("map")).string()))
+            if (!cslibs_ndt_2d::serialization::saveBinary(*(map_->get()), (path_ / boost::filesystem::path("map")).string()))
                 return false;
 
-            cslibs_ndt_2d::conversion::from(map_->get(), tmp, sampling_resolution_, ivm_);
+            cslibs_ndt_2d::conversion::from(*(map_->get()), tmp, sampling_resolution_, ivm_);
             if (!tmp)
                 return false;
         }

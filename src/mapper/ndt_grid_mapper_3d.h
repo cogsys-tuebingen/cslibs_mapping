@@ -12,6 +12,7 @@
 #include <cslibs_math_3d/linear/pointcloud.hpp>
 #include <cslibs_math_ros/tf/conversion_3d.hpp>
 
+#include <cslibs_ndt_3d/serialization/serialization.hpp>
 #include <cslibs_ndt_3d/serialization/dynamic_maps/gridmap.hpp>
 #include <cslibs_time/time.hpp>
 
@@ -90,7 +91,7 @@ protected:
         if (!cslibs_ndt::common::serialization::create_directory(path_root))
             return false;
 
-        if (cslibs_ndt_3d::dynamic_maps::saveBinary<T>(map_->get(), (path_ / boost::filesystem::path("map")).string())) {
+        if (cslibs_ndt_3d::serialization::saveBinary(*(map_->get()), (path_ / boost::filesystem::path("map")).string())) {
             std::cout << "[NDTGridMapper3D '" << name_ << "']: Saved Map successfully." << std::endl;
             return true;
         }

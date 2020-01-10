@@ -21,6 +21,7 @@ find_package(catkin REQUIRED COMPONENTS
     message_generation
     std_msgs
     pluginlib
+    roscpp
 )
 
 find_package(Boost REQUIRED COMPONENTS filesystem)
@@ -41,7 +42,7 @@ catkin_package(
     INCLUDE_DIRS include
     LIBRARIES    ${PROJECT_NAME}
     CATKIN_DEPENDS cslibs_plugins cslibs_plugins_data cslibs_gridmaps cslibs_ndt_2d cslibs_ndt_3d
-                   cslibs_time cslibs_utility cslibs_math_ros
+                   cslibs_time cslibs_utility cslibs_math_ros pluginlib roscpp
     CFG_EXTRAS cslibs_mapping_enable_c++11.cmake
                cslibs_mapping_extras.cmake
                cslibs_mapping_show_headers.cmake
