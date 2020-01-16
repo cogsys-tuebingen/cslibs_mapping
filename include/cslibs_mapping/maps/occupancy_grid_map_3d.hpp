@@ -2,33 +2,15 @@
 #define CSLIBS_MAPPING_OCCUPANCY_GRID_MAP_3D_HPP
 
 #include <cslibs_mapping/maps/map.hpp>
+#include <cslibs_mapping/maps/map_template.hpp>
 #include <octomap/OcTree.h>
 
 namespace cslibs_mapping {
 namespace maps {
-class OccupancyGridMap3D : public Map
-{
-public:
-    using Ptr       = std::shared_ptr<OccupancyGridMap3D>;
-    using ConstPtr  = std::shared_ptr<const OccupancyGridMap3D>;
 
-    using map_t    = octomap::OcTree;
-    template <typename ... args_t>
-    inline OccupancyGridMap3D(const std::string &frame,
-                              const args_t &...args) :
-        Map(frame),
-        map_(new map_t(args...))
-    {
-    }
+using OccupancyGridMap3D =
+cslibs_mapping::maps::MapTemplate<octomap::OcTree>;
 
-    const inline std::shared_ptr<map_t> get() const
-    {
-        return map_;
-    }
-
-private:
-    const std::shared_ptr<map_t> map_;
-};
 }
 }
 
