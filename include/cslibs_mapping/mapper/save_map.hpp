@@ -1,5 +1,5 @@
 #ifndef CSLIBS_MAPPING_SAVE_MAP_HPP
-#define CSLIBA_MAPPING_SAVE_MAP_HPP
+#define CSLIBS_MAPPING_SAVE_MAP_HPP
 
 #include <cslibs_math_2d/linear/pose.hpp>
 #include <nav_msgs/Path.h>

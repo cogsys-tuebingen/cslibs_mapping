@@ -6,6 +6,7 @@
 #include <condition_variable>
 
 #include <cslibs_mapping/mapper/mapper.hpp>
+#include <cslibs_mapping/mapper/save_map.hpp>
 #include <cslibs_mapping/maps/occupancy_grid_map_2d.hpp>
 
 #include <cslibs_plugins_data/types/laserscan.hpp>
@@ -24,7 +25,7 @@ template <typename Tp = double, typename T = double>
 class OccupancyGridMapper2DBase : public Mapper
 {
 public:
-    using rep_t = maps::OccupancyGridMap2D<Tp,T>;
+    using rep_t = cslibs_mapping::maps::OccupancyGridMap2D<Tp,T>;
     using ivm_t = cslibs_gridmaps::utility::InverseModel<T>;
 
     virtual const inline map_t::ConstPtr getMap() const override
@@ -143,7 +144,7 @@ protected:
             for(int i = min_chunk_index[1] ; i <= max_chunk_index[1] ; ++ i) {
                 for(int j = min_chunk_index[0] ; j <= max_chunk_index[0] ; ++ j) {
                     typename cslibs_gridmaps::dynamic_maps::ProbabilityGridmap<Tp,T>::chunk_t *chunk = map->getChunk({{j,i}});
-                    if (chunk != nullptr) {
+                    if (chunk) {
                         const std::size_t cx = static_cast<std::size_t>((j - min_chunk_index[0]) * static_cast<int>(chunk_step));
                         const std::size_t cy = static_cast<std::size_t>((i - min_chunk_index[1]) * static_cast<int>(chunk_step));
                         for (std::size_t k = 0 ; k < chunk_step ; ++ k)
