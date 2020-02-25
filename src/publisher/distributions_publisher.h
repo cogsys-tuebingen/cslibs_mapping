@@ -64,8 +64,8 @@ private:
         using local_map_t = typename cslibs_mapping::maps::NDTGridMap3D<T>::map_t;//cslibs_ndt_3d::dynamic_maps::Gridmap<T>;
         const typename local_map_t::Ptr m = map->as<cslibs_mapping::maps::NDTGridMap3D<T>>().get();
         if (m) {
-            visualization_msgs::MarkerArray::Ptr markers;
-            //cslibs_ndt_3d::conversion::from<T>(m, markers, time, map->getFrame());
+            visualization_msgs::MarkerArray::Ptr markers(new visualization_msgs::MarkerArray);
+            cslibs_ndt_3d::conversion::from(*m, *markers, time, map->getFrame());
 
             if (markers) {
                 publisher_.publish(markers);
@@ -81,8 +81,8 @@ private:
             using local_map_t = typename cslibs_mapping::maps::OccupancyNDTGridMap3D<T>::map_t;//cslibs_ndt_3d::dynamic_maps::OccupancyGridmap<T>;
             const typename local_map_t::Ptr m = map->as<cslibs_mapping::maps::OccupancyNDTGridMap3D<T>>().get();
             if (m) {
-                visualization_msgs::MarkerArray::Ptr markers;
-                //cslibs_ndt_3d::conversion::from<T>(m, markers, time, map->getFrame(), ivm_);
+                visualization_msgs::MarkerArray::Ptr markers(new visualization_msgs::MarkerArray);
+                cslibs_ndt_3d::conversion::from(*m, *markers, ivm_, time, map->getFrame());
 
                 if (markers) {
                     publisher_.publish(markers);
@@ -99,7 +99,7 @@ private:
         const typename local_map_t::Ptr m = map->as<cslibs_mapping::maps::NDTGridMap2D<T>>().get();
         if (m) {
             visualization_msgs::MarkerArray::Ptr markers;
-           // cslibs_ndt_3d::conversion::from<T>(m, markers, time, map->getFrame());
+            //cslibs_ndt_3d::conversion::from<T>(m, markers, time, map->getFrame());
 
             if (markers) {
                 publisher_.publish(markers);
@@ -116,7 +116,7 @@ private:
             const typename local_map_t::Ptr m = map->as<cslibs_mapping::maps::OccupancyNDTGridMap2D<T>>().get();
             if (m) {
                 visualization_msgs::MarkerArray::Ptr markers;
-               // cslibs_ndt_3d::conversion::from<T>(m, markers, time, map->getFrame(), ivm_);
+                //cslibs_ndt_3d::conversion::from<T>(m, markers, time, map->getFrame(), ivm_);
 
                 if (markers) {
                     publisher_.publish(markers);
