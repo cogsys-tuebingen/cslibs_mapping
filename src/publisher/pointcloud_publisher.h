@@ -84,9 +84,9 @@ private:
                 sensor_msgs::PointCloud2 msg;
 
                 if (publish_sampled_)
-                    cslibs_ndt_3d::conversion::/*rgbFrom*/from<T>(m, msg, ivm_, /*sampling_resolution_,*/ occ_threshold_, allocate_all_);
+                    cslibs_ndt_3d::conversion::/*rgbFrom*/from<T>(m, msg, ivm_, cslibs_math_3d::Pose3<T>(),/*sampling_resolution_,*/ occ_threshold_, allocate_all_);
                 else
-                    cslibs_ndt_3d::conversion::from<T>(m, msg, ivm_, occ_threshold_);
+                    cslibs_ndt_3d::conversion::from<T>(m, msg, ivm_, cslibs_math_3d::Pose3<T>(), occ_threshold_);
 
                 msg.header.stamp    = time;
                 msg.header.frame_id = map->getFrame();

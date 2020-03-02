@@ -89,10 +89,11 @@ protected:
                                  ros::Time(cloud_data.timeFrame().start.seconds()),
                                  o_T_d,
                                  tf_timeout_)) {
+            using iterator_t = cslibs_math_3d::algorithms::NDTIterator<T>;
             if (const typename cslibs_math_3d::Pointcloud3<T>::ConstPtr &cloud = cloud_data.points())
                 visibility_based_update_ ?
-                            map_->get()->insertVisible(cloud, o_T_d, ivm_, ivm_visibility_) :
-                            map_->get()->insert(cloud, o_T_d);
+                            map_->get()->template insertVisible<iterator_t>(cloud, o_T_d, ivm_, ivm_visibility_) :
+                            map_->get()->template insert<iterator_t>(cloud, o_T_d);
             return true;
         }
         return false;
