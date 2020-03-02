@@ -10,7 +10,7 @@
 #include <cslibs_mapping/maps/occupancy_ndt_grid_map_2d.hpp>
 
 #include <cslibs_ndt_3d/conversion/distributions.hpp>
-//#include <cslibs_ndt_2d/conversion/distributions.hpp>
+#include <cslibs_ndt_2d/conversion/distributions.hpp>
 #include <visualization_msgs/MarkerArray.h>
 
 namespace cslibs_mapping {
@@ -61,7 +61,7 @@ private:
 
     inline void publishNDTGridMap3D(const map_t::ConstPtr &map, const ros::Time &time)
     {
-        using local_map_t = typename cslibs_mapping::maps::NDTGridMap3D<T>::map_t;//cslibs_ndt_3d::dynamic_maps::Gridmap<T>;
+        using local_map_t = typename cslibs_mapping::maps::NDTGridMap3D<T>::map_t;
         const typename local_map_t::Ptr m = map->as<cslibs_mapping::maps::NDTGridMap3D<T>>().get();
         if (m) {
             visualization_msgs::MarkerArray::Ptr markers(new visualization_msgs::MarkerArray);
@@ -78,11 +78,11 @@ private:
     inline void publishOccupancyNDTGridMap3D(const map_t::ConstPtr &map, const ros::Time &time)
     {
         if (ivm_) {
-            using local_map_t = typename cslibs_mapping::maps::OccupancyNDTGridMap3D<T>::map_t;//cslibs_ndt_3d::dynamic_maps::OccupancyGridmap<T>;
+            using local_map_t = typename cslibs_mapping::maps::OccupancyNDTGridMap3D<T>::map_t;
             const typename local_map_t::Ptr m = map->as<cslibs_mapping::maps::OccupancyNDTGridMap3D<T>>().get();
             if (m) {
                 visualization_msgs::MarkerArray::Ptr markers(new visualization_msgs::MarkerArray);
-                cslibs_ndt_3d::conversion::from(*m, *markers, ivm_, time, map->getFrame());
+                cslibs_ndt_3d::conversion::from(*m, *markers, ivm_, time, map->getFrame(), cslibs_math_3d::Pose3<T>(), occ_threshold_);
 
                 if (markers) {
                     publisher_.publish(markers);
@@ -95,11 +95,11 @@ private:
 
     inline void publishNDTGridMap2D(const map_t::ConstPtr &map, const ros::Time &time)
     {
-        using local_map_t = typename cslibs_mapping::maps::NDTGridMap2D<T>::map_t;//cslibs_ndt_2d::dynamic_maps::Gridmap<T>;
+        using local_map_t = typename cslibs_mapping::maps::NDTGridMap2D<T>::map_t;
         const typename local_map_t::Ptr m = map->as<cslibs_mapping::maps::NDTGridMap2D<T>>().get();
         if (m) {
             visualization_msgs::MarkerArray::Ptr markers;
-            //cslibs_ndt_3d::conversion::from<T>(m, markers, time, map->getFrame());
+            cslibs_ndt_2d::conversion::from<T>(m, markers, time, map->getFrame());
 
             if (markers) {
                 publisher_.publish(markers);
@@ -112,11 +112,14 @@ private:
     inline void publishOccupancyNDTGridMap2D(const map_t::ConstPtr &map, const ros::Time &time)
     {
         if (ivm_) {
-            using local_map_t = typename cslibs_mapping::maps::OccupancyNDTGridMap2D<T>::map_t;//cslibs_ndt_2d::dynamic_maps::OccupancyGridmap<T>;
+            using local_map_t = typename cslibs_mapping::maps::OccupancyNDTGridMap2D<T>::map_t;
             const typename local_map_t::Ptr m = map->as<cslibs_mapping::maps::OccupancyNDTGridMap2D<T>>().get();
             if (m) {
                 visualization_msgs::MarkerArray::Ptr markers;
-                //cslibs_ndt_3d::conversion::from<T>(m, markers, time, map->getFrame(), ivm_);
+                cslibs_ndt_2d::conversion::from<T>(m, markers, ivm_, time, map->getFrame(),
+                                                   cslibs_math_2d::Pose2<T>(),
+                                                   cslibs_math::color::Color<T>(0.0, 0.45, 0.63),
+                                                   occ_threshold_);
 
                 if (markers) {
                     publisher_.publish(markers);
