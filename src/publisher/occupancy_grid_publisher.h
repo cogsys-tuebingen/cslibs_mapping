@@ -54,6 +54,8 @@ private:
         if(flattened_) {
           ROS_WARN_STREAM("Publishing the flatttened map.");
         }
+        interpolate_  = nh.param<bool>(param_name("interpolate"),false);
+        allocate_all_ = nh.param<bool>(param_name("allocate_all"),false);
 
         publisher_ = nh.advertise<nav_msgs::OccupancyGrid>(topic, 1);
     }
@@ -86,7 +88,7 @@ private:
               std::cerr << "flattened" << std::endl;
               cslibs_ndt_2d::conversion::from(*fm, occ_map, sampling_resolution_);
             } else {
-              cslibs_ndt_2d::conversion::from(m, occ_map, sampling_resolution_);
+              cslibs_ndt_2d::conversion::from(m, occ_map, sampling_resolution_, allocate_all_, T(0.0), interpolate_);
             }
             if (occ_map) {
                 doPublish<T,T>(occ_map, time, map->getFrame());
@@ -103,7 +105,7 @@ private:
             const typename local_map_t::Ptr m = map->as<cslibs_mapping::maps::OccupancyNDTGridMap2D<T>>().get();
             if (m && !m->empty()) {
                 typename cslibs_gridmaps::static_maps::ProbabilityGridmap<T,T>::Ptr occ_map;
-                cslibs_ndt_2d::conversion::from(*m, occ_map, sampling_resolution_, ivm_);
+                cslibs_ndt_2d::conversion::from(*m, occ_map, sampling_resolution_, ivm_, allocate_all_, T(0.0), interpolate_);
                 if (occ_map) {
                     doPublish<T,T>(occ_map, time, map->getFrame());
                     return;
@@ -253,6 +255,8 @@ private:
     T                   sampling_resolution_;
     typename ivm_t::Ptr ivm_;
     bool                flattened_;
+    bool                interpolate_;
+    bool                allocate_all_;
 };
 
 using OccupancyGridPublisher    = OccupancyGridPublisherBase<double,double>;
