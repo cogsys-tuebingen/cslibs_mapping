@@ -28,10 +28,12 @@
   <depend>yaml-cpp</depend>
   <depend>pluginlib</depend>
   <depend>roscpp</depend>
+  <depend>ndt_map</depend>
 
   <export>
     <cslibs_mapping plugin="${prefix}/plugins.xml"/>
     <cslibs_mapping plugin="${prefix}/plugins_ndt.xml"/>
     <cslibs_mapping plugin="${prefix}/plugins_ondt.xml"/>
+    <cslibs_mapping plugin="${prefix}/plugins_oru.xml"/>
   </export>
 </package>

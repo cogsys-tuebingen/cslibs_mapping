@@ -1,0 +1,14 @@
+<library path="libcslibs_mapping">
+  <!-- Mapper -->
+  <class type="cslibs_mapping::mapper::OruNDTOMGridMapper3D" base_class_type="cslibs_mapping::mapper::Mapper">
+    <description> </description>
+  </class>
+  <class type="cslibs_mapping::mapper::OruNDTOMFGGridMapper3D" base_class_type="cslibs_mapping::mapper::Mapper">
+    <description> </description>
+  </class>
+
+  <!-- Publisher -->
+  <class type="cslibs_mapping::publisher::OruPublisher" base_class_type="cslibs_mapping::publisher::Publisher">
+    <description> </description>
+  </class>
+</library>

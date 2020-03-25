@@ -9,6 +9,17 @@ CLASS_LOADER_REGISTER_CLASS(cslibs_mapping::mapper::OccupancyGridMapper3D, cslib
 
 namespace cslibs_mapping {
 namespace mapper {
+OccupancyGridMapper3D::~OccupancyGridMapper3D()
+{
+    std::string stats_print =
+            "[OccupancyGridMapper3D]: N | current | mean | std | mem = " +
+            std::to_string(stats_.getN())
+            + " | " + std::to_string(stats_.getMean())
+            + " | " + std::to_string(stats_.getStandardDeviation())
+            + " | " + std::to_string(map_->get()->memoryUsage()) + "\n";
+    std::cout << stats_print << std::endl;
+}
+
 const OccupancyGridMapper3D::map_t::ConstPtr OccupancyGridMapper3D::getMap() const
 {
     map_->get()->updateInnerOccupancy();
@@ -56,6 +67,17 @@ bool OccupancyGridMapper3D::saveMap()
     path_t path_root(path_);
     if (!cslibs_ndt::common::serialization::create_directory(path_root))
         return false;
+
+    std::ofstream out((path_root / path_t("stats")).string(), std::fstream::trunc);
+    std::string stats_print =
+            "[OccupancyGridMapper3D]: N | current | mean | std | mem = " +
+            std::to_string(stats_.getN())
+            + " | " + std::to_string(stats_.getMean())
+            + " | " + std::to_string(stats_.getStandardDeviation())
+            + " | " + std::to_string(map_->get()->memoryUsage()) + "\n";
+    std::cout << stats_print << std::endl;
+    out << stats_print << std::endl;
+    out.close();
 
     std::string map_path_yaml = (path_ / boost::filesystem::path("map.ot")).string();
     {

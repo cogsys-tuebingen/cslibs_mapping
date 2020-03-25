@@ -15,6 +15,9 @@
 #include <cslibs_ndt_3d/serialization/serialization.hpp>
 #include <cslibs_ndt_3d/serialization/dynamic_maps/occupancy_gridmap.hpp>
 
+#include <cslibs_time/time.hpp>
+#include <cslibs_math/statistics/stable_distribution.hpp>
+
 namespace cslibs_mapping {
 namespace mapper {
 template <cslibs_ndt::map::tags::option option_t = cslibs_ndt::map::tags::dynamic_map,
@@ -25,6 +28,16 @@ class OccupancyNDTGridMapper3DBase : public Mapper
 public:
     using rep_t = maps::OccupancyNDTGridMap3D<option_t,T,backend_t>;
     using ivm_t = cslibs_gridmaps::utility::InverseModel<T>;
+    virtual ~OccupancyNDTGridMapper3DBase()
+    {
+        std::string stats_print =
+                "[OccupancyNDTGridMapper3D]: N | current | mean | std | mem = " +
+                std::to_string(stats_.getN())
+                + " | " + std::to_string(stats_.getMean())
+                + " | " + std::to_string(stats_.getStandardDeviation())
+                + " | " + std::to_string(map_->get()->getByteSize()) + "\n";
+        std::cout << stats_print << std::endl;
+    }
 
     virtual const inline map_t::ConstPtr getMap() const override
     {
@@ -120,11 +133,18 @@ protected:
                                  o_T_d,
                                  tf_timeout_)) {
             using iterator_t = cslibs_math_3d::algorithms::NDTIterator<T>;
-            if (const typename cslibs_math_3d::Pointcloud3<T>::ConstPtr &cloud = cloud_data.points())
+            if (const typename cslibs_math_3d::Pointcloud3<T>::ConstPtr &cloud = cloud_data.points()) {
+
+                const cslibs_time::Time start = cslibs_time::Time::now();
                 visibility_based_update_ ?
                             map_->get()->template insertVisible<iterator_t>(cloud, o_T_d, ivm_, ivm_visibility_) :
                             map_->get()->template insert<iterator_t>(cloud, o_T_d);
-            return true;
+                const double time = (cslibs_time::Time::now() - start).milliseconds();
+                stats_ += time;
+
+                std::cout << "[OccupancyNDTGridMapper3D]: N = " << stats_.getN() << std::endl;
+                return true;
+            }
         }
         return false;
     }
@@ -147,6 +167,17 @@ protected:
         if (!cslibs_ndt::common::serialization::create_directory(path_root))
             return false;
 
+        std::ofstream out((path_root / path_t("stats")).string(), std::fstream::trunc);
+        std::string stats_print =
+                "[OccupancyNDTGridMapper3D]: N | current | mean | std | mem = " +
+                std::to_string(stats_.getN())
+                + " | " + std::to_string(stats_.getMean())
+                + " | " + std::to_string(stats_.getStandardDeviation())
+                + " | " + std::to_string(map_->get()->getByteSize()) + "\n";
+        std::cout << stats_print << std::endl;
+        out << stats_print << std::endl;
+        out.close();
+
         if (cslibs_ndt_3d::serialization::saveBinary(*(map_->get()), (path_ / boost::filesystem::path("map")).string())) {
             std::cout << "[OccupancyNDTGridMapper3D '" << name_ << "']: Saved Map successfully." << std::endl;
             return true;
@@ -160,6 +191,8 @@ private:
     typename ivm_t::Ptr ivm_;
     typename ivm_t::Ptr ivm_visibility_;
     bool                visibility_based_update_;
+
+    cslibs_math::statistics::StableDistribution<double,1,6> stats_;
 };
 
 namespace tag = cslibs_ndt::map::tags;

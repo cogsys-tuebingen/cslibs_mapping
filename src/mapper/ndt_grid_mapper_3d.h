@@ -14,7 +14,9 @@
 
 #include <cslibs_ndt_3d/serialization/serialization.hpp>
 #include <cslibs_ndt_3d/serialization/dynamic_maps/gridmap.hpp>
+
 #include <cslibs_time/time.hpp>
+#include <cslibs_math/statistics/stable_distribution.hpp>
 
 namespace cis = cslibs_indexed_storage;
 
@@ -27,6 +29,17 @@ class NDTGridMapper3DBase : public Mapper
 {
 public:
     using rep_t = maps::NDTGridMap3D<option_t,T,backend_t>;
+    virtual ~NDTGridMapper3DBase()
+    {
+        std::string stats_print =
+                "[NDTGridMapper3D]: N | current | mean | std | mem = " +
+                std::to_string(stats_.getN())
+                + " | " + std::to_string(stats_.getMean())
+                + " | " + std::to_string(stats_.getStandardDeviation())
+                + " | " + std::to_string(map_->get()->getByteSize()) + "\n";
+        std::cout << stats_print << std::endl;
+    }
+
     virtual const inline map_t::ConstPtr getMap() const override
     {
         return map_;
@@ -98,9 +111,16 @@ protected:
                                  ros::Time(cloud_data.timeFrame().start.seconds()),
                                  o_T_d,
                                  tf_timeout_)) {
-            if (const typename cslibs_math_3d::Pointcloud3<T>::ConstPtr &cloud = cloud_data.points())
+            if (const typename cslibs_math_3d::Pointcloud3<T>::ConstPtr &cloud = cloud_data.points()) {
+
+                const cslibs_time::Time start = cslibs_time::Time::now();
                 map_->get()->insert(cloud, o_T_d);
-            return true;
+                const double time = (cslibs_time::Time::now() - start).milliseconds();
+                stats_ += time;
+
+                std::cout << "[NDTGridMapper3D]: N = " << stats_.getN() << std::endl;
+                return true;
+            }
         }
         return false;
     }
@@ -123,6 +143,17 @@ protected:
         if (!cslibs_ndt::common::serialization::create_directory(path_root))
             return false;
 
+        std::ofstream out((path_root / path_t("stats")).string(), std::fstream::trunc);
+        std::string stats_print =
+                "[NDTGridMapper3D]: N | current | mean | std | mem = " +
+                std::to_string(stats_.getN())
+                + " | " + std::to_string(stats_.getMean())
+                + " | " + std::to_string(stats_.getStandardDeviation())
+                + " | " + std::to_string(map_->get()->getByteSize()) + "\n";
+        std::cout << stats_print << std::endl;
+        out << stats_print << std::endl;
+        out.close();
+
         if (cslibs_ndt_3d::serialization::saveBinary(*(map_->get()), (path_ / boost::filesystem::path("map")).string())) {
             std::cout << "[NDTGridMapper3D '" << name_ << "']: Saved Map successfully." << std::endl;
             return true;
@@ -132,6 +163,7 @@ protected:
 
 private:
     typename rep_t::Ptr map_;
+    cslibs_math::statistics::StableDistribution<double,1,6> stats_;
 };
 
 namespace tag = cslibs_ndt::map::tags;

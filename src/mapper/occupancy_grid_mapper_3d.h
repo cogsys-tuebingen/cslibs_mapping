@@ -11,11 +11,15 @@
 #include <cslibs_plugins_data/types/pointcloud_3d.hpp>
 #include <cslibs_math_3d/linear/pointcloud.hpp>
 
+#include <cslibs_time/time.hpp>
+#include <cslibs_math/statistics/stable_distribution.hpp>
+
 namespace cslibs_mapping {
 namespace mapper {
 class OccupancyGridMapper3D : public Mapper
 {
 public:
+    virtual ~OccupancyGridMapper3D();
     virtual const inline map_t::ConstPtr getMap() const override;
 
 protected:
@@ -49,9 +53,14 @@ protected:
                                                o_T_d.translation()(1),
                                                o_T_d.translation()(2));
 
+                const cslibs_time::Time start = cslibs_time::Time::now();
                 map_->get()->insertPointCloud(cloud, origin, -1, true, true);
+                const double time = (cslibs_time::Time::now() - start).milliseconds();
+                stats_ += time;
+
+                std::cout << "[OccupancyGridMapper3D]: N = " << stats_.getN() << std::endl;
+                return true;
             }
-            return true;
         }
         return false;
     }
@@ -60,6 +69,7 @@ protected:
 
 private:
     maps::OccupancyGridMap3D::Ptr map_;
+    cslibs_math::statistics::StableDistribution<double,1,6> stats_;
 };
 }
 }

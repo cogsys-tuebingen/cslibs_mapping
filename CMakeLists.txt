@@ -28,6 +28,7 @@ find_package(catkin REQUIRED COMPONENTS
 find_package(Boost REQUIRED COMPONENTS filesystem)
 find_package(octomap QUIET)
 find_package(yaml-cpp REQUIRED)
+find_package(ndt_map QUIET)
 
 add_service_files(
     FILES
@@ -69,44 +70,109 @@ endif()
 cslibs_mapping_show_headers()
 
 if (octomap_FOUND)
-    #octomap
-    add_library(${PROJECT_NAME}
-        src/mapper/ndt_grid_mapper_2d.cpp
-        src/mapper/ndt_grid_mapper_3d.cpp
-        src/mapper/occupancy_grid_mapper_2d.cpp
-        src/mapper/occupancy_grid_mapper_3d.cpp
-        src/mapper/occupancy_ndt_grid_mapper_2d.cpp
-        src/mapper/occupancy_ndt_grid_mapper_3d.cpp
-        src/mapper/min_height_mapper_2d.cpp
-        src/mapper/distribution_height_mapper_2d.cpp
-        src/publisher/distributions_publisher.cpp
-        src/publisher/occupancy_grid_publisher.cpp
-        src/publisher/octomap_publisher.cpp
-        src/publisher/pointcloud_publisher.cpp
-        )
-    target_link_libraries(${PROJECT_NAME}
-        ${catkin_LIBRARIES}
-        ${OCTOMAP_LIBRARIES}
-        yaml-cpp
-        )
+    if (ndt_map_FOUND)
+        find_package(PCL REQUIRED COMPONENTS common filters segmentation io)
+        include_directories(
+            ${ndt_map_INCLUDE_DIRS}
+            ${PCL_INCLUDE_DIRS}
+            )
+        #octomap + oru + pcl
+        add_library(${PROJECT_NAME}
+            src/mapper/ndt_grid_mapper_2d.cpp
+            src/mapper/ndt_grid_mapper_3d.cpp
+            src/mapper/occupancy_grid_mapper_2d.cpp
+            src/mapper/occupancy_grid_mapper_3d.cpp
+            src/mapper/occupancy_ndt_grid_mapper_2d.cpp
+            src/mapper/occupancy_ndt_grid_mapper_3d.cpp
+            src/mapper/min_height_mapper_2d.cpp
+            src/mapper/distribution_height_mapper_2d.cpp
+            src/mapper/oru_ndt_om_grid_mapper_3d.cpp
+            src/mapper/oru_ndt_omfg_grid_mapper_3d.cpp
+            src/publisher/distributions_publisher.cpp
+            src/publisher/occupancy_grid_publisher.cpp
+            src/publisher/octomap_publisher.cpp
+            src/publisher/pointcloud_publisher.cpp
+            src/publisher/oru_publisher.cpp
+            )
+        target_link_libraries(${PROJECT_NAME}
+            ${catkin_LIBRARIES}
+            ${OCTOMAP_LIBRARIES}
+            ${ndt_map_LIBRARIES}
+            yaml-cpp
+            ${PCL_LIBRARIES}
+            )
+        link_directories(${PCL_LIBRARY_DIRS})
+    else()
+        #octomap
+        add_library(${PROJECT_NAME}
+            src/mapper/ndt_grid_mapper_2d.cpp
+            src/mapper/ndt_grid_mapper_3d.cpp
+            src/mapper/occupancy_grid_mapper_2d.cpp
+            src/mapper/occupancy_grid_mapper_3d.cpp
+            src/mapper/occupancy_ndt_grid_mapper_2d.cpp
+            src/mapper/occupancy_ndt_grid_mapper_3d.cpp
+            src/mapper/min_height_mapper_2d.cpp
+            src/mapper/distribution_height_mapper_2d.cpp
+            src/publisher/distributions_publisher.cpp
+            src/publisher/occupancy_grid_publisher.cpp
+            src/publisher/octomap_publisher.cpp
+            src/publisher/pointcloud_publisher.cpp
+            )
+        target_link_libraries(${PROJECT_NAME}
+            ${catkin_LIBRARIES}
+            ${OCTOMAP_LIBRARIES}
+            yaml-cpp
+            )
+    endif()
 else()
-    #no octomap
-    add_library(${PROJECT_NAME}
-        src/mapper/ndt_grid_mapper_2d.cpp
-        src/mapper/ndt_grid_mapper_3d.cpp
-        src/mapper/occupancy_grid_mapper_2d.cpp
-        src/mapper/occupancy_ndt_grid_mapper_2d.cpp
-        src/mapper/occupancy_ndt_grid_mapper_3d.cpp
-        src/mapper/min_height_mapper_2d.cpp
-        src/mapper/distribution_height_mapper_2d.cpp
-        src/publisher/distributions_publisher.cpp
-        src/publisher/occupancy_grid_publisher.cpp
-        src/publisher/pointcloud_publisher.cpp
-        )
-    target_link_libraries(${PROJECT_NAME}
-        ${catkin_LIBRARIES}
-        yaml-cpp
-        )
+    if (ndt_map_FOUND)
+        find_package(PCL REQUIRED COMPONENTS common filters segmentation io)
+        include_directories(
+            ${ndt_map_INCLUDE_DIRS}
+            ${PCL_INCLUDE_DIRS}
+            )
+        #no octomap + oru + pcl
+        add_library(${PROJECT_NAME}
+            src/mapper/ndt_grid_mapper_2d.cpp
+            src/mapper/ndt_grid_mapper_3d.cpp
+            src/mapper/occupancy_grid_mapper_2d.cpp
+            src/mapper/occupancy_ndt_grid_mapper_2d.cpp
+            src/mapper/occupancy_ndt_grid_mapper_3d.cpp
+            src/mapper/min_height_mapper_2d.cpp
+            src/mapper/distribution_height_mapper_2d.cpp
+            src/mapper/oru_ndt_om_grid_mapper_3d.cpp
+            src/mapper/oru_ndt_omfg_grid_mapper_3d.cpp
+            src/publisher/distributions_publisher.cpp
+            src/publisher/occupancy_grid_publisher.cpp
+            src/publisher/pointcloud_publisher.cpp
+            src/publisher/oru_publisher.cpp
+            )
+        target_link_libraries(${PROJECT_NAME}
+            ${catkin_LIBRARIES}
+            ${ndt_map_LIBRARIES}
+            yaml-cpp
+            ${PCL_LIBRARIES}
+            )
+        link_directories(${PCL_LIBRARY_DIRS})
+    else()
+        #no octomap
+        add_library(${PROJECT_NAME}
+            src/mapper/ndt_grid_mapper_2d.cpp
+            src/mapper/ndt_grid_mapper_3d.cpp
+            src/mapper/occupancy_grid_mapper_2d.cpp
+            src/mapper/occupancy_ndt_grid_mapper_2d.cpp
+            src/mapper/occupancy_ndt_grid_mapper_3d.cpp
+            src/mapper/min_height_mapper_2d.cpp
+            src/mapper/distribution_height_mapper_2d.cpp
+            src/publisher/distributions_publisher.cpp
+            src/publisher/occupancy_grid_publisher.cpp
+            src/publisher/pointcloud_publisher.cpp
+            )
+        target_link_libraries(${PROJECT_NAME}
+            ${catkin_LIBRARIES}
+            yaml-cpp
+            )
+    endif()
 endif()
 add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 

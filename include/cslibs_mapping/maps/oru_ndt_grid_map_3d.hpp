@@ -9,7 +9,7 @@ namespace cslibs_mapping {
 namespace maps {
 
 using OruNDTGridMap3D =
-cslibs_mapping::maps::MapTemplate<lslgeneric::NDTMap>;
+cslibs_mapping::maps::MapTemplate<perception_oru::NDTMap>;
 
 }
 }
