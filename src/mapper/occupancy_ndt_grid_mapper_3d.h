@@ -17,11 +17,13 @@
 
 namespace cslibs_mapping {
 namespace mapper {
-template <typename T = double>
+template <cslibs_ndt::map::tags::option option_t = cslibs_ndt::map::tags::dynamic_map,
+          typename T = double,
+          template <typename, typename, typename...> class backend_t = cis::backend::simple::UnorderedMap>
 class OccupancyNDTGridMapper3DBase : public Mapper
 {
 public:
-    using rep_t = maps::OccupancyNDTGridMap3D<T>;
+    using rep_t = maps::OccupancyNDTGridMap3D<option_t,T,backend_t>;
     using ivm_t = cslibs_gridmaps::utility::InverseModel<T>;
 
     virtual const inline map_t::ConstPtr getMap() const override
@@ -63,13 +65,41 @@ protected:
             return false;
 
         setupVisibilityBasedUpdateParameters(nh);
+        setupMap(nh, origin, resolution);
+        return true;
+    }
+
+    template<cslibs_ndt::map::tags::option O = option_t>
+    inline typename std::enable_if<O == cslibs_ndt::map::tags::dynamic_map, void>::type
+    setupMap(ros::NodeHandle &nh, const std::vector<double>& origin, const T& resolution)
+    {
         map_.reset(new rep_t(
                        map_frame_,
                        cslibs_math_3d::Pose3<T>(
-                            cslibs_math_3d::Vector3<T>(static_cast<T>(origin[0]), static_cast<T>(origin[1]), static_cast<T>(origin[2])),
-                            cslibs_math_3d::Quaternion<T>(static_cast<T>(origin[3]), static_cast<T>(origin[4]), static_cast<T>(origin[5]))),
+                           cslibs_math_3d::Vector3<T>(static_cast<T>(origin[0]), static_cast<T>(origin[1]), static_cast<T>(origin[2])),
+                           cslibs_math_3d::Quaternion<T>(static_cast<T>(origin[3]), static_cast<T>(origin[4]), static_cast<T>(origin[5]))),
                        resolution));
-        return true;
+    }
+
+    template<cslibs_ndt::map::tags::option O = option_t>
+    inline typename std::enable_if<O == cslibs_ndt::map::tags::static_map, void>::type
+    setupMap(ros::NodeHandle &nh, const std::vector<double>& origin, const T& resolution)
+    {
+        auto param_name = [this](const std::string &name){return name_ + "/" + name;};
+
+        std::vector<int> size = {0, 0, 0};
+        std::vector<int> min_bundle_index = {0, 0, 0};
+        size = nh.param<std::vector<int>>(param_name("size"), size);
+        min_bundle_index = nh.param<std::vector<int>>(param_name("min_bundle_index"), min_bundle_index);
+
+        map_.reset(new rep_t(
+                       map_frame_,
+                       cslibs_math_3d::Pose3<T>(
+                           cslibs_math_3d::Vector3<T>(static_cast<T>(origin[0]), static_cast<T>(origin[1]), static_cast<T>(origin[2])),
+                           cslibs_math_3d::Quaternion<T>(static_cast<T>(origin[3]), static_cast<T>(origin[4]), static_cast<T>(origin[5]))),
+                       resolution,
+                       std::array<std::size_t,3>{static_cast<std::size_t>(size[0]), static_cast<std::size_t>(size[1]), static_cast<std::size_t>(size[2])},
+                       std::array<int,3>{min_bundle_index[0], min_bundle_index[1], min_bundle_index[2]}));
     }
 
     virtual inline bool uses(const data_t::ConstPtr &type) override
@@ -132,9 +162,20 @@ private:
     bool                visibility_based_update_;
 };
 
-using OccupancyNDTGridMapper3D   = OccupancyNDTGridMapper3DBase<double>;
-using OccupancyNDTGridMapper3D_d = OccupancyNDTGridMapper3DBase<double>;
-using OccupancyNDTGridMapper3D_f = OccupancyNDTGridMapper3DBase<float>;
+namespace tag = cslibs_ndt::map::tags;
+namespace backend = cis::backend;
+
+using OccupancyNDTGridMapper3D          = OccupancyNDTGridMapper3DBase<>;
+using OccupancyNDTGridMapper3D_d_array  = OccupancyNDTGridMapper3DBase<tag::static_map,  double, backend::array::Array>;
+using OccupancyNDTGridMapper3D_d_kdtree = OccupancyNDTGridMapper3DBase<tag::dynamic_map, double, backend::kdtree::KDTree>;
+using OccupancyNDTGridMapper3D_d_map    = OccupancyNDTGridMapper3DBase<tag::dynamic_map, double, backend::simple::Map>;
+using OccupancyNDTGridMapper3D_d_umap   = OccupancyNDTGridMapper3DBase<tag::dynamic_map, double, backend::simple::UnorderedMap>;
+using OccupancyNDTGridMapper3D_d_ucmap  = OccupancyNDTGridMapper3DBase<tag::dynamic_map, double, backend::simple::UnorderedComponentMap>;
+using OccupancyNDTGridMapper3D_f_array  = OccupancyNDTGridMapper3DBase<tag::static_map,  float, backend::array::Array>;
+using OccupancyNDTGridMapper3D_f_kdtree = OccupancyNDTGridMapper3DBase<tag::dynamic_map, float, backend::kdtree::KDTree>;
+using OccupancyNDTGridMapper3D_f_map    = OccupancyNDTGridMapper3DBase<tag::dynamic_map, float, backend::simple::Map>;
+using OccupancyNDTGridMapper3D_f_umap   = OccupancyNDTGridMapper3DBase<tag::dynamic_map, float, backend::simple::UnorderedMap>;
+using OccupancyNDTGridMapper3D_f_ucmap  = OccupancyNDTGridMapper3DBase<tag::dynamic_map, float, backend::simple::UnorderedComponentMap>;
 }
 }
 

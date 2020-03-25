@@ -1,23 +1,5 @@
 <library path="libcslibs_mapping">
   <!-- Mapper -->
-  <class type="cslibs_mapping::mapper::NDTGridMapper2D" base_class_type="cslibs_mapping::mapper::Mapper">
-    <description> </description>
-  </class>
-  <class type="cslibs_mapping::mapper::NDTGridMapper2D_d" base_class_type="cslibs_mapping::mapper::Mapper">
-    <description> </description>
-  </class>
-  <class type="cslibs_mapping::mapper::NDTGridMapper2D_f" base_class_type="cslibs_mapping::mapper::Mapper">
-    <description> </description>
-  </class>
-  <class type="cslibs_mapping::mapper::NDTGridMapper3D" base_class_type="cslibs_mapping::mapper::Mapper">
-    <description> </description>
-  </class>
-  <class type="cslibs_mapping::mapper::NDTGridMapper3D_d" base_class_type="cslibs_mapping::mapper::Mapper">
-    <description> </description>
-  </class>
-  <class type="cslibs_mapping::mapper::NDTGridMapper3D_f" base_class_type="cslibs_mapping::mapper::Mapper">
-    <description> </description>
-  </class>
   <class type="cslibs_mapping::mapper::OccupancyGridMapper2D" base_class_type="cslibs_mapping::mapper::Mapper">
     <description> </description>
   </class>
@@ -34,24 +16,6 @@
     <description> </description>
   </class>
   <class type="cslibs_mapping::mapper::OccupancyGridMapper3D" base_class_type="cslibs_mapping::mapper::Mapper">
-    <description> </description>
-  </class>
-  <class type="cslibs_mapping::mapper::OccupancyNDTGridMapper2D" base_class_type="cslibs_mapping::mapper::Mapper">
-    <description> </description>
-  </class>
-  <class type="cslibs_mapping::mapper::OccupancyNDTGridMapper2D_d" base_class_type="cslibs_mapping::mapper::Mapper">
-    <description> </description>
-  </class>
-  <class type="cslibs_mapping::mapper::OccupancyNDTGridMapper2D_f" base_class_type="cslibs_mapping::mapper::Mapper">
-    <description> </description>
-  </class>
-  <class type="cslibs_mapping::mapper::OccupancyNDTGridMapper3D" base_class_type="cslibs_mapping::mapper::Mapper">
-    <description> </description>
-  </class>
-  <class type="cslibs_mapping::mapper::OccupancyNDTGridMapper3D_d" base_class_type="cslibs_mapping::mapper::Mapper">
-    <description> </description>
-  </class>
-  <class type="cslibs_mapping::mapper::OccupancyNDTGridMapper3D_f" base_class_type="cslibs_mapping::mapper::Mapper">
     <description> </description>
   </class>
   <class type="cslibs_mapping::mapper::MinHeightMapper2D" base_class_type="cslibs_mapping::mapper::Mapper">

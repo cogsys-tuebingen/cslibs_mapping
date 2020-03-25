@@ -23,11 +23,31 @@ private:
 
     virtual inline bool uses(const map_t::ConstPtr &map) const
     {
-        return map->isType<cslibs_mapping::maps::NDTGridMap3D<T>>() ||
-               map->isType<cslibs_mapping::maps::OccupancyNDTGridMap3D<T>>() ||
-               map->isType<cslibs_mapping::maps::NDTGridMap2D<T>>() ||
-               map->isType<cslibs_mapping::maps::OccupancyNDTGridMap2D<T>>();              ;
+        return map->isType<cslibs_mapping::maps::NDTGridMap3D<cslibs_ndt::map::tags::static_map,T,cis::backend::array::Array>>() ||
+               map->isType<cslibs_mapping::maps::NDTGridMap3D<cslibs_ndt::map::tags::dynamic_map,T,cis::backend::kdtree::KDTree>>() ||
+               map->isType<cslibs_mapping::maps::NDTGridMap3D<cslibs_ndt::map::tags::dynamic_map,T,cis::backend::simple::Map>>() ||
+               map->isType<cslibs_mapping::maps::NDTGridMap3D<cslibs_ndt::map::tags::dynamic_map,T,cis::backend::simple::UnorderedMap>>() ||
+               map->isType<cslibs_mapping::maps::NDTGridMap3D<cslibs_ndt::map::tags::dynamic_map,T,cis::backend::simple::UnorderedComponentMap>>() ||
+
+               map->isType<cslibs_mapping::maps::OccupancyNDTGridMap3D<cslibs_ndt::map::tags::static_map,T,cis::backend::array::Array>>() ||
+               map->isType<cslibs_mapping::maps::OccupancyNDTGridMap3D<cslibs_ndt::map::tags::dynamic_map,T,cis::backend::kdtree::KDTree>>() ||
+               map->isType<cslibs_mapping::maps::OccupancyNDTGridMap3D<cslibs_ndt::map::tags::dynamic_map,T,cis::backend::simple::Map>>() ||
+               map->isType<cslibs_mapping::maps::OccupancyNDTGridMap3D<cslibs_ndt::map::tags::dynamic_map,T,cis::backend::simple::UnorderedMap>>() ||
+               map->isType<cslibs_mapping::maps::OccupancyNDTGridMap3D<cslibs_ndt::map::tags::dynamic_map,T,cis::backend::simple::UnorderedComponentMap>>() ||
+
+               map->isType<cslibs_mapping::maps::NDTGridMap2D<cslibs_ndt::map::tags::static_map,T,cis::backend::array::Array>>() ||
+               map->isType<cslibs_mapping::maps::NDTGridMap2D<cslibs_ndt::map::tags::dynamic_map,T,cis::backend::kdtree::KDTree>>() ||
+               map->isType<cslibs_mapping::maps::NDTGridMap2D<cslibs_ndt::map::tags::dynamic_map,T,cis::backend::simple::Map>>() ||
+               map->isType<cslibs_mapping::maps::NDTGridMap2D<cslibs_ndt::map::tags::dynamic_map,T,cis::backend::simple::UnorderedMap>>() ||
+               map->isType<cslibs_mapping::maps::NDTGridMap2D<cslibs_ndt::map::tags::dynamic_map,T,cis::backend::simple::UnorderedComponentMap>>() ||
+
+               map->isType<cslibs_mapping::maps::OccupancyNDTGridMap2D<cslibs_ndt::map::tags::static_map,T,cis::backend::array::Array>>() ||
+               map->isType<cslibs_mapping::maps::OccupancyNDTGridMap2D<cslibs_ndt::map::tags::dynamic_map,T,cis::backend::kdtree::KDTree>>() ||
+               map->isType<cslibs_mapping::maps::OccupancyNDTGridMap2D<cslibs_ndt::map::tags::dynamic_map,T,cis::backend::simple::Map>>() ||
+               map->isType<cslibs_mapping::maps::OccupancyNDTGridMap2D<cslibs_ndt::map::tags::dynamic_map,T,cis::backend::simple::UnorderedMap>>() ||
+               map->isType<cslibs_mapping::maps::OccupancyNDTGridMap2D<cslibs_ndt::map::tags::dynamic_map,T,cis::backend::simple::UnorderedComponentMap>>();
     }
+
     virtual inline void doAdvertise(ros::NodeHandle &nh, const std::string &topic)
     {
         auto param_name = [this](const std::string &name){return name_ + "/" + name;};
@@ -48,21 +68,59 @@ private:
 
     virtual inline void doPublish(const map_t::ConstPtr &map, const ros::Time &time)
     {
-        if (map->isType<cslibs_mapping::maps::NDTGridMap3D<T>>())
-            return publishNDTGridMap3D(map, time);
-        if (map->isType<cslibs_mapping::maps::OccupancyNDTGridMap3D<T>>())
-            return publishOccupancyNDTGridMap3D(map, time);
-        if (map->isType<cslibs_mapping::maps::NDTGridMap2D<T>>())
-            return publishNDTGridMap2D(map, time);
-        if (map->isType<cslibs_mapping::maps::OccupancyNDTGridMap2D<T>>())
-            return publishOccupancyNDTGridMap2D(map, time);
+        if (map->isType<cslibs_mapping::maps::NDTGridMap3D<cslibs_ndt::map::tags::static_map,T,cis::backend::array::Array>>())
+            return publishNDTGridMap3D<cslibs_ndt::map::tags::static_map,cis::backend::array::Array>(map, time);
+        if (map->isType<cslibs_mapping::maps::NDTGridMap3D<cslibs_ndt::map::tags::dynamic_map,T,cis::backend::kdtree::KDTree>>())
+            return publishNDTGridMap3D<cslibs_ndt::map::tags::dynamic_map,cis::backend::kdtree::KDTree>(map, time);
+        if (map->isType<cslibs_mapping::maps::NDTGridMap3D<cslibs_ndt::map::tags::dynamic_map,T,cis::backend::simple::Map>>())
+            return publishNDTGridMap3D<cslibs_ndt::map::tags::dynamic_map,cis::backend::simple::Map>(map, time);
+        if (map->isType<cslibs_mapping::maps::NDTGridMap3D<cslibs_ndt::map::tags::dynamic_map,T,cis::backend::simple::UnorderedMap>>())
+            return publishNDTGridMap3D<cslibs_ndt::map::tags::dynamic_map,cis::backend::simple::UnorderedMap>(map, time);
+        if (map->isType<cslibs_mapping::maps::NDTGridMap3D<cslibs_ndt::map::tags::dynamic_map,T,cis::backend::simple::UnorderedComponentMap>>())
+            return publishNDTGridMap3D<cslibs_ndt::map::tags::dynamic_map,cis::backend::simple::UnorderedComponentMap>(map, time);
+
+        if (map->isType<cslibs_mapping::maps::OccupancyNDTGridMap3D<cslibs_ndt::map::tags::static_map,T,cis::backend::array::Array>>())
+            return publishOccupancyNDTGridMap3D<cslibs_ndt::map::tags::static_map,cis::backend::array::Array>(map, time);
+        if (map->isType<cslibs_mapping::maps::OccupancyNDTGridMap3D<cslibs_ndt::map::tags::dynamic_map,T,cis::backend::kdtree::KDTree>>())
+            return publishOccupancyNDTGridMap3D<cslibs_ndt::map::tags::dynamic_map,cis::backend::kdtree::KDTree>(map, time);
+        if (map->isType<cslibs_mapping::maps::OccupancyNDTGridMap3D<cslibs_ndt::map::tags::dynamic_map,T,cis::backend::simple::Map>>())
+            return publishOccupancyNDTGridMap3D<cslibs_ndt::map::tags::dynamic_map,cis::backend::simple::Map>(map, time);
+        if (map->isType<cslibs_mapping::maps::OccupancyNDTGridMap3D<cslibs_ndt::map::tags::dynamic_map,T,cis::backend::simple::UnorderedMap>>())
+            return publishOccupancyNDTGridMap3D<cslibs_ndt::map::tags::dynamic_map,cis::backend::simple::UnorderedMap>(map, time);
+        if (map->isType<cslibs_mapping::maps::OccupancyNDTGridMap3D<cslibs_ndt::map::tags::dynamic_map,T,cis::backend::simple::UnorderedComponentMap>>())
+            return publishOccupancyNDTGridMap3D<cslibs_ndt::map::tags::dynamic_map,cis::backend::simple::UnorderedComponentMap>(map, time);
+
+        if (map->isType<cslibs_mapping::maps::NDTGridMap2D<cslibs_ndt::map::tags::static_map,T,cis::backend::array::Array>>())
+            return publishNDTGridMap2D<cslibs_ndt::map::tags::static_map,cis::backend::array::Array>(map, time);
+        if (map->isType<cslibs_mapping::maps::NDTGridMap2D<cslibs_ndt::map::tags::dynamic_map,T,cis::backend::kdtree::KDTree>>())
+            return publishNDTGridMap2D<cslibs_ndt::map::tags::dynamic_map,cis::backend::kdtree::KDTree>(map, time);
+        if (map->isType<cslibs_mapping::maps::NDTGridMap2D<cslibs_ndt::map::tags::dynamic_map,T,cis::backend::simple::Map>>())
+            return publishNDTGridMap2D<cslibs_ndt::map::tags::dynamic_map,cis::backend::simple::Map>(map, time);
+        if (map->isType<cslibs_mapping::maps::NDTGridMap2D<cslibs_ndt::map::tags::dynamic_map,T,cis::backend::simple::UnorderedMap>>())
+            return publishNDTGridMap2D<cslibs_ndt::map::tags::dynamic_map,cis::backend::simple::UnorderedMap>(map, time);
+        if (map->isType<cslibs_mapping::maps::NDTGridMap2D<cslibs_ndt::map::tags::dynamic_map,T,cis::backend::simple::UnorderedComponentMap>>())
+            return publishNDTGridMap2D<cslibs_ndt::map::tags::dynamic_map,cis::backend::simple::UnorderedComponentMap>(map, time);
+
+        if (map->isType<cslibs_mapping::maps::OccupancyNDTGridMap2D<cslibs_ndt::map::tags::static_map,T,cis::backend::array::Array>>())
+            return publishOccupancyNDTGridMap2D<cslibs_ndt::map::tags::static_map,cis::backend::array::Array>(map, time);
+        if (map->isType<cslibs_mapping::maps::OccupancyNDTGridMap2D<cslibs_ndt::map::tags::dynamic_map,T,cis::backend::kdtree::KDTree>>())
+            return publishOccupancyNDTGridMap2D<cslibs_ndt::map::tags::dynamic_map,cis::backend::kdtree::KDTree>(map, time);
+        if (map->isType<cslibs_mapping::maps::OccupancyNDTGridMap2D<cslibs_ndt::map::tags::dynamic_map,T,cis::backend::simple::Map>>())
+            return publishOccupancyNDTGridMap2D<cslibs_ndt::map::tags::dynamic_map,cis::backend::simple::Map>(map, time);
+        if (map->isType<cslibs_mapping::maps::OccupancyNDTGridMap2D<cslibs_ndt::map::tags::dynamic_map,T,cis::backend::simple::UnorderedMap>>())
+            return publishOccupancyNDTGridMap2D<cslibs_ndt::map::tags::dynamic_map,cis::backend::simple::UnorderedMap>(map, time);
+        if (map->isType<cslibs_mapping::maps::OccupancyNDTGridMap2D<cslibs_ndt::map::tags::dynamic_map,T,cis::backend::simple::UnorderedComponentMap>>())
+            return publishOccupancyNDTGridMap2D<cslibs_ndt::map::tags::dynamic_map,cis::backend::simple::UnorderedComponentMap>(map, time);
+
         std::cout << "[DistributionsPublisher '" << name_ << "']: Got wrong map type!" << std::endl;
     }
 
+    template <cslibs_ndt::map::tags::option option_t,
+              template <typename, typename, typename...> class backend_t>
     inline void publishNDTGridMap3D(const map_t::ConstPtr &map, const ros::Time &time)
     {
-        using local_map_t = typename cslibs_mapping::maps::NDTGridMap3D<T>::map_t;
-        const typename local_map_t::Ptr m = map->as<cslibs_mapping::maps::NDTGridMap3D<T>>().get();
+        using local_map_t = typename cslibs_mapping::maps::NDTGridMap3D<option_t,T,backend_t>::map_t;
+        const typename local_map_t::Ptr m = map->as<cslibs_mapping::maps::NDTGridMap3D<option_t,T,backend_t>>().get();
         if (m) {
             visualization_msgs::MarkerArray::Ptr markers(new visualization_msgs::MarkerArray);
             cslibs_ndt_3d::conversion::from(*m, *markers, time, map->getFrame());
@@ -75,11 +133,13 @@ private:
         std::cout << "[DistributionsPublisher '" << name_ << "']: Map could not be published!" << std::endl;
     }
 
+    template <cslibs_ndt::map::tags::option option_t,
+              template <typename, typename, typename...> class backend_t>
     inline void publishOccupancyNDTGridMap3D(const map_t::ConstPtr &map, const ros::Time &time)
     {
         if (ivm_) {
-            using local_map_t = typename cslibs_mapping::maps::OccupancyNDTGridMap3D<T>::map_t;
-            const typename local_map_t::Ptr m = map->as<cslibs_mapping::maps::OccupancyNDTGridMap3D<T>>().get();
+            using local_map_t = typename cslibs_mapping::maps::OccupancyNDTGridMap3D<option_t,T,backend_t>::map_t;
+            const typename local_map_t::Ptr m = map->as<cslibs_mapping::maps::OccupancyNDTGridMap3D<option_t,T,backend_t>>().get();
             if (m) {
                 visualization_msgs::MarkerArray::Ptr markers(new visualization_msgs::MarkerArray);
                 cslibs_ndt_3d::conversion::from(*m, *markers, ivm_, time, map->getFrame(), cslibs_math_3d::Pose3<T>(), occ_threshold_);
@@ -93,13 +153,15 @@ private:
         std::cout << "[DistributionsPublisher '" << name_ << "']: Map could not be published!" << std::endl;
     }
 
+    template <cslibs_ndt::map::tags::option option_t,
+              template <typename, typename, typename...> class backend_t>
     inline void publishNDTGridMap2D(const map_t::ConstPtr &map, const ros::Time &time)
     {
-        using local_map_t = typename cslibs_mapping::maps::NDTGridMap2D<T>::map_t;
-        const typename local_map_t::Ptr m = map->as<cslibs_mapping::maps::NDTGridMap2D<T>>().get();
+        using local_map_t = typename cslibs_mapping::maps::NDTGridMap2D<option_t,T,backend_t>::map_t;
+        const typename local_map_t::Ptr m = map->as<cslibs_mapping::maps::NDTGridMap2D<option_t,T,backend_t>>().get();
         if (m) {
             visualization_msgs::MarkerArray::Ptr markers;
-            cslibs_ndt_2d::conversion::from<T>(m, markers, time, map->getFrame());
+            cslibs_ndt_2d::conversion::from(*m, *markers, time, map->getFrame());
 
             if (markers) {
                 publisher_.publish(markers);
@@ -109,17 +171,19 @@ private:
         std::cout << "[DistributionsPublisher '" << name_ << "']: Map could not be published!" << std::endl;
     }
 
+    template <cslibs_ndt::map::tags::option option_t,
+              template <typename, typename, typename...> class backend_t>
     inline void publishOccupancyNDTGridMap2D(const map_t::ConstPtr &map, const ros::Time &time)
     {
         if (ivm_) {
-            using local_map_t = typename cslibs_mapping::maps::OccupancyNDTGridMap2D<T>::map_t;
-            const typename local_map_t::Ptr m = map->as<cslibs_mapping::maps::OccupancyNDTGridMap2D<T>>().get();
+            using local_map_t = typename cslibs_mapping::maps::OccupancyNDTGridMap2D<option_t,T,backend_t>::map_t;
+            const typename local_map_t::Ptr m = map->as<cslibs_mapping::maps::OccupancyNDTGridMap2D<option_t,T,backend_t>>().get();
             if (m) {
                 visualization_msgs::MarkerArray::Ptr markers;
-                cslibs_ndt_2d::conversion::from<T>(m, markers, ivm_, time, map->getFrame(),
-                                                   cslibs_math_2d::Pose2<T>(),
-                                                   cslibs_math::color::Color<T>(0.0, 0.45, 0.63),
-                                                   occ_threshold_);
+                cslibs_ndt_2d::conversion::from(*m, *markers, ivm_, time, map->getFrame(),
+                                                cslibs_math_2d::Pose2<T>(),
+                                                cslibs_math::color::Color<T>(0.0, 0.45, 0.63),
+                                                occ_threshold_);
 
                 if (markers) {
                     publisher_.publish(markers);
