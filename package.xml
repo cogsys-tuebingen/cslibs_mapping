@@ -32,8 +32,6 @@
 
   <export>
     <cslibs_mapping plugin="${prefix}/plugins.xml"/>
-    <cslibs_mapping plugin="${prefix}/plugins_ndt.xml"/>
-    <cslibs_mapping plugin="${prefix}/plugins_ondt.xml"/>
-    <cslibs_mapping plugin="${prefix}/plugins_oru.xml"/>
+<!--    <cslibs_mapping plugin="${prefix}/plugins_oru.xml"/>-->
   </export>
 </package>

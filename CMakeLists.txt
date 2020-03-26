@@ -69,6 +69,8 @@ endif()
 
 cslibs_mapping_show_headers()
 
+#add_definitions("-DEIGEN_MAX_ALIGN_BYTES=16")
+
 if (octomap_FOUND)
     if (ndt_map_FOUND)
         find_package(PCL REQUIRED COMPONENTS common filters segmentation io)

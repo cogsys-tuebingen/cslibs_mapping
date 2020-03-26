@@ -31,13 +31,18 @@ public:
     using rep_t = maps::NDTGridMap3D<option_t,T,backend_t>;
     virtual ~NDTGridMapper3DBase()
     {
+        const std::array<std::size_t,3> size = map_->get()->getSize();
+        const std::array<int,3> min_index    = map_->get()->getMinBundleIndex();
+
         std::string stats_print =
-                "[NDTGridMapper3D]: N | current | mean | std | mem = " +
-                std::to_string(stats_.getN())
+                "[NDTGridMapper3D]: N | current | mean | std | mem = \n"
+                + std::to_string(stats_.getN())
                 + " | " + std::to_string(stats_.getMean())
                 + " | " + std::to_string(stats_.getStandardDeviation())
-                + " | " + std::to_string(map_->get()->getByteSize()) + "\n";
-        std::cout << stats_print << std::endl;
+                + " | " + std::to_string(map_->get()->getByteSize())
+                + " | " + std::to_string(map_->get()->getOrigin())
+                + " | " + std::to_string(map_->get()->getInitialOrigin());
+        std::cout << stats_print << " || " << size << ", " << min_index << std::endl;
     }
 
     virtual const inline map_t::ConstPtr getMap() const override
