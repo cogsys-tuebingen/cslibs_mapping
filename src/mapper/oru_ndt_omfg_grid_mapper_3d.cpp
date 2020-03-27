@@ -44,9 +44,9 @@ bool OruNDTOMFGGridMapper3D::setupMap(ros::NodeHandle &nh)
     const double ndt_oru_cen_x  = nh.param<double>(param_name("ndt_oru_cen_x"),  0.0);
     const double ndt_oru_cen_y  = nh.param<double>(param_name("ndt_oru_cen_y"),  0.0);
     const double ndt_oru_cen_z  = nh.param<double>(param_name("ndt_oru_cen_z"),  0.0);
-    ndt_oru_local_size_x_ = nh.param<double>(param_name("ndt_oru_local_size_x"), 0.0);
-    ndt_oru_local_size_y_ = nh.param<double>(param_name("ndt_oru_local_size_y"), 0.0);
-    ndt_oru_local_size_z_ = nh.param<double>(param_name("ndt_oru_local_size_z"), 0.0);
+    ndt_oru_local_size_x_ = nh.param<double>(param_name("ndt_oru_local_size_x"), ndt_oru_size_x);
+    ndt_oru_local_size_y_ = nh.param<double>(param_name("ndt_oru_local_size_y"), ndt_oru_size_y);
+    ndt_oru_local_size_z_ = nh.param<double>(param_name("ndt_oru_local_size_z"), ndt_oru_size_z);
 
 
     if (ndt_oru_size_x > 1e-3 && ndt_oru_size_y > 1e-3 && ndt_oru_size_z > 1e-3)

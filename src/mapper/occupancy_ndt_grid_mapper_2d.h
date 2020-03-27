@@ -88,10 +88,15 @@ protected:
     {
         auto param_name = [this](const std::string &name){return name_ + "/" + name;};
 
-        std::vector<int> size = {0, 0};
-        std::vector<int> min_bundle_index = {0, 0};
-        size = nh.param<std::vector<int>>(param_name("size"), size);
-        min_bundle_index = nh.param<std::vector<int>>(param_name("min_bundle_index"), min_bundle_index);
+        std::vector<double> extents   = {0.,0.};
+        std::vector<double> min_point = {0.,0.};
+        extents = nh.param<std::vector<double>>(param_name("extents"), extents);
+        min_point = nh.param<std::vector<double>>(param_name("min_point"), min_point);
+
+        std::vector<int> size = {static_cast<int>(std::ceil(extents[0]/resolution)),
+                                 static_cast<int>(std::ceil(extents[1]/resolution))};
+        std::vector<int> min_bundle_index = {static_cast<int>(std::floor(min_point[0]/resolution)),
+                                             static_cast<int>(std::floor(min_point[1]/resolution))};
 
         map_.reset(new rep_t(
                        map_frame_,
