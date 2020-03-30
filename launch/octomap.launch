@@ -1,0 +1,105 @@
+<?xml version="1.0" ?>
+<launch>
+    <param name="/use_sim_time" value="true"/>
+    <arg name="bag_root"   value="/home/cschulz/Bagfiles/octomap"/>
+    <arg name="bag_file"   value="geb079_max50m.bag" />
+    <arg name="bag_args"   value="--clock --rate 0.1 -k --pause -q" />
+
+    <group ns="cslibs_mapping">
+        <param name="node_rate" value="0.0" />
+
+        <!-- data providers -->
+        <group ns="velodyne">
+          <param name="class"                    value="cslibs_plugins_data::Pointcloud3dProvider_d"/>
+          <param name="base_class"               value="cslibs_plugins_data::DataProvider"/>
+          <param name="topic"                    value="/points"/>
+          <param name="queue_size"               value="10000"/>
+          <param name="rate"                     value="0.0"/>
+        </group>
+
+        <!-- 3D mappers -->
+        <group ns="map">
+          <param name="class"      	 value="cslibs_mapping::mapper::OccupancyGridMapper3D"/>
+<!-- OccupancyGridMapper3D
+     OruNDTOMGridMapper3D, 
+     OruNDTOMFGGridMapper3D, 
+     NDTGridMapper3D_d_array, 
+     NDTGridMapper3D_d_kdtree, 
+     NDTGridMapper3D_d_map, 
+     NDTGridMapper3D_d_umap, 
+     NDTGridMapper3D_d_ucmap, 
+     NDTGridMapper3D_f_kdtree, 
+     NDTGridMapper3D_f_map, 
+     NDTGridMapper3D_f_umap, 
+     NDTGridMapper3D_f_ucmap, 
+     OccupancyNDTGridMapper3D_d_array, 
+     OccupancyNDTGridMapper3D_d_kdtree, 
+     OccupancyNDTGridMapper3D_d_map, 
+     OccupancyNDTGridMapper3D_d_umap, 
+     OccupancyNDTGridMapper3D_d_ucmap, 
+     OccupancyNDTGridMapper3D_f_array, 
+     OccupancyNDTGridMapper3D_f_kdtree, 
+     OccupancyNDTGridMapper3D_f_map, 
+     OccupancyNDTGridMapper3D_f_umap, 
+     OccupancyNDTGridMapper3D_f_ucmap -->
+          <param name="base_class" 	 value="cslibs_mapping::mapper::Mapper"/>	
+          <rosparam param="data_providers">
+                ["velodyne"]
+          </rosparam>
+          <rosparam param="map_publishers">
+                []  <!-- oru_ndt_3d, ndt_3d_pointcloud, octomap_3d -->
+          </rosparam>
+          <param name="map_frame"	 value="/odom"/>
+          <param name="resolution" 	 value="0.5"/>
+          <rosparam param="extents">[43.7,18.2,3.3]</rosparam> 
+          <!-- geb: [43.7,18.2,3.3] -->
+          <rosparam param="min_point">[-20.0,-17.0,-0.5]</rosparam>
+          <!-- geb: [-20.0,-17.0,-0.5] -->
+
+        <param name="ndt_oru_size_x" value="43.7" />
+        <!-- geb: 45.0, fr: 300.0, new: 165.0-->
+        <param name="ndt_oru_size_y" value="18.2" />
+        <!-- geb: 20.0, fr: 170.0, new: 250.0-->
+        <param name="ndt_oru_size_z" value="3.3" /> 
+        <!-- geb:  4.0, fr:  30.0, new:  60.0-->
+        <param name="ndt_oru_cen_x" value="11.8" /> 
+        <!-- geb: 12.0, fr:  70.0, new:  82.5-->
+        <param name="ndt_oru_cen_y" value="-2" />  
+        <!-- geb:  0.0, fr: -50.0, new: 100.0-->
+        <param name="ndt_oru_cen_z" value="1.15" />  
+        <!-- geb:  2.0, fr:   5.0, new:  20.0-->
+<!--
+	  <param name="force_publish"    value="true"/>
+          <param name="publish_every_n"  value="1"/>-->
+        </group>
+
+        <!-- 3D publishers -->
+        <group ns="ndt_3d_pointcloud">
+          <param name="class"		    	value="cslibs_mapping::publisher::PointcloudPublisher_f"/>
+          <param name="base_class"	    	value="cslibs_mapping::publisher::Publisher"/>
+          <param name="rate"		    	value="0.0"/>
+          <param name="topic"		    	value="/cslibs_mapping/ndt_3d/map/pointcloud"/>
+          <param name="occupancy_ndt"		value="true"/>
+          <param name="allocate_all"		value="true"/>
+        </group>
+        <group ns="octomap_3d">
+          <param name="class"		    	value="cslibs_mapping::publisher::OctomapPublisher"/>
+          <param name="base_class"	    	value="cslibs_mapping::publisher::Publisher"/>
+          <param name="rate"		    	value="0.0"/>
+          <param name="topic"		    	value="/cslibs_mapping/ndt_3d/map/octomap"/>
+        </group>
+        <group ns="oru_ndt_3d">
+          <param name="class"		    	value="cslibs_mapping::publisher::OruPublisher"/>
+          <param name="base_class"	    	value="cslibs_mapping::publisher::Publisher"/>
+          <param name="rate"		    	value="0.0"/>
+          <param name="topic"		    	value="/cslibs_mapping/ndt_3d/map/oru"/>
+          <param name="occupancy_ndt"		value="false"/>
+          <param name="allocate_all"		value="true"/>
+        </group>
+    </group>
+
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find cslibs_mapping)/config/rawseeds.rviz" required="true"/>
+    <node pkg="rosbag" type="play" name="rosbag" args="$(arg bag_args) $(arg bag_root)/$(arg bag_file)" required="true" output="screen"/>
+
+    <node name="cslibs_mapping" pkg="cslibs_mapping" type="cslibs_mapping_node" output="screen" required="true" clear_params="true"/>
+</launch>
