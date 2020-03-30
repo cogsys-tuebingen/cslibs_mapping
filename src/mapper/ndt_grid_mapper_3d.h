@@ -35,7 +35,7 @@ public:
         const std::array<int,3> min_index    = map_->get()->getMinBundleIndex();
 
         std::string stats_print =
-                "[NDTGridMapper3D]: N | current | mean | std | mem = \n"
+                "[NDTGridMapper3D]: N | mean | std | mem = \n"
                 + std::to_string(stats_.getN())
                 + " | " + std::to_string(stats_.getMean())
                 + " | " + std::to_string(stats_.getStandardDeviation())
@@ -158,7 +158,7 @@ protected:
 
         std::ofstream out((path_root / path_t("stats")).string(), std::fstream::trunc);
         std::string stats_print =
-                "[NDTGridMapper3D]: N | current | mean | std | mem = " +
+                "[NDTGridMapper3D]: N | mean | std | mem = " +
                 std::to_string(stats_.getN())
                 + " | " + std::to_string(stats_.getMean())
                 + " | " + std::to_string(stats_.getStandardDeviation())

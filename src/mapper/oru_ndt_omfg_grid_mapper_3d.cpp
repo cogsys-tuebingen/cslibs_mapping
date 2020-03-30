@@ -19,7 +19,7 @@ namespace mapper {
 OruNDTOMFGGridMapper3D::~OruNDTOMFGGridMapper3D()
 {
     std::string stats_print =
-            "[OruNDTOMFGGridMapper3D]: N | current | mean | std | mem = " +
+            "[OruNDTOMFGGridMapper3D]: N | mean | std | mem = " +
             std::to_string(stats_.getN())
             + " | " + std::to_string(stats_.getMean())
             + " | " + std::to_string(stats_.getStandardDeviation())
@@ -129,7 +129,7 @@ bool OruNDTOMFGGridMapper3D::saveMap()
 
     std::ofstream out((path_root / path_t("stats")).string(), std::fstream::trunc);
     std::string stats_print =
-            "[OruNDTOFGMGridMapper3D]: N | current | mean | std | mem = " +
+            "[OruNDTOFGMGridMapper3D]: N | mean | std | mem = " +
             std::to_string(stats_.getN())
             + " | " + std::to_string(stats_.getMean())
             + " | " + std::to_string(stats_.getStandardDeviation())

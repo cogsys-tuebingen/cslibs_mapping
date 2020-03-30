@@ -31,7 +31,7 @@ public:
     virtual ~OccupancyNDTGridMapper3DBase()
     {
         std::string stats_print =
-                "[OccupancyNDTGridMapper3D]: N | current | mean | std | mem = " +
+                "[OccupancyNDTGridMapper3D]: N | mean | std | mem = " +
                 std::to_string(stats_.getN())
                 + " | " + std::to_string(stats_.getMean())
                 + " | " + std::to_string(stats_.getStandardDeviation())
@@ -176,7 +176,7 @@ protected:
 
         std::ofstream out((path_root / path_t("stats")).string(), std::fstream::trunc);
         std::string stats_print =
-                "[OccupancyNDTGridMapper3D]: N | current | mean | std | mem = " +
+                "[OccupancyNDTGridMapper3D]: N | mean | std | mem = " +
                 std::to_string(stats_.getN())
                 + " | " + std::to_string(stats_.getMean())
                 + " | " + std::to_string(stats_.getStandardDeviation())

@@ -12,7 +12,7 @@ namespace mapper {
 OccupancyGridMapper3D::~OccupancyGridMapper3D()
 {
     std::string stats_print =
-            "[OccupancyGridMapper3D]: N | current | mean | std | mem = " +
+            "[OccupancyGridMapper3D]: N | mean | std | mem = " +
             std::to_string(stats_.getN())
             + " | " + std::to_string(stats_.getMean())
             + " | " + std::to_string(stats_.getStandardDeviation())
@@ -70,7 +70,7 @@ bool OccupancyGridMapper3D::saveMap()
 
     std::ofstream out((path_root / path_t("stats")).string(), std::fstream::trunc);
     std::string stats_print =
-            "[OccupancyGridMapper3D]: N | current | mean | std | mem = " +
+            "[OccupancyGridMapper3D]: N | mean | std | mem = " +
             std::to_string(stats_.getN())
             + " | " + std::to_string(stats_.getMean())
             + " | " + std::to_string(stats_.getStandardDeviation())
