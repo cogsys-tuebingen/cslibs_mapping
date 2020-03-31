@@ -18,6 +18,36 @@ OccupancyGridMapper3D::~OccupancyGridMapper3D()
             + " | " + std::to_string(stats_.getStandardDeviation())
             + " | " + std::to_string(map_->get()->memoryUsage()) + "\n";
     std::cout << stats_print << std::endl;
+
+    std::vector<octomap::point3d> indices;
+    cslibs_math::statistics::StableDistribution<double,1,6> traversal;
+    for (int i=0; i<100; ++i) {
+        indices.clear();
+        cslibs_time::Time now = cslibs_time::Time::now();
+        for (octomap::OcTree::leaf_iterator it = map_->get()->begin_leafs(), end = map_->get()->end_leafs() ; it != end ; ++ it)
+            indices.emplace_back(it.getCoordinate());
+        const double time = (cslibs_time::Time::now() - now).milliseconds();
+        traversal += time;
+    }
+    std::vector<octomap::OcTreeNode*> vec;
+    cslibs_math::statistics::StableDistribution<double,1,6> access;
+    for (auto &index : indices) {
+        cslibs_time::Time now = cslibs_time::Time::now();
+        vec.push_back(map_->get()->search(index(0), index(1), index(2)));
+        const double time = (cslibs_time::Time::now() - now).milliseconds();
+        access += time;
+    }
+
+    std::cout << "[OccupancyGridMapper3D]: traversal N | mean | std = \n"
+              << std::to_string(traversal.getN())
+              << " | " << std::to_string(traversal.getMean())
+              << " | " << std::to_string(traversal.getStandardDeviation())
+              << std::endl;
+    std::cout << "[OccupancyGridMapper3D]: access N | mean | std = \n"
+              << std::to_string(access.getN())
+              << " | " << std::to_string(access.getMean())
+              << " | " << std::to_string(access.getStandardDeviation())
+              << std::endl;
 }
 
 const OccupancyGridMapper3D::map_t::ConstPtr OccupancyGridMapper3D::getMap() const

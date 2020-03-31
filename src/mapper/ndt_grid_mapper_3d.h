@@ -43,6 +43,35 @@ public:
                 + " | " + std::to_string(map_->get()->getOrigin())
                 + " | " + std::to_string(map_->get()->getInitialOrigin());
         std::cout << stats_print << " || " << size << ", " << min_index << std::endl;
+
+        std::vector<std::array<int,3>> indices;
+        cslibs_math::statistics::StableDistribution<double,1,6> traversal;
+        for (int i=0; i<100; ++i) {
+            indices.clear();
+            cslibs_time::Time now = cslibs_time::Time::now();
+            map_->get()->getBundleIndices(indices);
+            const double time = (cslibs_time::Time::now() - now).milliseconds();
+            traversal += time;
+        }
+        std::vector<typename rep_t::map_t::distribution_bundle_t*> vec;
+        cslibs_math::statistics::StableDistribution<double,1,6> access;
+        for (auto &index : indices) {
+            cslibs_time::Time now = cslibs_time::Time::now();
+            vec.push_back(map_->get()->getDistributionBundle(index));
+            const double time = (cslibs_time::Time::now() - now).milliseconds();
+            access += time;
+        }
+
+        std::cout << "[NDTGridMapper3D]: traversal N | mean | std = \n"
+                  << std::to_string(traversal.getN())
+                  << " | " << std::to_string(traversal.getMean())
+                  << " | " << std::to_string(traversal.getStandardDeviation())
+                  << std::endl;
+        std::cout << "[NDTGridMapper3D]: access N | mean | std = \n"
+                  << std::to_string(access.getN())
+                  << " | " << std::to_string(access.getMean())
+                  << " | " << std::to_string(access.getStandardDeviation())
+                  << std::endl;
     }
 
     virtual const inline map_t::ConstPtr getMap() const override

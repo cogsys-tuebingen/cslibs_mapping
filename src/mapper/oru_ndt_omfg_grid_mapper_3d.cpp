@@ -25,6 +25,44 @@ OruNDTOMFGGridMapper3D::~OruNDTOMFGGridMapper3D()
             + " | " + std::to_string(stats_.getStandardDeviation())
             + " | " + std::to_string(map_->get()->byteSize()) + "\n";
     std::cout << stats_print << std::endl;
+
+
+    perception_oru::SpatialIndex* si = map_->get()->getMyIndex();
+    perception_oru::LazyGrid* lg = dynamic_cast<perception_oru::LazyGrid*>(si);
+    auto index = [this,&lg](const pcl::PointXYZ& p) -> std::array<int,3> {
+        int ix,iy,iz;
+        lg->getIndexForPoint(p,ix,iy,iz);
+        return {{ix,iy,iz}};
+    };
+    std::vector<std::array<int,3>> indices;
+    cslibs_math::statistics::StableDistribution<double,1,6> traversal;
+    for (int i=0; i<100; ++i) {
+        indices.clear();
+        cslibs_time::Time now = cslibs_time::Time::now();
+        for (typename std::vector<perception_oru::NDTCell*>::iterator it = si->begin(), end = si->end() ; it != end ; ++ it)
+            indices.emplace_back(index((*it)->getCenter()));
+        const double time = (cslibs_time::Time::now() - now).milliseconds();
+        traversal += time;
+    }
+    std::vector<perception_oru::NDTCell*> vec;
+    cslibs_math::statistics::StableDistribution<double,1,6> access;
+    for (auto &index : indices) {
+        cslibs_time::Time now = cslibs_time::Time::now();
+        vec.push_back(map_->get()->getCellAtID(index[0], index[1], index[2]));
+        const double time = (cslibs_time::Time::now() - now).milliseconds();
+        access += time;
+    }
+
+    std::cout << "[OruNDTOMGridMapper3D]: traversal N | mean | std = \n"
+              << std::to_string(traversal.getN())
+              << " | " << std::to_string(traversal.getMean())
+              << " | " << std::to_string(traversal.getStandardDeviation())
+              << std::endl;
+    std::cout << "[OruNDTOMGridMapper3D]: access N | mean | std = \n"
+              << std::to_string(access.getN())
+              << " | " << std::to_string(access.getMean())
+              << " | " << std::to_string(access.getStandardDeviation())
+              << std::endl;
 }
 
 const OruNDTOMFGGridMapper3D::map_t::ConstPtr OruNDTOMFGGridMapper3D::getMap() const
