@@ -53,6 +53,12 @@ public:
             const double time = (cslibs_time::Time::now() - now).milliseconds();
             traversal += time;
         }
+        std::cout << "[NDTGridMapper3D]: traversal N | mean | std = \n"
+                  << std::to_string(traversal.getN())
+                  << " | " << std::to_string(traversal.getMean())
+                  << " | " << std::to_string(traversal.getStandardDeviation())
+                  << std::endl;
+
         std::vector<typename rep_t::map_t::distribution_bundle_t*> vec;
         cslibs_math::statistics::StableDistribution<double,1,6> access;
         for (auto &index : indices) {
@@ -61,12 +67,6 @@ public:
             const double time = (cslibs_time::Time::now() - now).milliseconds();
             access += time;
         }
-
-        std::cout << "[NDTGridMapper3D]: traversal N | mean | std = \n"
-                  << std::to_string(traversal.getN())
-                  << " | " << std::to_string(traversal.getMean())
-                  << " | " << std::to_string(traversal.getStandardDeviation())
-                  << std::endl;
         std::cout << "[NDTGridMapper3D]: access N | mean | std = \n"
                   << std::to_string(access.getN())
                   << " | " << std::to_string(access.getMean())
