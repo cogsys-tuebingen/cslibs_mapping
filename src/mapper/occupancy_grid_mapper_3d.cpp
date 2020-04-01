@@ -27,6 +27,7 @@ OccupancyGridMapper3D::~OccupancyGridMapper3D()
         for (octomap::OcTree::leaf_iterator it = map_->get()->begin_leafs(), end = map_->get()->end_leafs() ; it != end ; ++ it)
             indices.emplace_back(it.getCoordinate());
         const double time = (cslibs_time::Time::now() - now).milliseconds();
+        std::cout << time << std::endl;
         traversal += time;
     }
     std::cout << "[OccupancyGridMapper3D]: traversal N | mean | std = \n"
