@@ -21,13 +21,12 @@ OccupancyGridMapper3D::~OccupancyGridMapper3D()
 
     std::vector<octomap::point3d> indices;
     cslibs_math::statistics::StableDistribution<double,1,6> traversal;
-    for (int i=0; i<100; ++i) {
+    for (int i=0; i<80; ++i) {
         indices.clear();
         cslibs_time::Time now = cslibs_time::Time::now();
         for (octomap::OcTree::leaf_iterator it = map_->get()->begin_leafs(), end = map_->get()->end_leafs() ; it != end ; ++ it)
             indices.emplace_back(it.getCoordinate());
         const double time = (cslibs_time::Time::now() - now).milliseconds();
-        std::cout << traversal.getN() << " | " << time << std::endl;
         traversal += time;
     }
     std::cout << "[OccupancyGridMapper3D]: traversal N | mean | std = \n"
