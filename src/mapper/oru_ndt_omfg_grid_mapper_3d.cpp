@@ -11,6 +11,8 @@
 #include <pcl/common/transforms.h>
 #include <pcl/filters/filter.h>
 
+#include <vector>
+
 #include <class_loader/class_loader_register_macro.h>
 CLASS_LOADER_REGISTER_CLASS(cslibs_mapping::mapper::OruNDTOMFGGridMapper3D, cslibs_mapping::mapper::Mapper)
 
@@ -25,7 +27,6 @@ OruNDTOMFGGridMapper3D::~OruNDTOMFGGridMapper3D()
             + " | " + std::to_string(stats_.getStandardDeviation())
             + " | " + std::to_string(map_->get()->byteSize()) + "\n";
     std::cout << stats_print << std::endl;
-
 
     perception_oru::SpatialIndex* si = map_->get()->getMyIndex();
     perception_oru::LazyGrid* lg = dynamic_cast<perception_oru::LazyGrid*>(si);
@@ -48,6 +49,8 @@ OruNDTOMFGGridMapper3D::~OruNDTOMFGGridMapper3D()
               << std::to_string(traversal.getN())
               << " | " << std::to_string(traversal.getMean())
               << " | " << std::to_string(traversal.getStandardDeviation())
+              <<" || " << std::to_string(traversal.getMean() / traversal.getN())
+              << " | " << std::to_string(traversal.getStandardDeviation() / traversal.getN())
               << std::endl;
 
     std::vector<perception_oru::NDTCell*> vec;
