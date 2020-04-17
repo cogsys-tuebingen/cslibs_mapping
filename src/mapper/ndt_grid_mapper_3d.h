@@ -39,6 +39,7 @@ public:
                 + std::to_string(stats_.getN())
                 + " | " + std::to_string(stats_.getMean())
                 + " | " + std::to_string(stats_.getStandardDeviation())
+                + " | " + std::to_string(map_->get()->getByteSize())
                 + " | " + std::to_string(map_->get()->getOrigin())
                 + " | " + std::to_string(map_->get()->getInitialOrigin());
         std::cout << stats_print << " || " << size << ", " << min_index << std::endl;
@@ -73,9 +74,6 @@ public:
                   << " | " << std::to_string(access.getMean())
                   << " | " << std::to_string(access.getStandardDeviation())
                   << std::endl;
-
-        std::cout << "[NDTGridMapper3D] byte size = "
-                  << std::to_string(map_->get()->getByteSize()) << std::endl;
     }
 
     virtual const inline map_t::ConstPtr getMap() const override
@@ -195,7 +193,7 @@ protected:
                 std::to_string(stats_.getN())
                 + " | " + std::to_string(stats_.getMean())
                 + " | " + std::to_string(stats_.getStandardDeviation())
-                + " | " + std::to_string(map_->get()->getByteSize()) + "\n";
+                /*+ " | " + std::to_string(map_->get()->getByteSize())*/ + "\n";
         std::cout << stats_print << std::endl;
         out << stats_print << std::endl;
         out.close();
