@@ -34,8 +34,7 @@ public:
                 "[OccupancyNDTGridMapper3D]: N | mean | std | mem = " +
                 std::to_string(stats_.getN())
                 + " | " + std::to_string(stats_.getMean())
-                + " | " + std::to_string(stats_.getStandardDeviation())
-                + " | " + std::to_string(map_->get()->getByteSize()) + "\n";
+                + " | " + std::to_string(stats_.getStandardDeviation()) + "\n";
         std::cout << stats_print << std::endl;
 
         std::vector<std::array<int,3>> indices;
@@ -68,6 +67,9 @@ public:
                   << " | " << std::to_string(access.getMean())
                   << " | " << std::to_string(access.getStandardDeviation())
                   << std::endl;
+
+        std::cout << "[OccupancyNDTGridMapper3D] byte size = "
+                  << std::to_string(map_->get()->getByteSize()) << std::endl;
     }
 
     virtual const inline map_t::ConstPtr getMap() const override
