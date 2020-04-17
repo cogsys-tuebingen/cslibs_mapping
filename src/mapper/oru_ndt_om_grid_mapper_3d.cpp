@@ -47,8 +47,8 @@ OruNDTOMGridMapper3D::~OruNDTOMGridMapper3D()
               << std::to_string(traversal.getN())
               << " | " << std::to_string(traversal.getMean())
               << " | " << std::to_string(traversal.getStandardDeviation())
-              <<" || " << std::to_string(traversal.getMean() / traversal.getN())
-              << " | " << std::to_string(traversal.getStandardDeviation() / traversal.getN())
+              <<" || " << std::to_string(traversal.getMean() / indices.size())
+              << " | " << std::to_string(traversal.getStandardDeviation() / indices.size())
               << std::endl;
 
     std::vector<perception_oru::NDTCell*> vec;
