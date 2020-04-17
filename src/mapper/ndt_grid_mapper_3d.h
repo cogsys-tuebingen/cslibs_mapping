@@ -46,7 +46,7 @@ public:
 
         std::vector<std::array<int,3>> indices;
         cslibs_math::statistics::StableDistribution<double,1,6> traversal;
-        for (int i=0; i<100; ++i) {
+        for (int i=0; i<50; ++i) {
             indices.clear();
             cslibs_time::Time now = cslibs_time::Time::now();
             map_->get()->getBundleIndices(indices);

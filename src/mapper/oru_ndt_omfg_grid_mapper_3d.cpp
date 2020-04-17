@@ -37,7 +37,7 @@ OruNDTOMFGGridMapper3D::~OruNDTOMFGGridMapper3D()
     };
     std::vector<std::array<int,3>> indices;
     cslibs_math::statistics::StableDistribution<double,1,6> traversal;
-    for (int i=0; i<100; ++i) {
+    for (int i=0; i<50; ++i) {
         indices.clear();
         cslibs_time::Time now = cslibs_time::Time::now();
         for (typename std::vector<perception_oru::NDTCell*>::iterator it = si->begin(), end = si->end() ; it != end ; ++ it)
