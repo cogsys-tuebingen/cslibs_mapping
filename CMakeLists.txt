@@ -5,7 +5,6 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 include(cmake/cslibs_mapping_enable_c++11.cmake)
 include(cmake/cslibs_mapping_extras.cmake)
-include(cmake/cslibs_mapping_show_headers.cmake)
 include(cmake/cslibs_mapping_add_unit_test_gtest.cmake)
 include(cmake/cslibs_mapping_eigen_cpu_flags.cmake)
 
@@ -47,7 +46,6 @@ catkin_package(
                    cslibs_time cslibs_utility cslibs_math cslibs_math_ros pluginlib roscpp
     CFG_EXTRAS cslibs_mapping_enable_c++11.cmake
                cslibs_mapping_extras.cmake
-               cslibs_mapping_show_headers.cmake
                cslibs_mapping_add_unit_test_gtest.cmake
                cslibs_mapping_eigen_cpu_flags.cmake
 )
@@ -66,8 +64,6 @@ if(octomap_FOUND)
         ${OCTOMAP_INCLUDE_DIRS}
         )
 endif()
-
-cslibs_mapping_show_headers()
 
 #add_definitions("-DEIGEN_MAX_ALIGN_BYTES=16")
 
