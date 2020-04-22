@@ -11,7 +11,7 @@
 #include <pcl/common/transforms.h>
 #include <pcl/filters/filter.h>
 
-#include <class_loader/class_loader_register_macro.h>
+#include <class_loader/register_macro.hpp>
 CLASS_LOADER_REGISTER_CLASS(cslibs_mapping::mapper::OruNDTOMGridMapper3D, cslibs_mapping::mapper::Mapper)
 
 namespace cslibs_mapping {

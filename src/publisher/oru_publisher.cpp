@@ -4,7 +4,7 @@
 #include <ndt_map/NDTMapMsg.h>
 #include <ndt_map/ndt_conversions.h>
 
-#include <class_loader/class_loader_register_macro.h>
+#include <class_loader/register_macro.hpp>
 CLASS_LOADER_REGISTER_CLASS(cslibs_mapping::publisher::OruPublisher, cslibs_mapping::publisher::Publisher)
 
 namespace cslibs_mapping {

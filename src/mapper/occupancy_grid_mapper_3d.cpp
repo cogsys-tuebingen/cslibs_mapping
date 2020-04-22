@@ -4,7 +4,7 @@
 #include <cslibs_time/time.hpp>
 #include <cslibs_ndt/serialization/filesystem.hpp>
 
-#include <class_loader/class_loader_register_macro.h>
+#include <class_loader/register_macro.hpp>
 CLASS_LOADER_REGISTER_CLASS(cslibs_mapping::mapper::OccupancyGridMapper3D, cslibs_mapping::mapper::Mapper)
 
 namespace cslibs_mapping {
