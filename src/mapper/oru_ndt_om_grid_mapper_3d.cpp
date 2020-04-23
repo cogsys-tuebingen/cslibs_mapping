@@ -111,7 +111,7 @@ bool OruNDTOMGridMapper3D::process(const data_t::ConstPtr &data)
     cslibs_math_3d::Transform3<double> origin;
     if (tf_->lookupTransform(map_frame_,
                              cloud_data.frame(),
-                             ros::Time(cloud_data.timeFrame().start.seconds()),
+                             ros::Time().fromNSec(cloud_data.timeFrame().start.nanoseconds()),
                              origin,
                              tf_timeout_)) {
         if (const cslibs_math_3d::Pointcloud3d::ConstPtr cloud = cloud_data.points()) {
