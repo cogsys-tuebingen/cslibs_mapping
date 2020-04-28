@@ -58,10 +58,6 @@ catkin_package(
         cslibs_mapping_eigen_cpu_flags.cmake
 )
 
-set(TARGET_COMPILE_OPTIONS
-    -std=c++17
-)
-
 if(NOT ${CMAKE_BUILD_TYPE} STREQUAL Debug)
     list(APPEND TARGET_COMPILE_OPTIONS
         -Wall -Werror -Ofast -ffast-math
