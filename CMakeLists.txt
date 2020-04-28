@@ -59,8 +59,9 @@ catkin_package(
 
 if(NOT ${CMAKE_BUILD_TYPE} STREQUAL Debug)
     set(TARGET_COMPILE_OPTIONS
-        -Wall -Werror -Ofast -ffast-math -rdynamic
+        -Wall -Werror -Ofast -ffast-math
     )
+    # linker flag -rdynamic
     # enabling -march=native my result in problems on some machines,
     # my try -mtune=native
 
