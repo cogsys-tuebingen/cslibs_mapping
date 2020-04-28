@@ -3,7 +3,7 @@ project(cslibs_mapping CXX)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
-include(cmake/cslibs_mapping_enable_c++11.cmake)
+include(cmake/cslibs_mapping_enable_c++17.cmake)
 include(cmake/cslibs_mapping_extras.cmake)
 include(cmake/cslibs_mapping_add_unit_test_gtest.cmake)
 include(cmake/cslibs_mapping_eigen_cpu_flags.cmake)
