@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 2.8.3)
 project(cslibs_mapping CXX)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-
 include(cmake/cslibs_mapping_eigen_cpu_flags.cmake)
+
 
 find_package(catkin REQUIRED COMPONENTS
     cslibs_plugins
@@ -15,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
     cslibs_utility
     cslibs_math
     cslibs_math_ros
+    cslibs_indexed_storage
     message_generation
     std_msgs
     pluginlib
@@ -59,7 +60,7 @@ catkin_package(
 
 if(NOT ${CMAKE_BUILD_TYPE} STREQUAL Debug)
     set(TARGET_COMPILE_OPTIONS
-        -Wall -Werror -Ofast -ffast-math
+        -Wall -Werror -Ofast -ffast-math -std=c++17
     )
     # linker flag -rdynamic
     # enabling -march=native my result in problems on some machines,
@@ -207,8 +208,8 @@ target_link_libraries(${PROJECT_NAME}_node
 )
 
 target_compile_options(${PROJECT_NAME}_node
-PRIVATE
-    ${TARGET_COMPILE_OPTIONS}
+    PRIVATE
+        ${TARGET_COMPILE_OPTIONS}
 )
 
 install(FILES plugins.xml DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
