@@ -74,7 +74,7 @@ protected:
         cslibs_math_2d::Transform2<Tp> o_T_d;
         if (tf_->lookupTransform(map_frame_,
                                  laser_data.frame(),
-                                 ros::Time(laser_data.timeFrame().start.seconds()),
+                                 ros::Time().fromNSec(laser_data.timeFrame().start.nanoseconds()),
                                  o_T_d,
                                  tf_timeout_)) {
 

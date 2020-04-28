@@ -63,7 +63,7 @@ protected:
         cslibs_math_3d::Transform3<Tp> o_T_d;
         if (tf_->lookupTransform(map_frame_,
                                  cloud_data.frame(),
-                                 ros::Time(cloud_data.timeFrame().start.seconds()),
+                                 ros::Time().fromNSec(cloud_data.timeFrame().start.nanoseconds()),
                                  o_T_d,
                                  tf_timeout_)) {
             const cslibs_math_2d::Point2<Tp> sensor_xy(o_T_d.tx(), o_T_d.ty());
