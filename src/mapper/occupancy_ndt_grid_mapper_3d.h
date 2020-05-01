@@ -37,36 +37,62 @@ public:
                 + " | " + std::to_string(stats_.getStandardDeviation())
                 /*+ " | " + std::to_string(map_->get()->getByteSize())*/ + "\n";
         std::cout << stats_print << std::endl;
+/*
+        cslibs_math::statistics::StableDistribution<double,1,6> traversal;
+        std::vector<const typename rep_t::map_t::distribution_bundle_t*> cells;
+        double traversal_overall = 0.0;
+        for (int i=0; i<iterations_; ++i) {
+            cells.clear();
+            cslibs_time::Time now = cslibs_time::Time::now();
+            map_->get()->traverse([&cells](const std::array<int,3>& i, const typename rep_t::map_t::distribution_bundle_t& b){
+                cells.emplace_back(&b);
+            });
+            const double time = (cslibs_time::Time::now() - now).nanoseconds();
+            traversal += time;
+            traversal_overall += time;
+        }
 
         std::vector<std::array<int,3>> indices;
-        cslibs_math::statistics::StableDistribution<double,1,6> traversal;
-        for (int i=0; i<50; ++i) {
-            indices.clear();
-            cslibs_time::Time now = cslibs_time::Time::now();
-            map_->get()->getBundleIndices(indices);
-            const double time = (cslibs_time::Time::now() - now).milliseconds();
-            traversal += time;
-        }
-        std::cout << "[OccupancyNDTGridMapper3D]: traversal N | mean | std = \n"
+        map_->get()->getBundleIndices(indices);
+        std::cout << "[OccupancyNDTGridMapper3D]: traversal N | mean | std [ms] || traversal normalized mean | std [ns] = \n"
                   << std::to_string(traversal.getN())
-                  << " | " << std::to_string(traversal.getMean())
-                  << " | " << std::to_string(traversal.getStandardDeviation())
+                  << " | " << std::to_string(traversal.getMean() * 1e-6)
+                  << " | " << std::to_string(traversal.getStandardDeviation() * 1e-6)
                   <<" || " << std::to_string(traversal.getMean() / indices.size())
                   << " | " << std::to_string(traversal.getStandardDeviation() / indices.size())
                   << std::endl;
-
-        std::vector<typename rep_t::map_t::distribution_bundle_t*> vec;
+        std::cout << "[OccupancyNDTGridMapper3D]: traversal mean [ms] | traversal normalized mean [ns] = \n"
+                  << std::to_string(traversal_overall * 1e-6 / iterations_)
+                  << " | " << std::to_string(traversal_overall / iterations_ / indices.size())
+                  << std::endl;
+*/
         cslibs_math::statistics::StableDistribution<double,1,6> access;
-        for (auto &index : indices) {
+        double access_overall = 0.0;
+        double sz = 0.0;
+        for (int i=0; i<iterations_; ++i) {
+//            cells.clear();
+//        for (auto &index : indices) {
+//            if (clear_)
+//                cells.clear();
+            sz = 0.0;
+            map_->get()->traverse([&access,&access_overall,&sz,this](const std::array<int,3>& index, const typename rep_t::map_t::distribution_bundle_t& b){
+            //});
             cslibs_time::Time now = cslibs_time::Time::now();
-            vec.push_back(map_->get()->getDistributionBundle(index));
-            const double time = (cslibs_time::Time::now() - now).milliseconds();
+            //cells.emplace_back(
+                        map_->get()->get(index);//);
+            const double time = (cslibs_time::Time::now() - now).nanoseconds();
             access += time;
-        }
-        std::cout << "[OccupancyNDTGridMapper3D]: access N | mean | std = \n"
-                  << std::to_string(access.getN())
+            access_overall += time;
+            ++sz;
+            });
+        }//}
+        std::cout << "[OccupancyNDTGridMapper3D]: access N | mean | std [ns] = \n"
+                  << std::to_string(access.getN() / iterations_)
                   << " | " << std::to_string(access.getMean())
                   << " | " << std::to_string(access.getStandardDeviation())
+                  << std::endl;
+        std::cout << "[OccupancyNDTGridMapper3D]: access mean [ns] = \n"
+                  << std::to_string(access_overall / sz / iterations_)
                   << std::endl;
 
         std::cout << "[OccupancyNDTGridMapper3D]: byte_size = " << std::to_string(map_->get()->getByteSize()) << std::endl;
@@ -102,6 +128,8 @@ protected:
     virtual inline bool setupMap(ros::NodeHandle &nh) override
     {
         auto param_name = [this](const std::string &name){return name_ + "/" + name;};
+        iterations_ = nh.param<double>(param_name("iterations"), 100.0);
+        clear_ = nh.param<bool>(param_name("clear"), false);
 
         const T resolution = static_cast<T>(nh.param<double>(param_name("resolution"), 1.0));
         std::vector<double> origin = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
@@ -233,6 +261,8 @@ private:
     bool                visibility_based_update_;
 
     cslibs_math::statistics::StableDistribution<double,1,6> stats_;
+    double iterations_;
+    bool clear_;
 };
 
 namespace tag = cslibs_ndt::map::tags;

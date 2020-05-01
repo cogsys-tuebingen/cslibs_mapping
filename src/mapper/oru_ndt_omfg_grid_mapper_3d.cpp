@@ -25,7 +25,7 @@ OruNDTOMFGGridMapper3D::~OruNDTOMFGGridMapper3D()
             std::to_string(stats_.getN())
             + " | " + std::to_string(stats_.getMean())
             + " | " + std::to_string(stats_.getStandardDeviation())
-            + " | " + std::to_string(map_->get()->byteSize()) + "\n";
+            /*+ " | " + std::to_string(map_->get()->byteSize())*/ + "\n";
     std::cout << stats_print << std::endl;
 
     perception_oru::SpatialIndex* si = map_->get()->getMyIndex();
@@ -35,37 +35,67 @@ OruNDTOMFGGridMapper3D::~OruNDTOMFGGridMapper3D()
         lg->getIndexForPoint(p,ix,iy,iz);
         return {{ix,iy,iz}};
     };
-    std::vector<std::array<int,3>> indices;
+/*
     cslibs_math::statistics::StableDistribution<double,1,6> traversal;
-    for (int i=0; i<50; ++i) {
-        indices.clear();
+    std::vector<perception_oru::NDTCell*> cells;
+    double traversal_overall = 0.0;
+    for (int i=0; i<iterations_; ++i) {
+        cells.clear();
         cslibs_time::Time now = cslibs_time::Time::now();
         for (typename std::vector<perception_oru::NDTCell*>::iterator it = si->begin(), end = si->end() ; it != end ; ++ it)
-            indices.emplace_back(index((*it)->getCenter()));
-        const double time = (cslibs_time::Time::now() - now).milliseconds();
+            cells.emplace_back(*it);
+        const double time = (cslibs_time::Time::now() - now).nanoseconds();
         traversal += time;
+        traversal_overall += time;
     }
-    std::cout << "[OruNDTOMGridMapper3D]: traversal N | mean | std = \n"
+
+    std::vector<std::array<int,3>> indices;
+    for (typename std::vector<perception_oru::NDTCell*>::iterator it = si->begin(), end = si->end() ; it != end ; ++ it)
+        indices.emplace_back(index((*it)->getCenter()));
+    std::cout << "[OruNDTOMFGGridMapper3D]: traversal N | mean | std [ms] || traversal normalized mean | std [ns] = \n"
               << std::to_string(traversal.getN())
-              << " | " << std::to_string(traversal.getMean())
-              << " | " << std::to_string(traversal.getStandardDeviation())
+              << " | " << std::to_string(traversal.getMean() * 1e-6)
+              << " | " << std::to_string(traversal.getStandardDeviation() * 1e-6)
               <<" || " << std::to_string(traversal.getMean() / indices.size())
               << " | " << std::to_string(traversal.getStandardDeviation() / indices.size())
               << std::endl;
-
-    std::vector<perception_oru::NDTCell*> vec;
+    std::cout << "[OruNDTOMFGGridMapper3D]: traversal mean [ms / ns] | traversal normalized mean [ns] = \n"
+              << std::to_string(traversal_overall * 1e-6 / iterations_)
+              << " / " << std::to_string(traversal_overall / iterations_)
+              << " | " << std::to_string(traversal_overall / iterations_ / indices.size())
+              << std::endl;
+*/
     cslibs_math::statistics::StableDistribution<double,1,6> access;
-    for (auto &index : indices) {
+    double access_overall = 0.0;
+    double size = 0.0;
+    for (int i=0; i<iterations_; ++i) {
+//        cells.clear();
+//    for (auto &index : indices) {
+//        if (clear_)
+//            cells.clear();
+        size = 0.0;
+    for (typename std::vector<perception_oru::NDTCell*>::iterator it = si->begin(), end = si->end() ; it != end ; ++ it) {
+//            indices.emplace_back(index((*it)->getCenter()));
+        const std::array<int,3> in = index((*it)->getCenter());
+
         cslibs_time::Time now = cslibs_time::Time::now();
-        vec.push_back(map_->get()->getCellAtID(index[0], index[1], index[2]));
-        const double time = (cslibs_time::Time::now() - now).milliseconds();
+//        cells.emplace_back(
+        map_->get()->getCellAtID(in[0], in[1], in[2]);//);
+        const double time = (cslibs_time::Time::now() - now).nanoseconds();
         access += time;
-    }
-    std::cout << "[OruNDTOMGridMapper3D]: access N | mean | std = \n"
-              << std::to_string(access.getN())
+        access_overall += time;
+        ++size;
+    }}
+    std::cout << "[OruNDTOMFGGridMapper3D]: access N | mean | std [ns] = \n"
+              << std::to_string(access.getN() / iterations_)
               << " | " << std::to_string(access.getMean())
               << " | " << std::to_string(access.getStandardDeviation())
               << std::endl;
+    std::cout << "[OruNDTOMFGGridMapper3D]: access mean [ns] = \n"
+              << std::to_string(access_overall / size / iterations_)
+              << std::endl;
+
+    std::cout << "[OruNDTOMFGGridMapper3D]: byte_size = " << std::to_string(map_->get()->byteSize()) << std::endl;
 }
 
 const OruNDTOMFGGridMapper3D::map_t::ConstPtr OruNDTOMFGGridMapper3D::getMap() const
@@ -77,6 +107,8 @@ bool OruNDTOMFGGridMapper3D::setupMap(ros::NodeHandle &nh)
 {
     auto param_name = [this](const std::string &name){return name_ + "/" + name;};
 
+    iterations_ = nh.param<double>(param_name("iterations"), 100.0);
+    clear_ = nh.param<bool>(param_name("clear"), false);
     const double resolution = nh.param<double>(param_name("resolution"), 1.0);
 
     const double ndt_oru_size_x = nh.param<double>(param_name("ndt_oru_size_x"), 0.0);

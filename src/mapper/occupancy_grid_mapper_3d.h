@@ -70,6 +70,8 @@ protected:
 private:
     maps::OccupancyGridMap3D::Ptr map_;
     cslibs_math::statistics::StableDistribution<double,1,6> stats_;
+    double iterations_;
+    bool clear_;
 };
 }
 }
