@@ -83,7 +83,8 @@ OruNDTOMGridMapper3D::~OruNDTOMGridMapper3D()
         access += time;
         access_overall += time;
         ++size;
-    }}
+    }std::cout << "[OruNDTOMGridMapper3D]: mean = " << std::to_string(access.getMean()) << std::endl;
+    }
     std::cout << "[OruNDTOMGridMapper3D]: access N | mean | std [ns] = \n"
               << std::to_string(access.getN() / iterations_)
               << " | " << std::to_string(access.getMean())

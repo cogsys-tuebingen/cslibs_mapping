@@ -12,6 +12,8 @@
 #include <cslibs_math_3d/linear/pointcloud.hpp>
 #include <cslibs_math_ros/tf/conversion_3d.hpp>
 
+#include <cslibs_ndt/backend/octree.hpp>
+
 #include <cslibs_ndt_3d/serialization/serialization.hpp>
 #include <cslibs_ndt_3d/serialization/dynamic_maps/occupancy_gridmap.hpp>
 
@@ -85,6 +87,7 @@ public:
             access_overall += time;
             ++sz;
             });
+            //std::cout << "[OccupancyNDTGridMapper3D]: mean = " << std::to_string(access.getMean()) << std::endl;
         }//}
         std::cout << "[OccupancyNDTGridMapper3D]: access N | mean | std [ns] = \n"
                   << std::to_string(access.getN() / iterations_)
@@ -274,11 +277,13 @@ using OccupancyNDTGridMapper3D_d_kdtree = OccupancyNDTGridMapper3DBase<tag::dyna
 using OccupancyNDTGridMapper3D_d_map    = OccupancyNDTGridMapper3DBase<tag::dynamic_map, double, backend::simple::Map>;
 using OccupancyNDTGridMapper3D_d_umap   = OccupancyNDTGridMapper3DBase<tag::dynamic_map, double, backend::simple::UnorderedMap>;
 using OccupancyNDTGridMapper3D_d_ucmap  = OccupancyNDTGridMapper3DBase<tag::dynamic_map, double, backend::simple::UnorderedComponentMap>;
+using OccupancyNDTGridMapper3D_d_octree = OccupancyNDTGridMapper3DBase<tag::dynamic_map, double, cslibs_ndt::backend::OcTree>;
 using OccupancyNDTGridMapper3D_f_array  = OccupancyNDTGridMapper3DBase<tag::static_map,  float, backend::array::Array>;
 using OccupancyNDTGridMapper3D_f_kdtree = OccupancyNDTGridMapper3DBase<tag::dynamic_map, float, backend::kdtree::KDTree>;
 using OccupancyNDTGridMapper3D_f_map    = OccupancyNDTGridMapper3DBase<tag::dynamic_map, float, backend::simple::Map>;
 using OccupancyNDTGridMapper3D_f_umap   = OccupancyNDTGridMapper3DBase<tag::dynamic_map, float, backend::simple::UnorderedMap>;
 using OccupancyNDTGridMapper3D_f_ucmap  = OccupancyNDTGridMapper3DBase<tag::dynamic_map, float, backend::simple::UnorderedComponentMap>;
+using OccupancyNDTGridMapper3D_f_octree = OccupancyNDTGridMapper3DBase<tag::dynamic_map, float, cslibs_ndt::backend::OcTree>;
 }
 }
 

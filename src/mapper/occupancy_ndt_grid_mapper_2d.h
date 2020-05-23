@@ -12,6 +12,8 @@
 #include <cslibs_math_2d/linear/pointcloud.hpp>
 #include <cslibs_gridmaps/static_maps/algorithms/normalize.hpp>
 
+#include <cslibs_ndt/backend/octree.hpp>
+
 #include <cslibs_ndt_2d/serialization/serialization.hpp>
 #include <cslibs_ndt_2d/serialization/dynamic_maps/occupancy_gridmap.hpp>
 #include <cslibs_ndt_2d/conversion/probability_gridmap.hpp>
@@ -191,11 +193,13 @@ using OccupancyNDTGridMapper2D_d_kdtree = OccupancyNDTGridMapper2DBase<tag::dyna
 using OccupancyNDTGridMapper2D_d_map    = OccupancyNDTGridMapper2DBase<tag::dynamic_map, double, backend::simple::Map>;
 using OccupancyNDTGridMapper2D_d_umap   = OccupancyNDTGridMapper2DBase<tag::dynamic_map, double, backend::simple::UnorderedMap>;
 using OccupancyNDTGridMapper2D_d_ucmap  = OccupancyNDTGridMapper2DBase<tag::dynamic_map, double, backend::simple::UnorderedComponentMap>;
+using OccupancyNDTGridMapper2D_d_octree = OccupancyNDTGridMapper2DBase<tag::dynamic_map, double, cslibs_ndt::backend::OcTree>;
 using OccupancyNDTGridMapper2D_f_array  = OccupancyNDTGridMapper2DBase<tag::static_map,  float, backend::array::Array>;
 using OccupancyNDTGridMapper2D_f_kdtree = OccupancyNDTGridMapper2DBase<tag::dynamic_map, float, backend::kdtree::KDTree>;
 using OccupancyNDTGridMapper2D_f_map    = OccupancyNDTGridMapper2DBase<tag::dynamic_map, float, backend::simple::Map>;
 using OccupancyNDTGridMapper2D_f_umap   = OccupancyNDTGridMapper2DBase<tag::dynamic_map, float, backend::simple::UnorderedMap>;
 using OccupancyNDTGridMapper2D_f_ucmap  = OccupancyNDTGridMapper2DBase<tag::dynamic_map, float, backend::simple::UnorderedComponentMap>;
+using OccupancyNDTGridMapper2D_f_octree = OccupancyNDTGridMapper2DBase<tag::dynamic_map, float, cslibs_ndt::backend::OcTree>;
 }
 }
 
