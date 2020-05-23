@@ -12,6 +12,8 @@
 #include <cslibs_math_3d/linear/pointcloud.hpp>
 #include <cslibs_math_ros/tf/conversion_3d.hpp>
 
+#include <cslibs_ndt/backend/octree.hpp>
+
 #include <cslibs_ndt_3d/serialization/serialization.hpp>
 #include <cslibs_ndt_3d/serialization/dynamic_maps/gridmap.hpp>
 
@@ -92,6 +94,7 @@ public:
             access_overall += time;
             ++sz;
             });
+            //std::cout << "[NDTGridMapper3D]: mean = " << std::to_string(access.getMean()) << std::endl;
         }//}
         std::cout << "[NDTGridMapper3D]: access N | mean | std [ns] = \n"
                   << std::to_string(access.getN() / iterations_)
@@ -252,11 +255,13 @@ using NDTGridMapper3D_d_kdtree = NDTGridMapper3DBase<tag::dynamic_map, double, b
 using NDTGridMapper3D_d_map    = NDTGridMapper3DBase<tag::dynamic_map, double, backend::simple::Map>;
 using NDTGridMapper3D_d_umap   = NDTGridMapper3DBase<tag::dynamic_map, double, backend::simple::UnorderedMap>;
 using NDTGridMapper3D_d_ucmap  = NDTGridMapper3DBase<tag::dynamic_map, double, backend::simple::UnorderedComponentMap>;
+using NDTGridMapper3D_d_octree = NDTGridMapper3DBase<tag::dynamic_map, double, cslibs_ndt::backend::OcTree>;
 using NDTGridMapper3D_f_array  = NDTGridMapper3DBase<tag::static_map,  float, backend::array::Array>;
 using NDTGridMapper3D_f_kdtree = NDTGridMapper3DBase<tag::dynamic_map, float, backend::kdtree::KDTree>;
 using NDTGridMapper3D_f_map    = NDTGridMapper3DBase<tag::dynamic_map, float, backend::simple::Map>;
 using NDTGridMapper3D_f_umap   = NDTGridMapper3DBase<tag::dynamic_map, float, backend::simple::UnorderedMap>;
 using NDTGridMapper3D_f_ucmap  = NDTGridMapper3DBase<tag::dynamic_map, float, backend::simple::UnorderedComponentMap>;
+using NDTGridMapper3D_f_octree = NDTGridMapper3DBase<tag::dynamic_map, float, cslibs_ndt::backend::OcTree>;
 }
 }
 

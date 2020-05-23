@@ -11,12 +11,15 @@ namespace cslibs_mapping {
 namespace mapper {
 OccupancyGridMapper3D::~OccupancyGridMapper3D()
 {
+    double sx,sy,sz;
+    map_->get()->getMetricSize(sx,sy,sz);
     std::string stats_print =
             "[OccupancyGridMapper3D]: N | mean | std | mem = " +
             std::to_string(stats_.getN())
             + " | " + std::to_string(stats_.getMean())
             + " | " + std::to_string(stats_.getStandardDeviation())
-            + " | " + std::to_string(map_->get()->memoryUsage()) + "\n";
+            + " | " + std::to_string(map_->get()->memoryUsage())
+            + " | " + "[" + std::to_string(sx) + "," + std::to_string(sy) + "," + std::to_string(sz) + "]" + "\n";
     std::cout << stats_print << std::endl;
 /*
     cslibs_math::statistics::StableDistribution<double,1,6> traversal;
@@ -67,7 +70,8 @@ OccupancyGridMapper3D::~OccupancyGridMapper3D()
         access += time;
         access_overall += time;
         ++size;
-    }}
+    }//std::cout << "[OccupancyGridMapper3D]: mean = " << std::to_string(access.getMean()) << std::endl;
+    }
     std::cout << "[OccupancyGridMapper3D]: access N | mean | std [ns] = \n"
               << std::to_string(access.getN() / iterations_)
               << " | " << std::to_string(access.getMean())

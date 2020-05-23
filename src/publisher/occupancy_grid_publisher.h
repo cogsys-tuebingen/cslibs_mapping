@@ -12,6 +12,8 @@
 #include <cslibs_mapping/maps/min_height_map_2d.hpp>
 #include <cslibs_mapping/maps/distribution_height_map_2d.hpp>
 
+#include <cslibs_ndt/backend/octree.hpp>
+
 #include <cslibs_ndt_2d/conversion/probability_gridmap.hpp>
 #include <cslibs_ndt_2d/conversion/merge.hpp>
 
@@ -37,12 +39,14 @@ private:
                map->isType<cslibs_mapping::maps::NDTGridMap2D<cslibs_ndt::map::tags::dynamic_map,T,cis::backend::simple::Map>>() ||
                map->isType<cslibs_mapping::maps::NDTGridMap2D<cslibs_ndt::map::tags::dynamic_map,T,cis::backend::simple::UnorderedMap>>() ||
                map->isType<cslibs_mapping::maps::NDTGridMap2D<cslibs_ndt::map::tags::dynamic_map,T,cis::backend::simple::UnorderedComponentMap>>() ||
+               map->isType<cslibs_mapping::maps::NDTGridMap2D<cslibs_ndt::map::tags::dynamic_map,T,cslibs_ndt::backend::OcTree>>() ||
 
                map->isType<cslibs_mapping::maps::OccupancyNDTGridMap2D<cslibs_ndt::map::tags::static_map,T,cis::backend::array::Array>>() ||
                map->isType<cslibs_mapping::maps::OccupancyNDTGridMap2D<cslibs_ndt::map::tags::dynamic_map,T,cis::backend::kdtree::KDTree>>() ||
                map->isType<cslibs_mapping::maps::OccupancyNDTGridMap2D<cslibs_ndt::map::tags::dynamic_map,T,cis::backend::simple::Map>>() ||
                map->isType<cslibs_mapping::maps::OccupancyNDTGridMap2D<cslibs_ndt::map::tags::dynamic_map,T,cis::backend::simple::UnorderedMap>>() ||
                map->isType<cslibs_mapping::maps::OccupancyNDTGridMap2D<cslibs_ndt::map::tags::dynamic_map,T,cis::backend::simple::UnorderedComponentMap>>() ||
+               map->isType<cslibs_mapping::maps::OccupancyNDTGridMap2D<cslibs_ndt::map::tags::dynamic_map,T,cslibs_ndt::backend::OcTree>>() ||
 
                map->isType<cslibs_mapping::maps::MinHeightMap2D<Tp,T>>() ||
                map->isType<cslibs_mapping::maps::DistributionHeightMap2D<Tp,T>>();
@@ -87,6 +91,8 @@ private:
             return publishNDTGridMap2D<cslibs_ndt::map::tags::dynamic_map,cis::backend::simple::UnorderedMap>(map, time);
         if (map->isType<cslibs_mapping::maps::NDTGridMap2D<cslibs_ndt::map::tags::dynamic_map,T,cis::backend::simple::UnorderedComponentMap>>())
             return publishNDTGridMap2D<cslibs_ndt::map::tags::dynamic_map,cis::backend::simple::UnorderedComponentMap>(map, time);
+        if (map->isType<cslibs_mapping::maps::NDTGridMap2D<cslibs_ndt::map::tags::dynamic_map,T,cslibs_ndt::backend::OcTree>>())
+            return publishNDTGridMap2D<cslibs_ndt::map::tags::dynamic_map,cslibs_ndt::backend::OcTree>(map, time);
 
         if (map->isType<cslibs_mapping::maps::OccupancyNDTGridMap2D<cslibs_ndt::map::tags::static_map,T,cis::backend::array::Array>>())
             return publishOccupancyNDTGridMap2D<cslibs_ndt::map::tags::static_map,cis::backend::array::Array>(map, time);
@@ -98,6 +104,8 @@ private:
             return publishOccupancyNDTGridMap2D<cslibs_ndt::map::tags::dynamic_map,cis::backend::simple::UnorderedMap>(map, time);
         if (map->isType<cslibs_mapping::maps::OccupancyNDTGridMap2D<cslibs_ndt::map::tags::dynamic_map,T,cis::backend::simple::UnorderedComponentMap>>())
             return publishOccupancyNDTGridMap2D<cslibs_ndt::map::tags::dynamic_map,cis::backend::simple::UnorderedComponentMap>(map, time);
+        if (map->isType<cslibs_mapping::maps::OccupancyNDTGridMap2D<cslibs_ndt::map::tags::dynamic_map,T,cslibs_ndt::backend::OcTree>>())
+            return publishOccupancyNDTGridMap2D<cslibs_ndt::map::tags::dynamic_map,cslibs_ndt::backend::OcTree>(map, time);
 
         if (map->isType<cslibs_mapping::maps::MinHeightMap2D<Tp,T>>())
             return publishMinHeightMap2D(map, time);
