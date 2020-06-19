@@ -37,7 +37,7 @@ public:
                 std::to_string(stats_.getN())
                 + " | " + std::to_string(stats_.getMean())
                 + " | " + std::to_string(stats_.getStandardDeviation())
-                /*+ " | " + std::to_string(map_->get()->getByteSize())*/ + "\n";
+                + " | " + std::to_string(map_->get()->getByteSize()) + "\n";
         std::cout << stats_print << std::endl;
 /*
         cslibs_math::statistics::StableDistribution<double,1,6> traversal;

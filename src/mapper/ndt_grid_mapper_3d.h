@@ -41,7 +41,7 @@ public:
                 + std::to_string(stats_.getN())
                 + " | " + std::to_string(stats_.getMean())
                 + " | " + std::to_string(stats_.getStandardDeviation())
-               // + " | " + std::to_string(map_->get()->getByteSize())
+                + " | " + std::to_string(map_->get()->getByteSize())
                 + " | " + std::to_string(map_->get()->getOrigin())
                 + " | " + std::to_string(map_->get()->getInitialOrigin());
         const auto min_point = map_->get()->getMin();
