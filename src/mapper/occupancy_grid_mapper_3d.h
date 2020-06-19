@@ -54,7 +54,10 @@ protected:
                                                o_T_d.translation()(2));
 
                 const cslibs_time::Time start = cslibs_time::Time::now();
-                map_->get()->insertPointCloud(cloud, origin, -1);
+                // first  bool: lazy_eval (requires updateInnerOccupancy() call;
+                // second bool: enables clustering
+                map_->get()->insertPointCloud(cloud, origin, -1, true, true);
+                map_->get()->updateInnerOccupancy();
                 const double time = (cslibs_time::Time::now() - start).milliseconds();
                 stats_ += time;
 
