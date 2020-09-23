@@ -54,7 +54,7 @@ public:
 
     inline void setup(const std::map<std::string, data_provider_t::Ptr> &data_providers,
                       const std::map<std::string, typename publisher_t::Ptr> &publishers,
-                      ros::NodeHandle &nh)
+                      const tf_listener_t::Ptr &tf_listener, ros::NodeHandle &nh)
     {
         auto param_name = [this](const std::string &name){return name_ + "/" + name;};
         auto callback = [this](const data_t::ConstPtr &data) {
@@ -69,7 +69,8 @@ public:
         queue_size_ = static_cast<std::size_t>(nh.param<int>(param_name("queue_size"), 10));
 
         // tf listener and lookup timeout
-        tf_.reset(new tf_listener_t);
+        //tf_.reset(new tf_listener_t);
+        tf_ = tf_listener;
         tf_timeout_ = ros::Duration(nh.param<double>(param_name("tf_timeout"), 0.1));
 
         // publication parameters

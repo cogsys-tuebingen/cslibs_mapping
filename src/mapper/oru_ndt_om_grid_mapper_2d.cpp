@@ -1,6 +1,6 @@
-#include "oru_ndt_omfg_grid_mapper_3d.h"
+#include "oru_ndt_om_grid_mapper_2d.h"
 
-#include <cslibs_plugins_data/types/pointcloud_3d.hpp>
+#include <cslibs_plugins_data/types/laserscan.hpp>
 #include <cslibs_math_3d/linear/pointcloud.hpp>
 #include <cslibs_math_ros/tf/conversion_3d.hpp>
 
@@ -14,20 +14,20 @@
 #include <vector>
 
 #include <class_loader/class_loader_register_macro.h>
-CLASS_LOADER_REGISTER_CLASS(cslibs_mapping::mapper::OruNDTOMFGGridMapper3D, cslibs_mapping::mapper::Mapper)
+CLASS_LOADER_REGISTER_CLASS(cslibs_mapping::mapper::OruNDTOMGridMapper2D, cslibs_mapping::mapper::Mapper)
 
 namespace cslibs_mapping {
 namespace mapper {
-OruNDTOMFGGridMapper3D::~OruNDTOMFGGridMapper3D()
+OruNDTOMGridMapper2D::~OruNDTOMGridMapper2D()
 {
 }
 
-const OruNDTOMFGGridMapper3D::map_t::ConstPtr OruNDTOMFGGridMapper3D::getMap() const
+const OruNDTOMGridMapper2D::map_t::ConstPtr OruNDTOMGridMapper2D::getMap() const
 {
     return map_;
 }
 
-bool OruNDTOMFGGridMapper3D::setupMap(ros::NodeHandle &nh)
+bool OruNDTOMGridMapper2D::setupMap(ros::NodeHandle &nh)
 {
     auto param_name = [this](const std::string &name){return name_ + "/" + name;};
 
@@ -45,6 +45,7 @@ bool OruNDTOMFGGridMapper3D::setupMap(ros::NodeHandle &nh)
     ndt_oru_local_size_y_ = nh.param<double>(param_name("ndt_oru_local_size_y"), ndt_oru_size_y);
     ndt_oru_local_size_z_ = nh.param<double>(param_name("ndt_oru_local_size_z"), ndt_oru_size_z);
 
+    varz_ = resolution/4;
 
     if (ndt_oru_size_x > 1e-3 && ndt_oru_size_y > 1e-3 && ndt_oru_size_z > 1e-3)
         map_.reset(new maps::OruNDTGridMap3D(
@@ -59,63 +60,64 @@ bool OruNDTOMFGGridMapper3D::setupMap(ros::NodeHandle &nh)
     return true;
 }
 
-bool OruNDTOMFGGridMapper3D::uses(const data_t::ConstPtr &type)
+bool OruNDTOMGridMapper2D::uses(const data_t::ConstPtr &type)
 {
-    return type->isType<cslibs_plugins_data::types::Pointcloud3<double>>();
+    return type->isType<cslibs_plugins_data::types::Laserscan2<double>>();
 }
 
-bool OruNDTOMFGGridMapper3D::process(const data_t::ConstPtr &data)
+bool OruNDTOMGridMapper2D::process(const data_t::ConstPtr &data)
 {
     assert (uses(data));
 
-    const cslibs_plugins_data::types::Pointcloud3<double> &cloud_data = data->as<cslibs_plugins_data::types::Pointcloud3<double>>();
+    const cslibs_plugins_data::types::Laserscan2<double> &laser_data = data->as<cslibs_plugins_data::types::Laserscan2<double>>();
 
     cslibs_math_3d::Transform3<double> origin;
     if (tf_->lookupTransform(map_frame_,
-                             cloud_data.frame(),
-                             ros::Time().fromNSec(cloud_data.timeFrame().start.nanoseconds()),
+                             laser_data.frame(),
+                             ros::Time().fromNSec(laser_data.timeFrame().start.nanoseconds()),
                              origin,
                              tf_timeout_)) {
-        if (const cslibs_math_3d::Pointcloud3d::ConstPtr cloud = cloud_data.points()) {
-            pcl::PointCloud<pcl::PointXYZ> pc;
-            for (const cslibs_math_3d::Point3d &p : cloud->getPoints()) {
-                if (p.isNormal()) {
-                    const cslibs_math_3d::Point3d q = origin * p;
-                    if (q.isNormal()) {
-                        pcl::PointXYZ pt(q(0), q(1), q(2));
-                        pc.push_back(pt);
-                    }
+
+        const typename cslibs_plugins_data::types::Laserscan2<double>::rays_t &rays = laser_data.getRays();
+        pcl::PointCloud<pcl::PointXYZ> pc;
+
+        for (const auto& ray : rays) {
+            if (ray.valid() && ray.end_point.isNormal()) {
+                const cslibs_math_3d::Point3d p(ray.end_point(0), ray.end_point(1), varz_*((double)rand())/(double)INT_MAX);
+                const cslibs_math_3d::Point3d q = origin * p;
+                if (q.isNormal()) {
+                    pcl::PointXYZ pt(q(0), q(1), q(2));
+                    pc.push_back(pt);
                 }
             }
-
-            std::vector<int> indices;
-            pcl::removeNaNFromPointCloud(pc, pc, indices);
-
-            const cslibs_time::Time start = cslibs_time::Time::now();
-            map_->get()->addPointCloudMeanUpdate(Eigen::Vector3d(origin.tx(), origin.ty(), origin.tz()), pc,
-                                                 Eigen::Vector3d(ndt_oru_local_size_x_, ndt_oru_local_size_y_, ndt_oru_local_size_z_));
-            map_->get()->computeNDTCells(CELL_UPDATE_MODE_SAMPLE_VARIANCE, 1e9, 255,
-                                         Eigen::Vector3d(origin.tx(), origin.ty(), origin.tz()), 0.1);
-            const double time = (cslibs_time::Time::now() - start).milliseconds();
-            stats_ += time;
-
-            std::cout << "[OruNDTOMFGGridMapper3D]: N = " << stats_.getN() << std::endl;
-            return true;
         }
+
+        std::vector<int> indices;
+        pcl::removeNaNFromPointCloud(pc, pc, indices);
+
+        const cslibs_time::Time start = cslibs_time::Time::now();
+        map_->get()->addPointCloud(Eigen::Vector3d(origin.tx(), origin.ty(), origin.tz()), pc);
+        map_->get()->computeNDTCells(CELL_UPDATE_MODE_SAMPLE_VARIANCE, 1e9, 255,
+                                     Eigen::Vector3d(origin.tx(), origin.ty(), origin.tz()), 0.1);
+        const double time = (cslibs_time::Time::now() - start).milliseconds();
+        stats_ += time;
+
+        std::cout << "[OruNDTOMGridMapper2D]: N = " << stats_.getN() << std::endl;
+        return true;
     }
     return false;
 }
 
-bool OruNDTOMFGGridMapper3D::saveMap()
+bool OruNDTOMGridMapper2D::saveMap()
 {
     if (!map_) {
-        std::cout << "[OruNDTOMFGGridMapper3D '" << name_ << "']: No Map." << std::endl;
+        std::cout << "[OruNDTOMGridMapper2D '" << name_ << "']: No Map." << std::endl;
         return true;
     }
 
-    std::cout << "[OruNDTOMFGGridMapper3D '" << name_ << "']: Saving Map..." << std::endl;
+    std::cout << "[OruNDTOMGridMapper2D '" << name_ << "']: Saving Map..." << std::endl;
     if (!checkPath()) {
-        std::cout << "[OruNDTOMFGGridMapper3D '" << name_ << "']: '" << path_ << "' is not a directory." << std::endl;
+        std::cout << "[OruNDTOMGridMapper2D '" << name_ << "']: '" << path_ << "' is not a directory." << std::endl;
         return false;
     }
 
@@ -126,7 +128,7 @@ bool OruNDTOMFGGridMapper3D::saveMap()
 
     std::ofstream out((path_root / path_t("stats")).string(), std::fstream::trunc);
     std::string stats_print =
-            "[OruNDTOFGMGridMapper3D]: N | mean | std | mem = " +
+            "[OruNDTOFGMGridMapper2D]: N | mean | std | mem = " +
             std::to_string(stats_.getN())
             + " | " + std::to_string(stats_.getMean())
             + " | " + std::to_string(stats_.getStandardDeviation())
@@ -137,7 +139,7 @@ bool OruNDTOMFGGridMapper3D::saveMap()
 
     const std::string filename = (path_root / path_t("map.jff")).string();
     if (map_->get()->writeToJFF(filename.c_str())) {
-        std::cout << "[OruNDTOMFGGridMapper3D '" << name_ << "']: Saved Map successfully." << std::endl;
+        std::cout << "[OruNDTOMGridMapper2D '" << name_ << "']: Saved Map successfully." << std::endl;
         return true;
     }
 

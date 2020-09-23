@@ -34,7 +34,7 @@ private:
                map->isType<cslibs_mapping::maps::OccupancyNDTGridMap3D<cslibs_ndt::map::tags::dynamic_map,T,cis::backend::simple::Map>>() ||
                map->isType<cslibs_mapping::maps::OccupancyNDTGridMap3D<cslibs_ndt::map::tags::dynamic_map,T,cis::backend::simple::UnorderedMap>>() ||
                map->isType<cslibs_mapping::maps::OccupancyNDTGridMap3D<cslibs_ndt::map::tags::dynamic_map,T,cis::backend::simple::UnorderedComponentMap>>() ||
-               map->isType<cslibs_mapping::maps::NDTGridMap3D<cslibs_ndt::map::tags::dynamic_map,T,cslibs_ndt::backend::OcTree>>();
+               map->isType<cslibs_mapping::maps::OccupancyNDTGridMap3D<cslibs_ndt::map::tags::dynamic_map,T,cslibs_ndt::backend::OcTree>>();
     }
 
     virtual inline void doAdvertise(ros::NodeHandle &nh, const std::string &topic)

@@ -135,9 +135,14 @@ protected:
                 if (ray.valid() && ray.end_point.isNormal())
                     cloud->insert(ray.end_point);
 
+            const cslibs_time::Time start = cslibs_time::Time::now();
             visibility_based_update_ ?
                         map_->get()->insertVisible(cloud, o_T_d, ivm_, ivm_visibility_) :
                         map_->get()->insert(cloud, o_T_d);
+            const double time = (cslibs_time::Time::now() - start).milliseconds();
+            stats_ += time;
+
+            std::cout << "[OccupancyNDTGridMapper2D]: N = " << stats_.getN() << std::endl;
             return true;
         }
         return false;
@@ -182,6 +187,8 @@ private:
     typename ivm_t::Ptr ivm_visibility_;
     bool                visibility_based_update_;
     T                   sampling_resolution_;
+
+    cslibs_math::statistics::StableDistribution<double,1,6> stats_;
 };
 
 namespace tag = cslibs_ndt::map::tags;
