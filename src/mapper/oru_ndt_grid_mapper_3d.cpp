@@ -29,8 +29,6 @@ bool OruNDTGridMapper3D::setupMap(ros::NodeHandle &nh)
 {
     auto param_name = [this](const std::string &name){return name_ + "/" + name;};
 
-    iterations_ = nh.param<double>(param_name("iterations"), 100.0);
-    clear_ = nh.param<bool>(param_name("clear"), false);
     const double resolution = nh.param<double>(param_name("resolution"), 1.0);
 
     const double ndt_oru_size_x = nh.param<double>(param_name("ndt_oru_size_x"), 0.0);
@@ -85,13 +83,9 @@ bool OruNDTGridMapper3D::process(const data_t::ConstPtr &data)
             std::vector<int> indices;
             pcl::removeNaNFromPointCloud(pc, pc, indices);
 
-            const cslibs_time::Time start = cslibs_time::Time::now();
             map_->get()->addPointCloudSimple(pc);
             map_->get()->computeNDTCells(CELL_UPDATE_MODE_SAMPLE_VARIANCE);
-            const double time = (cslibs_time::Time::now() - start).milliseconds();
-            stats_ += time;
 
-            std::cout << "[OruNDTGridMapper3D]: N = " << stats_.getN() << std::endl;
             return true;
         }
     }
@@ -115,17 +109,6 @@ bool OruNDTGridMapper3D::saveMap()
     path_t path_root(path_);
     if (!cslibs_ndt::common::serialization::create_directory(path_root))
         return false;
-
-    std::ofstream out((path_root / path_t("stats")).string(), std::fstream::trunc);
-    std::string stats_print =
-            "[OruNDTGridMapper3D]: N | mean | std | mem = " +
-            std::to_string(stats_.getN())
-            + " | " + std::to_string(stats_.getMean())
-            + " | " + std::to_string(stats_.getStandardDeviation())
-            + " | " + std::to_string(map_->get()->byteSize()) + "\n";
-    std::cout << stats_print << std::endl;
-    out << stats_print << std::endl;
-    out.close();
 
     const std::string filename = (path_root / path_t("map.jff")).string();
     if (map_->get()->writeToJFF(filename.c_str())) {

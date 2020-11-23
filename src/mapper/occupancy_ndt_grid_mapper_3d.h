@@ -64,8 +64,6 @@ protected:
     virtual inline bool setupMap(ros::NodeHandle &nh) override
     {
         auto param_name = [this](const std::string &name){return name_ + "/" + name;};
-        iterations_ = nh.param<double>(param_name("iterations"), 100.0);
-        clear_ = nh.param<bool>(param_name("clear"), false);
 
         const T resolution = static_cast<T>(nh.param<double>(param_name("resolution"), 1.0));
         std::vector<double> origin = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
@@ -139,14 +137,10 @@ protected:
             using iterator_t = cslibs_math_3d::algorithms::NDTIterator<T>;
             if (const typename cslibs_math_3d::Pointcloud3<T>::ConstPtr &cloud = cloud_data.points()) {
 
-                const cslibs_time::Time start = cslibs_time::Time::now();
                 visibility_based_update_ ?
                             map_->get()->template insertVisible<iterator_t>(cloud, o_T_d, ivm_, ivm_visibility_) :
                             map_->get()->template insert<iterator_t>(cloud, o_T_d);
-                const double time = (cslibs_time::Time::now() - start).milliseconds();
-                stats_ += time;
 
-                std::cout << "[OccupancyNDTGridMapper3D]: N = " << stats_.getN() << std::endl;
                 return true;
             }
         }
@@ -171,17 +165,6 @@ protected:
         if (!cslibs_ndt::common::serialization::create_directory(path_root))
             return false;
 
-        std::ofstream out((path_root / path_t("stats")).string(), std::fstream::trunc);
-        std::string stats_print =
-                "[OccupancyNDTGridMapper3D]: N | mean | std | mem = " +
-                std::to_string(stats_.getN())
-                + " | " + std::to_string(stats_.getMean())
-                + " | " + std::to_string(stats_.getStandardDeviation())
-                /*+ " | " + std::to_string(map_->get()->getByteSize())*/ + "\n";
-        std::cout << stats_print << std::endl;
-        out << stats_print << std::endl;
-        out.close();
-
         if (cslibs_ndt_3d::serialization::saveBinary(*(map_->get()), (path_ / boost::filesystem::path("map")).string())) {
             std::cout << "[OccupancyNDTGridMapper3D '" << name_ << "']: Saved Map successfully." << std::endl;
             return true;
@@ -195,10 +178,6 @@ private:
     typename ivm_t::Ptr ivm_;
     typename ivm_t::Ptr ivm_visibility_;
     bool                visibility_based_update_;
-
-    cslibs_math::statistics::StableDistribution<double,1,6> stats_;
-    double iterations_;
-    bool clear_;
 };
 
 namespace tag = cslibs_ndt::map::tags;

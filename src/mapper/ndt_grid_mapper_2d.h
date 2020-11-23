@@ -108,12 +108,7 @@ protected:
                 if (ray.valid() && ray.end_point.isNormal())
                     cloud->insert(ray.end_point);
 
-            const cslibs_time::Time start = cslibs_time::Time::now();
             map_->get()->insert(cloud, o_T_d);
-            const double time = (cslibs_time::Time::now() - start).milliseconds();
-            stats_ += time;
-
-            std::cout << "[NDTGridMapper2D]: N = " << stats_.getN() << std::endl;
             return true;
         }
         return false;
@@ -154,8 +149,6 @@ protected:
 private:
     typename rep_t::Ptr map_;
     T                   sampling_resolution_;
-
-    cslibs_math::statistics::StableDistribution<double,1,6> stats_;
 };
 
 namespace tag = cslibs_ndt::map::tags;

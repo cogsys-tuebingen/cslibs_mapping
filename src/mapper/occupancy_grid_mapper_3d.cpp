@@ -22,8 +22,6 @@ const OccupancyGridMapper3D::map_t::ConstPtr OccupancyGridMapper3D::getMap() con
 bool OccupancyGridMapper3D::setupMap(ros::NodeHandle &nh)
 {
     auto param_name = [this](const std::string &name){return name_ + "/" + name;};
-    iterations_ = nh.param<double>(param_name("iterations"), 100.0);
-    clear_ = nh.param<bool>(param_name("clear"), false);
 
     const double resolution = nh.param<double>(param_name("resolution"), 1.0);
     map_.reset(new maps::OccupancyGridMap3D(map_frame_, resolution));
@@ -62,17 +60,6 @@ bool OccupancyGridMapper3D::saveMap()
     path_t path_root(path_);
     if (!cslibs_ndt::common::serialization::create_directory(path_root))
         return false;
-
-    std::ofstream out((path_root / path_t("stats")).string(), std::fstream::trunc);
-    std::string stats_print =
-            "[OccupancyGridMapper3D]: N | mean | std | mem = " +
-            std::to_string(stats_.getN())
-            + " | " + std::to_string(stats_.getMean())
-            + " | " + std::to_string(stats_.getStandardDeviation())
-            + " | " + std::to_string(map_->get()->memoryUsage()) + "\n";
-    std::cout << stats_print << std::endl;
-    out << stats_print << std::endl;
-    out.close();
 
     std::string map_path_yaml = (path_ / boost::filesystem::path("map.ot")).string();
     {
