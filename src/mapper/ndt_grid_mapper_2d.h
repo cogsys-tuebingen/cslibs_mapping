@@ -12,6 +12,8 @@
 #include <cslibs_math_2d/linear/pointcloud.hpp>
 #include <cslibs_gridmaps/static_maps/algorithms/normalize.hpp>
 
+#include <cslibs_ndt/backend/octree.hpp>
+
 #include <cslibs_ndt_2d/serialization/serialization.hpp>
 #include <cslibs_ndt_2d/serialization/dynamic_maps/gridmap.hpp>
 #include <cslibs_ndt_2d/conversion/probability_gridmap.hpp>
@@ -158,11 +160,13 @@ using NDTGridMapper2D_d_kdtree = NDTGridMapper2DBase<tag::dynamic_map, double, b
 using NDTGridMapper2D_d_map    = NDTGridMapper2DBase<tag::dynamic_map, double, backend::simple::Map>;
 using NDTGridMapper2D_d_umap   = NDTGridMapper2DBase<tag::dynamic_map, double, backend::simple::UnorderedMap>;
 using NDTGridMapper2D_d_ucmap  = NDTGridMapper2DBase<tag::dynamic_map, double, backend::simple::UnorderedComponentMap>;
+using NDTGridMapper2D_d_octree = NDTGridMapper2DBase<tag::dynamic_map, double, cslibs_ndt::backend::OcTree>;
 using NDTGridMapper2D_f_array  = NDTGridMapper2DBase<tag::static_map,  float, backend::array::Array>;
 using NDTGridMapper2D_f_kdtree = NDTGridMapper2DBase<tag::dynamic_map, float, backend::kdtree::KDTree>;
 using NDTGridMapper2D_f_map    = NDTGridMapper2DBase<tag::dynamic_map, float, backend::simple::Map>;
 using NDTGridMapper2D_f_umap   = NDTGridMapper2DBase<tag::dynamic_map, float, backend::simple::UnorderedMap>;
 using NDTGridMapper2D_f_ucmap  = NDTGridMapper2DBase<tag::dynamic_map, float, backend::simple::UnorderedComponentMap>;
+using NDTGridMapper2D_f_octree = NDTGridMapper2DBase<tag::dynamic_map, float, cslibs_ndt::backend::OcTree>;
 }
 }
 

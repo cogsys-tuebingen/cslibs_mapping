@@ -45,8 +45,8 @@ bool MappingNode::setup()
     }
 
     {// load mappers
-        loader.load<mapper_t, map_t<data_provider_t>, map_t<publisher_t>, ros::NodeHandle&>(
-                    mappers_, data_providers_, publishers_, nh_);
+        loader.load<mapper_t, map_t<data_provider_t>, map_t<publisher_t>, tf_listener_t::Ptr, ros::NodeHandle&>(
+                    mappers_, data_providers_, publishers_, tf_, nh_);
         if (mappers_.empty()) {
             ROS_ERROR_STREAM("No mapper was found!");
             return false;

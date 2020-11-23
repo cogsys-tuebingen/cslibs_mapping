@@ -18,52 +18,6 @@ namespace cslibs_mapping {
 namespace mapper {
 OruNDTOMGridMapper3D::~OruNDTOMGridMapper3D()
 {
-    std::string stats_print =
-            "[OruNDTOMGridMapper3D]: N | mean | std | mem = " +
-            std::to_string(stats_.getN())
-            + " | " + std::to_string(stats_.getMean())
-            + " | " + std::to_string(stats_.getStandardDeviation())
-            + " | " + std::to_string(map_->get()->byteSize()) + "\n";
-    std::cout << stats_print << std::endl;
-
-    perception_oru::SpatialIndex* si = map_->get()->getMyIndex();
-    perception_oru::LazyGrid* lg = dynamic_cast<perception_oru::LazyGrid*>(si);
-    auto index = [this,&lg](const pcl::PointXYZ& p) -> std::array<int,3> {
-        int ix,iy,iz;
-        lg->getIndexForPoint(p,ix,iy,iz);
-        return {{ix,iy,iz}};
-    };
-    std::vector<std::array<int,3>> indices;
-    cslibs_math::statistics::StableDistribution<double,1,6> traversal;
-    for (int i=0; i<50; ++i) {
-        indices.clear();
-        cslibs_time::Time now = cslibs_time::Time::now();
-        for (typename std::vector<perception_oru::NDTCell*>::iterator it = si->begin(), end = si->end() ; it != end ; ++ it)
-            indices.emplace_back(index((*it)->getCenter()));
-        const double time = (cslibs_time::Time::now() - now).milliseconds();
-        traversal += time;
-    }
-    std::cout << "[OruNDTOMGridMapper3D]: traversal N | mean | std = \n"
-              << std::to_string(traversal.getN())
-              << " | " << std::to_string(traversal.getMean())
-              << " | " << std::to_string(traversal.getStandardDeviation())
-              <<" || " << std::to_string(traversal.getMean() / indices.size())
-              << " | " << std::to_string(traversal.getStandardDeviation() / indices.size())
-              << std::endl;
-
-    std::vector<perception_oru::NDTCell*> vec;
-    cslibs_math::statistics::StableDistribution<double,1,6> access;
-    for (auto &index : indices) {
-        cslibs_time::Time now = cslibs_time::Time::now();
-        vec.push_back(map_->get()->getCellAtID(index[0], index[1], index[2]));
-        const double time = (cslibs_time::Time::now() - now).milliseconds();
-        access += time;
-    }
-    std::cout << "[OruNDTOMGridMapper3D]: access N | mean | std = \n"
-              << std::to_string(access.getN())
-              << " | " << std::to_string(access.getMean())
-              << " | " << std::to_string(access.getStandardDeviation())
-              << std::endl;
 }
 
 const OruNDTOMGridMapper3D::map_t::ConstPtr OruNDTOMGridMapper3D::getMap() const
@@ -129,14 +83,10 @@ bool OruNDTOMGridMapper3D::process(const data_t::ConstPtr &data)
             std::vector<int> indices;
             pcl::removeNaNFromPointCloud(pc, pc, indices);
 
-            const cslibs_time::Time start = cslibs_time::Time::now();
             map_->get()->addPointCloud(Eigen::Vector3d(origin.tx(), origin.ty(), origin.tz()), pc);
             map_->get()->computeNDTCells(CELL_UPDATE_MODE_SAMPLE_VARIANCE, 1e9, 255,
                                          Eigen::Vector3d(origin.tx(), origin.ty(), origin.tz()), 0.1);
-            const double time = (cslibs_time::Time::now() - start).milliseconds();
-            stats_ += time;
 
-            std::cout << "[OruNDTOMGridMapper3D]: N = " << stats_.getN() << std::endl;
             return true;
         }
     }
@@ -160,17 +110,6 @@ bool OruNDTOMGridMapper3D::saveMap()
     path_t path_root(path_);
     if (!cslibs_ndt::common::serialization::create_directory(path_root))
         return false;
-
-    std::ofstream out((path_root / path_t("stats")).string(), std::fstream::trunc);
-    std::string stats_print =
-            "[OruNDTOMGridMapper3D]: N | mean | std | mem = " +
-            std::to_string(stats_.getN())
-            + " | " + std::to_string(stats_.getMean())
-            + " | " + std::to_string(stats_.getStandardDeviation())
-            + " | " + std::to_string(map_->get()->byteSize()) + "\n";
-    std::cout << stats_print << std::endl;
-    out << stats_print << std::endl;
-    out.close();
 
     const std::string filename = (path_root / path_t("map.jff")).string();
     if (map_->get()->writeToJFF(filename.c_str())) {

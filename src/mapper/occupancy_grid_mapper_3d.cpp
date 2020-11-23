@@ -11,45 +11,6 @@ namespace cslibs_mapping {
 namespace mapper {
 OccupancyGridMapper3D::~OccupancyGridMapper3D()
 {
-    std::string stats_print =
-            "[OccupancyGridMapper3D]: N | mean | std | mem = " +
-            std::to_string(stats_.getN())
-            + " | " + std::to_string(stats_.getMean())
-            + " | " + std::to_string(stats_.getStandardDeviation())
-            + " | " + std::to_string(map_->get()->memoryUsage()) + "\n";
-    std::cout << stats_print << std::endl;
-
-    std::vector<octomap::point3d> indices;
-    cslibs_math::statistics::StableDistribution<double,1,6> traversal;
-    for (int i=0; i<50; ++i) {
-        indices.clear();
-        cslibs_time::Time now = cslibs_time::Time::now();
-        for (octomap::OcTree::leaf_iterator it = map_->get()->begin_leafs(), end = map_->get()->end_leafs() ; it != end ; ++ it)
-            indices.emplace_back(it.getCoordinate());
-        const double time = (cslibs_time::Time::now() - now).milliseconds();
-        traversal += time;
-    }
-    std::cout << "[OccupancyGridMapper3D]: traversal N | mean | std = \n"
-              << std::to_string(traversal.getN())
-              << " | " << std::to_string(traversal.getMean())
-              << " | " << std::to_string(traversal.getStandardDeviation())
-              <<" || " << std::to_string(traversal.getMean() / indices.size())
-              << " | " << std::to_string(traversal.getStandardDeviation() / indices.size())
-              << std::endl;
-
-    std::vector<octomap::OcTreeNode*> vec;
-    cslibs_math::statistics::StableDistribution<double,1,6> access;
-    for (auto &index : indices) {
-        cslibs_time::Time now = cslibs_time::Time::now();
-        vec.push_back(map_->get()->search(index(0), index(1), index(2)));
-        const double time = (cslibs_time::Time::now() - now).milliseconds();
-        access += time;
-    }
-    std::cout << "[OccupancyGridMapper3D]: access N | mean | std = \n"
-              << std::to_string(access.getN())
-              << " | " << std::to_string(access.getMean())
-              << " | " << std::to_string(access.getStandardDeviation())
-              << std::endl;
 }
 
 const OccupancyGridMapper3D::map_t::ConstPtr OccupancyGridMapper3D::getMap() const
@@ -99,17 +60,6 @@ bool OccupancyGridMapper3D::saveMap()
     path_t path_root(path_);
     if (!cslibs_ndt::common::serialization::create_directory(path_root))
         return false;
-
-    std::ofstream out((path_root / path_t("stats")).string(), std::fstream::trunc);
-    std::string stats_print =
-            "[OccupancyGridMapper3D]: N | mean | std | mem = " +
-            std::to_string(stats_.getN())
-            + " | " + std::to_string(stats_.getMean())
-            + " | " + std::to_string(stats_.getStandardDeviation())
-            + " | " + std::to_string(map_->get()->memoryUsage()) + "\n";
-    std::cout << stats_print << std::endl;
-    out << stats_print << std::endl;
-    out.close();
 
     std::string map_path_yaml = (path_ / boost::filesystem::path("map.ot")).string();
     {

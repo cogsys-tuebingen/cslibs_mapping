@@ -53,12 +53,11 @@ protected:
                                                o_T_d.translation()(1),
                                                o_T_d.translation()(2));
 
-                const cslibs_time::Time start = cslibs_time::Time::now();
+                // first  bool: lazy_eval (requires updateInnerOccupancy() call;
+                // second bool: enables clustering
                 map_->get()->insertPointCloud(cloud, origin, -1, true, true);
-                const double time = (cslibs_time::Time::now() - start).milliseconds();
-                stats_ += time;
+                map_->get()->updateInnerOccupancy();
 
-                std::cout << "[OccupancyGridMapper3D]: N = " << stats_.getN() << std::endl;
                 return true;
             }
         }
@@ -69,7 +68,6 @@ protected:
 
 private:
     maps::OccupancyGridMap3D::Ptr map_;
-    cslibs_math::statistics::StableDistribution<double,1,6> stats_;
 };
 }
 }

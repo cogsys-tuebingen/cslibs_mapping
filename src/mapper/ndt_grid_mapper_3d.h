@@ -12,6 +12,8 @@
 #include <cslibs_math_3d/linear/pointcloud.hpp>
 #include <cslibs_math_ros/tf/conversion_3d.hpp>
 
+#include <cslibs_ndt/backend/octree.hpp>
+
 #include <cslibs_ndt_3d/serialization/serialization.hpp>
 #include <cslibs_ndt_3d/serialization/dynamic_maps/gridmap.hpp>
 
@@ -31,52 +33,6 @@ public:
     using rep_t = maps::NDTGridMap3D<option_t,T,backend_t>;
     virtual ~NDTGridMapper3DBase()
     {
-        const std::array<std::size_t,3> size = map_->get()->getSize();
-        const std::array<int,3> min_index    = map_->get()->getMinBundleIndex();
-
-        std::string stats_print =
-                "[NDTGridMapper3D]: N | mean | std | mem = \n"
-                + std::to_string(stats_.getN())
-                + " | " + std::to_string(stats_.getMean())
-                + " | " + std::to_string(stats_.getStandardDeviation())
-               // + " | " + std::to_string(map_->get()->getByteSize())
-                + " | " + std::to_string(map_->get()->getOrigin())
-                + " | " + std::to_string(map_->get()->getInitialOrigin());
-        const auto min_point = map_->get()->getMin();
-        std::cout << stats_print << " || " << size << ", " << min_index << " | " << min_point << std::endl;
-
-        std::vector<std::array<int,3>> indices;
-        cslibs_math::statistics::StableDistribution<double,1,6> traversal;
-        for (int i=0; i<50; ++i) {
-            indices.clear();
-            cslibs_time::Time now = cslibs_time::Time::now();
-            map_->get()->getBundleIndices(indices);
-            const double time = (cslibs_time::Time::now() - now).milliseconds();
-            traversal += time;
-        }
-        std::cout << "[NDTGridMapper3D]: traversal N | mean | std = \n"
-                  << std::to_string(traversal.getN())
-                  << " | " << std::to_string(traversal.getMean())
-                  << " | " << std::to_string(traversal.getStandardDeviation())
-                  <<" || " << std::to_string(traversal.getMean() / indices.size())
-                  << " | " << std::to_string(traversal.getStandardDeviation() / indices.size())
-                  << std::endl;
-
-        std::vector<typename rep_t::map_t::distribution_bundle_t*> vec;
-        cslibs_math::statistics::StableDistribution<double,1,6> access;
-        for (auto &index : indices) {
-            cslibs_time::Time now = cslibs_time::Time::now();
-            vec.push_back(map_->get()->getDistributionBundle(index));
-            const double time = (cslibs_time::Time::now() - now).milliseconds();
-            access += time;
-        }
-        std::cout << "[NDTGridMapper3D]: access N | mean | std = \n"
-                  << std::to_string(access.getN())
-                  << " | " << std::to_string(access.getMean())
-                  << " | " << std::to_string(access.getStandardDeviation())
-                  << std::endl;
-
-        std::cout << "[NDTGridMapper3D]: byte_size = " << std::to_string(map_->get()->getByteSize()) << std::endl;
     }
 
     virtual const inline map_t::ConstPtr getMap() const override
@@ -137,8 +93,6 @@ protected:
                        resolution,
                        std::array<std::size_t,3>{static_cast<std::size_t>(size[0]), static_cast<std::size_t>(size[1]), static_cast<std::size_t>(size[2])},
                        std::array<int,3>{min_bundle_index[0], min_bundle_index[1], min_bundle_index[2]}));
-
-        std::cout << map_->get()->getMinBundleIndex() << ", " << map_->get()->getMaxBundleIndex() << std::endl;
     }
 
     virtual inline bool uses(const data_t::ConstPtr &type) override
@@ -160,12 +114,7 @@ protected:
                                  tf_timeout_)) {
             if (const typename cslibs_math_3d::Pointcloud3<T>::ConstPtr &cloud = cloud_data.points()) {
 
-                const cslibs_time::Time start = cslibs_time::Time::now();
                 map_->get()->insert(cloud, o_T_d);
-                const double time = (cslibs_time::Time::now() - start).milliseconds();
-                stats_ += time;
-
-                std::cout << "[NDTGridMapper3D]: N = " << stats_.getN() << std::endl;
                 return true;
             }
         }
@@ -190,17 +139,6 @@ protected:
         if (!cslibs_ndt::common::serialization::create_directory(path_root))
             return false;
 
-        std::ofstream out((path_root / path_t("stats")).string(), std::fstream::trunc);
-        std::string stats_print =
-                "[NDTGridMapper3D]: N | mean | std | mem = " +
-                std::to_string(stats_.getN())
-                + " | " + std::to_string(stats_.getMean())
-                + " | " + std::to_string(stats_.getStandardDeviation())
-                /*+ " | " + std::to_string(map_->get()->getByteSize())*/ + "\n";
-        std::cout << stats_print << std::endl;
-        out << stats_print << std::endl;
-        out.close();
-
         if (cslibs_ndt_3d::serialization::saveBinary(*(map_->get()), (path_ / boost::filesystem::path("map")).string())) {
             std::cout << "[NDTGridMapper3D '" << name_ << "']: Saved Map successfully." << std::endl;
             return true;
@@ -210,7 +148,6 @@ protected:
 
 private:
     typename rep_t::Ptr map_;
-    cslibs_math::statistics::StableDistribution<double,1,6> stats_;
 };
 
 namespace tag = cslibs_ndt::map::tags;
@@ -222,11 +159,13 @@ using NDTGridMapper3D_d_kdtree = NDTGridMapper3DBase<tag::dynamic_map, double, b
 using NDTGridMapper3D_d_map    = NDTGridMapper3DBase<tag::dynamic_map, double, backend::simple::Map>;
 using NDTGridMapper3D_d_umap   = NDTGridMapper3DBase<tag::dynamic_map, double, backend::simple::UnorderedMap>;
 using NDTGridMapper3D_d_ucmap  = NDTGridMapper3DBase<tag::dynamic_map, double, backend::simple::UnorderedComponentMap>;
+using NDTGridMapper3D_d_octree = NDTGridMapper3DBase<tag::dynamic_map, double, cslibs_ndt::backend::OcTree>;
 using NDTGridMapper3D_f_array  = NDTGridMapper3DBase<tag::static_map,  float, backend::array::Array>;
 using NDTGridMapper3D_f_kdtree = NDTGridMapper3DBase<tag::dynamic_map, float, backend::kdtree::KDTree>;
 using NDTGridMapper3D_f_map    = NDTGridMapper3DBase<tag::dynamic_map, float, backend::simple::Map>;
 using NDTGridMapper3D_f_umap   = NDTGridMapper3DBase<tag::dynamic_map, float, backend::simple::UnorderedMap>;
 using NDTGridMapper3D_f_ucmap  = NDTGridMapper3DBase<tag::dynamic_map, float, backend::simple::UnorderedComponentMap>;
+using NDTGridMapper3D_f_octree = NDTGridMapper3DBase<tag::dynamic_map, float, cslibs_ndt::backend::OcTree>;
 }
 }
 

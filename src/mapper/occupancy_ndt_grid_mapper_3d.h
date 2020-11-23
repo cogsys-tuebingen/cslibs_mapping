@@ -12,6 +12,8 @@
 #include <cslibs_math_3d/linear/pointcloud.hpp>
 #include <cslibs_math_ros/tf/conversion_3d.hpp>
 
+#include <cslibs_ndt/backend/octree.hpp>
+
 #include <cslibs_ndt_3d/serialization/serialization.hpp>
 #include <cslibs_ndt_3d/serialization/dynamic_maps/occupancy_gridmap.hpp>
 
@@ -30,46 +32,6 @@ public:
     using ivm_t = cslibs_gridmaps::utility::InverseModel<T>;
     virtual ~OccupancyNDTGridMapper3DBase()
     {
-        std::string stats_print =
-                "[OccupancyNDTGridMapper3D]: N | mean | std | mem = " +
-                std::to_string(stats_.getN())
-                + " | " + std::to_string(stats_.getMean())
-                + " | " + std::to_string(stats_.getStandardDeviation())
-                /*+ " | " + std::to_string(map_->get()->getByteSize())*/ + "\n";
-        std::cout << stats_print << std::endl;
-
-        std::vector<std::array<int,3>> indices;
-        cslibs_math::statistics::StableDistribution<double,1,6> traversal;
-        for (int i=0; i<50; ++i) {
-            indices.clear();
-            cslibs_time::Time now = cslibs_time::Time::now();
-            map_->get()->getBundleIndices(indices);
-            const double time = (cslibs_time::Time::now() - now).milliseconds();
-            traversal += time;
-        }
-        std::cout << "[OccupancyNDTGridMapper3D]: traversal N | mean | std = \n"
-                  << std::to_string(traversal.getN())
-                  << " | " << std::to_string(traversal.getMean())
-                  << " | " << std::to_string(traversal.getStandardDeviation())
-                  <<" || " << std::to_string(traversal.getMean() / indices.size())
-                  << " | " << std::to_string(traversal.getStandardDeviation() / indices.size())
-                  << std::endl;
-
-        std::vector<typename rep_t::map_t::distribution_bundle_t*> vec;
-        cslibs_math::statistics::StableDistribution<double,1,6> access;
-        for (auto &index : indices) {
-            cslibs_time::Time now = cslibs_time::Time::now();
-            vec.push_back(map_->get()->getDistributionBundle(index));
-            const double time = (cslibs_time::Time::now() - now).milliseconds();
-            access += time;
-        }
-        std::cout << "[OccupancyNDTGridMapper3D]: access N | mean | std = \n"
-                  << std::to_string(access.getN())
-                  << " | " << std::to_string(access.getMean())
-                  << " | " << std::to_string(access.getStandardDeviation())
-                  << std::endl;
-
-        std::cout << "[OccupancyNDTGridMapper3D]: byte_size = " << std::to_string(map_->get()->getByteSize()) << std::endl;
     }
 
     virtual const inline map_t::ConstPtr getMap() const override
@@ -175,14 +137,10 @@ protected:
             using iterator_t = cslibs_math_3d::algorithms::NDTIterator<T>;
             if (const typename cslibs_math_3d::Pointcloud3<T>::ConstPtr &cloud = cloud_data.points()) {
 
-                const cslibs_time::Time start = cslibs_time::Time::now();
                 visibility_based_update_ ?
                             map_->get()->template insertVisible<iterator_t>(cloud, o_T_d, ivm_, ivm_visibility_) :
                             map_->get()->template insert<iterator_t>(cloud, o_T_d);
-                const double time = (cslibs_time::Time::now() - start).milliseconds();
-                stats_ += time;
 
-                std::cout << "[OccupancyNDTGridMapper3D]: N = " << stats_.getN() << std::endl;
                 return true;
             }
         }
@@ -207,17 +165,6 @@ protected:
         if (!cslibs_ndt::common::serialization::create_directory(path_root))
             return false;
 
-        std::ofstream out((path_root / path_t("stats")).string(), std::fstream::trunc);
-        std::string stats_print =
-                "[OccupancyNDTGridMapper3D]: N | mean | std | mem = " +
-                std::to_string(stats_.getN())
-                + " | " + std::to_string(stats_.getMean())
-                + " | " + std::to_string(stats_.getStandardDeviation())
-                /*+ " | " + std::to_string(map_->get()->getByteSize())*/ + "\n";
-        std::cout << stats_print << std::endl;
-        out << stats_print << std::endl;
-        out.close();
-
         if (cslibs_ndt_3d::serialization::saveBinary(*(map_->get()), (path_ / boost::filesystem::path("map")).string())) {
             std::cout << "[OccupancyNDTGridMapper3D '" << name_ << "']: Saved Map successfully." << std::endl;
             return true;
@@ -231,8 +178,6 @@ private:
     typename ivm_t::Ptr ivm_;
     typename ivm_t::Ptr ivm_visibility_;
     bool                visibility_based_update_;
-
-    cslibs_math::statistics::StableDistribution<double,1,6> stats_;
 };
 
 namespace tag = cslibs_ndt::map::tags;
@@ -244,11 +189,13 @@ using OccupancyNDTGridMapper3D_d_kdtree = OccupancyNDTGridMapper3DBase<tag::dyna
 using OccupancyNDTGridMapper3D_d_map    = OccupancyNDTGridMapper3DBase<tag::dynamic_map, double, backend::simple::Map>;
 using OccupancyNDTGridMapper3D_d_umap   = OccupancyNDTGridMapper3DBase<tag::dynamic_map, double, backend::simple::UnorderedMap>;
 using OccupancyNDTGridMapper3D_d_ucmap  = OccupancyNDTGridMapper3DBase<tag::dynamic_map, double, backend::simple::UnorderedComponentMap>;
+using OccupancyNDTGridMapper3D_d_octree = OccupancyNDTGridMapper3DBase<tag::dynamic_map, double, cslibs_ndt::backend::OcTree>;
 using OccupancyNDTGridMapper3D_f_array  = OccupancyNDTGridMapper3DBase<tag::static_map,  float, backend::array::Array>;
 using OccupancyNDTGridMapper3D_f_kdtree = OccupancyNDTGridMapper3DBase<tag::dynamic_map, float, backend::kdtree::KDTree>;
 using OccupancyNDTGridMapper3D_f_map    = OccupancyNDTGridMapper3DBase<tag::dynamic_map, float, backend::simple::Map>;
 using OccupancyNDTGridMapper3D_f_umap   = OccupancyNDTGridMapper3DBase<tag::dynamic_map, float, backend::simple::UnorderedMap>;
 using OccupancyNDTGridMapper3D_f_ucmap  = OccupancyNDTGridMapper3DBase<tag::dynamic_map, float, backend::simple::UnorderedComponentMap>;
+using OccupancyNDTGridMapper3D_f_octree = OccupancyNDTGridMapper3DBase<tag::dynamic_map, float, cslibs_ndt::backend::OcTree>;
 }
 }
 
