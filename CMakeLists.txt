@@ -95,7 +95,7 @@ set(TARGET_INCLUDE_DIRS
 if (octomap_FOUND)
     if (ndt_map_FOUND)
         find_package(PCL REQUIRED COMPONENTS common filters segmentation io)
-        list(append TARGET_INCLUDE_DIRS
+        list(APPEND TARGET_INCLUDE_DIRS
             ${PCL_INCLUDE_DIRS}
         )
         set(TARGET_SOURCE_FILES
