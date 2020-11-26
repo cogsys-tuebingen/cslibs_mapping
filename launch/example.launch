@@ -38,7 +38,7 @@
         <param name="resolution"        value="1.0"/>
       </group>
       <group ns="ondt_3d">
-        <param name="class"             value="cslibs_mapping::mapper::NDTGridMapper3D"/>
+        <param name="class"             value="cslibs_mapping::mapper::OccupancyNDTGridMapper3D"/>
         <param name="base_class"        value="cslibs_mapping::mapper::Mapper"/>
         <rosparam param="data_providers">
                 ["velodyne"]
@@ -59,8 +59,8 @@
         <param name="occupancy"         value="true"/>
       </group>
       <group ns="ondt_3d_pointcloud">
-      <param name="class"               value="cslibs_mapping::publisher::PointcloudPublisher"/>
-      <param name="base_class"          value="cslibs_mapping::publisher::Publisher"/>
+        <param name="class"             value="cslibs_mapping::publisher::PointcloudPublisher"/>
+        <param name="base_class"        value="cslibs_mapping::publisher::Publisher"/>
         <param name="rate"              value="10.0"/>
         <param name="topic"             value="/cslibs_mapping/ondt_3d"/>
         <param name="occupancy_ndt"     value="true"/>

@@ -51,10 +51,7 @@ private:
 
             occ_threshold_ = static_cast<T>(nh.param<double>(param_name("occ_threshold"), 0.169));
         }
-        publish_sampled_ = nh.param<bool>(param_name("sample"), true);
         allocate_all_ = nh.param<bool>(param_name("allocate_all"), false);
-        sampling_resolution_ = static_cast<T>(nh.param<double>(param_name("sampling_resolution"), 0.1));
-
         publisher_ = nh.advertise<sensor_msgs::PointCloud2>(topic, 1);
     }
 
@@ -129,12 +126,9 @@ private:
         std::cout << "[PointcloudPublisher '" << name_ << "']: Map could not be published!" << std::endl;
     }
 
-    T                   occ_threshold_;
     typename ivm_t::Ptr ivm_;
-
-    bool publish_sampled_;
+    T    occ_threshold_;
     bool allocate_all_;
-    T    sampling_resolution_;
 };
 
 using PointcloudPublisher   = PointcloudPublisherBase<double>;
