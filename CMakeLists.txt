@@ -41,7 +41,8 @@ catkin_package(
     INCLUDE_DIRS
         include
     LIBRARIES
-        ${PROJECT_NAME}
+        ${PROJECT_NAME}_mappers
+        ${PROJECT_NAME}_publishers
     CATKIN_DEPENDS
         cslibs_plugins
         cslibs_plugins_data
@@ -69,136 +70,110 @@ if(NOT ${CMAKE_BUILD_TYPE} STREQUAL Debug)
     message(STATUS "[${PROJECT_NAME}]: Compiling with optimization!")
 endif()
 
-if(octomap_FOUND)
-    find_package(octomap_msgs REQUIRED)
-endif()
-
+# basic libs and dirs
 set(TARGET_LINK_LIBRARIES
     ${catkin_LIBRARIES}
-    ${OCTOMAP_LIBRARIES}
-    ${ndt_map_LIBRARIES}
     ${YAML_CPP_LIBRARIES}
 )
-
 set(TARGET_INCLUDE_DIRS
     include/
     ${catkin_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS}
-    ${OCTOMAP_INCLUDE_DIRS}
     ${YAML_CPP_INCLUDE_DIRS}
-    ${ndt_map_INCLUDE_DIRS}
 )
 
+# basic src files
+set(TARGET_SOURCE_FILES_MAPPERS
+    src/mapper/ndt_grid_mapper_2d.cpp
+    src/mapper/ndt_grid_mapper_3d.cpp
+    src/mapper/occupancy_grid_mapper_2d.cpp
+    src/mapper/occupancy_ndt_grid_mapper_2d.cpp
+    src/mapper/occupancy_ndt_grid_mapper_3d.cpp
+    src/mapper/min_height_mapper_2d.cpp
+    src/mapper/distribution_height_mapper_2d.cpp
+)
+set(TARGET_SOURCE_FILES_PUBLISHERS
+    src/publisher/distributions_publisher.cpp
+    src/publisher/occupancy_grid_publisher.cpp
+    src/publisher/pointcloud_publisher.cpp
+)
 
-#add_definitions("-DEIGEN_MAX_ALIGN_BYTES=16")
-
+# additional libs, dirs and src files with octomap
 if (octomap_FOUND)
-    if (ndt_map_FOUND)
-        find_package(PCL REQUIRED COMPONENTS common filters segmentation io)
-        list(APPEND TARGET_INCLUDE_DIRS
-            ${PCL_INCLUDE_DIRS}
-        )
-        set(TARGET_SOURCE_FILES
-            src/mapper/ndt_grid_mapper_2d.cpp
-            src/mapper/ndt_grid_mapper_3d.cpp
-            src/mapper/occupancy_grid_mapper_2d.cpp
-            src/mapper/occupancy_grid_mapper_3d.cpp
-            src/mapper/occupancy_ndt_grid_mapper_2d.cpp
-            src/mapper/occupancy_ndt_grid_mapper_3d.cpp
-            src/mapper/min_height_mapper_2d.cpp
-            src/mapper/distribution_height_mapper_2d.cpp
-            src/mapper/oru_ndt_om_grid_mapper_3d.cpp
-            src/mapper/oru_ndt_omfg_grid_mapper_3d.cpp
-            src/mapper/oru_ndt_grid_mapper_3d.cpp
-            src/mapper/oru_ndt_om_grid_mapper_2d.cpp
-            src/mapper/oru_ndt_omfg_grid_mapper_2d.cpp
-            src/mapper/oru_ndt_grid_mapper_2d.cpp
-            src/publisher/distributions_publisher.cpp
-            src/publisher/occupancy_grid_publisher.cpp
-            src/publisher/octomap_publisher.cpp
-            src/publisher/pointcloud_publisher.cpp
-            src/publisher/oru_publisher.cpp
-        )
-
-        #octomap + oru + pcl
-    else()
-        #octomap
-        set(TARGET_SOURCE_FILES
-            src/mapper/ndt_grid_mapper_2d.cpp
-            src/mapper/ndt_grid_mapper_3d.cpp
-            src/mapper/occupancy_grid_mapper_2d.cpp
-            src/mapper/occupancy_grid_mapper_3d.cpp
-            src/mapper/occupancy_ndt_grid_mapper_2d.cpp
-            src/mapper/occupancy_ndt_grid_mapper_3d.cpp
-            src/mapper/min_height_mapper_2d.cpp
-            src/mapper/distribution_height_mapper_2d.cpp
-            src/publisher/distributions_publisher.cpp
-            src/publisher/occupancy_grid_publisher.cpp
-            src/publisher/octomap_publisher.cpp
-            src/publisher/pointcloud_publisher.cpp
-        )
-    endif()
-else()
-    if (ndt_map_FOUND)
-        find_package(PCL REQUIRED COMPONENTS common filters segmentation io)
-        list(append TARGET_INCLUDE_DIRS
-            ${PCL_INCLUDE_DIRS}
-        )
-        #no octomap + oru + pcl
-        set(TARGET_SOURCE_FILES
-            src/mapper/ndt_grid_mapper_2d.cpp
-            src/mapper/ndt_grid_mapper_3d.cpp
-            src/mapper/occupancy_grid_mapper_2d.cpp
-            src/mapper/occupancy_ndt_grid_mapper_2d.cpp
-            src/mapper/occupancy_ndt_grid_mapper_3d.cpp
-            src/mapper/min_height_mapper_2d.cpp
-            src/mapper/distribution_height_mapper_2d.cpp
-            src/mapper/oru_ndt_om_grid_mapper_3d.cpp
-            src/mapper/oru_ndt_omfg_grid_mapper_3d.cpp
-            src/mapper/oru_ndt_grid_mapper_3d.cpp
-            src/mapper/oru_ndt_om_grid_mapper_2d.cpp
-            src/mapper/oru_ndt_omfg_grid_mapper_2d.cpp
-            src/mapper/oru_ndt_grid_mapper_2d.cpp
-            src/publisher/distributions_publisher.cpp
-            src/publisher/occupancy_grid_publisher.cpp
-            src/publisher/pointcloud_publisher.cpp
-            src/publisher/oru_publisher.cpp
-        )
-    else()
-        #no octomap
-        set(TARGET_SOURCE_FILES
-            src/mapper/ndt_grid_mapper_2d.cpp
-            src/mapper/ndt_grid_mapper_3d.cpp
-            src/mapper/occupancy_grid_mapper_2d.cpp
-            src/mapper/occupancy_ndt_grid_mapper_2d.cpp
-            src/mapper/occupancy_ndt_grid_mapper_3d.cpp
-            src/mapper/min_height_mapper_2d.cpp
-            src/mapper/distribution_height_mapper_2d.cpp
-            src/publisher/distributions_publisher.cpp
-            src/publisher/occupancy_grid_publisher.cpp
-            src/publisher/pointcloud_publisher.cpp
-        )
-    endif()
+    # octomap requires octomap_msgs
+    find_package(octomap_msgs REQUIRED)
+    list(APPEND TARGET_LINK_LIBRARIES
+        ${OCTOMAP_LIBRARIES}
+    )
+    list(APPEND TARGET_INCLUDE_DIRS
+        ${OCTOMAP_INCLUDE_DIRS}
+    )
+    list(APPEND TARGET_SOURCE_FILES_MAPPERS
+        src/mapper/occupancy_grid_mapper_3d.cpp
+    )
+    list(APPEND TARGET_SOURCE_FILES_PUBLISHERS
+        src/publisher/octomap_publisher.cpp
+    )
 endif()
 
-add_library(${PROJECT_NAME}
-    ${TARGET_SOURCE_FILES}
-)
+# additional libs, dirs and src files with ndt_map
+if (ndt_map_FOUND)
+    find_package(PCL REQUIRED COMPONENTS common filters segmentation io)
+    list(APPEND TARGET_LINK_LIBRARIES
+        ${ndt_map_LIBRARIES}
+    )
+    list(APPEND TARGET_INCLUDE_DIRS
+        ${ndt_map_INCLUDE_DIRS}
+        ${PCL_INCLUDE_DIRS}
+    )
+    list(APPEND TARGET_SOURCE_FILES_MAPPERS
+        src/mapper/oru_ndt_om_grid_mapper_3d.cpp
+        src/mapper/oru_ndt_omfg_grid_mapper_3d.cpp
+        src/mapper/oru_ndt_grid_mapper_3d.cpp
+        src/mapper/oru_ndt_om_grid_mapper_2d.cpp
+        src/mapper/oru_ndt_omfg_grid_mapper_2d.cpp
+        src/mapper/oru_ndt_grid_mapper_2d.cpp
+    )
+    list(APPEND TARGET_SOURCE_FILES_PUBLISHERS
+        src/publisher/oru_publisher.cpp
+    )
+endif()
 
-target_include_directories(${PROJECT_NAME}
+
+add_library(${PROJECT_NAME}_mappers
+    ${TARGET_SOURCE_FILES_MAPPERS}
+)
+target_include_directories(${PROJECT_NAME}_mappers
     PRIVATE
         ${TARGET_INCLUDE_DIRS}
 )
-target_link_libraries(${PROJECT_NAME}
+target_link_libraries(${PROJECT_NAME}_mappers
     PRIVATE
         ${TARGET_LINK_LIBRARIES}
 )
-target_compile_options(${PROJECT_NAME}
+target_compile_options(${PROJECT_NAME}_mappers
+    PRIVATE
+        ${TARGET_COMPILE_OPTIONS}
+)
+add_dependencies(${PROJECT_NAME}_mappers ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+add_library(${PROJECT_NAME}_publishers
+    ${TARGET_SOURCE_FILES_PUBLISHERS}
+)
+target_include_directories(${PROJECT_NAME}_publishers
+    PRIVATE
+        ${TARGET_INCLUDE_DIRS}
+)
+target_link_libraries(${PROJECT_NAME}_publishers
+    PRIVATE
+        ${TARGET_LINK_LIBRARIES}
+)
+target_compile_options(${PROJECT_NAME}_publishers
     PRIVATE
         ${TARGET_COMPILE_OPTIONS}
 )
 
-add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(${PROJECT_NAME}_publishers ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 add_executable(${PROJECT_NAME}_node
     src/nodes/mapping_node.cpp
@@ -211,7 +186,8 @@ target_include_directories(${PROJECT_NAME}_node
 
 target_link_libraries(${PROJECT_NAME}_node
     PRIVATE
-        ${PROJECT_NAME}
+        ${PROJECT_NAME}_mappers
+        ${PROJECT_NAME}_publishers
         ${catkin_LIBRARIES}
 )
 
@@ -222,7 +198,7 @@ target_compile_options(${PROJECT_NAME}_node
 
 install(FILES plugins.xml DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 
-install(TARGETS ${PROJECT_NAME} #${PROJECT_NAME}_node
+install(TARGETS ${PROJECT_NAME}_mappers ${PROJECT_NAME}_publishers #${PROJECT_NAME}_node
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION})

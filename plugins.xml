@@ -1,5 +1,5 @@
-<library path="libcslibs_mapping">
-  <!-- Mapper -->
+<library path="libcslibs_mapping_mappers">
+  <!-- Basic Mappers -->
   <class type="cslibs_mapping::mapper::OccupancyGridMapper2D" base_class_type="cslibs_mapping::mapper::Mapper">
     <description> </description>
   </class>
@@ -15,9 +15,6 @@
   <class type="cslibs_mapping::mapper::OccupancyGridMapper2D_fd" base_class_type="cslibs_mapping::mapper::Mapper">
     <description> </description>
   </class>
-  <class type="cslibs_mapping::mapper::OccupancyGridMapper3D" base_class_type="cslibs_mapping::mapper::Mapper">
-    <description> </description>
-  </class>
   <class type="cslibs_mapping::mapper::MinHeightMapper2D" base_class_type="cslibs_mapping::mapper::Mapper">
     <description> </description>
   </class>
@@ -25,45 +22,12 @@
     <description> </description>
   </class>
 
-  <!-- Publisher -->
-  <class type="cslibs_mapping::publisher::DistributionsPublisher" base_class_type="cslibs_mapping::publisher::Publisher">
-    <description> </description>
-  </class>
-  <class type="cslibs_mapping::publisher::DistributionsPublisher_d" base_class_type="cslibs_mapping::publisher::Publisher">
-    <description> </description>
-  </class>
-  <class type="cslibs_mapping::publisher::DistributionsPublisher_f" base_class_type="cslibs_mapping::publisher::Publisher">
-    <description> </description>
-  </class>
-  <class type="cslibs_mapping::publisher::OccupancyGridPublisher" base_class_type="cslibs_mapping::publisher::Publisher">
-    <description> </description>
-  </class>
-  <class type="cslibs_mapping::publisher::OccupancyGridPublisher_dd" base_class_type="cslibs_mapping::publisher::Publisher">
-    <description> </description>
-  </class>
-  <class type="cslibs_mapping::publisher::OccupancyGridPublisher_df" base_class_type="cslibs_mapping::publisher::Publisher">
-    <description> </description>
-  </class>
-  <class type="cslibs_mapping::publisher::OccupancyGridPublisher_ff" base_class_type="cslibs_mapping::publisher::Publisher">
-    <description> </description>
-  </class>
-  <class type="cslibs_mapping::publisher::OccupancyGridPublisher_fd" base_class_type="cslibs_mapping::publisher::Publisher">
-    <description> </description>
-  </class>
-  <class type="cslibs_mapping::publisher::OctomapPublisher" base_class_type="cslibs_mapping::publisher::Publisher">
-    <description> </description>
-  </class>
-  <class type="cslibs_mapping::publisher::PointcloudPublisher" base_class_type="cslibs_mapping::publisher::Publisher">
-    <description> </description>
-  </class>
-  <class type="cslibs_mapping::publisher::PointcloudPublisher_d" base_class_type="cslibs_mapping::publisher::Publisher">
-    <description> </description>
-  </class>
-  <class type="cslibs_mapping::publisher::PointcloudPublisher_f" base_class_type="cslibs_mapping::publisher::Publisher">
+  <!-- Octomap Mapper -->
+  <class type="cslibs_mapping::mapper::OccupancyGridMapper3D" base_class_type="cslibs_mapping::mapper::Mapper">
     <description> </description>
   </class>
 
-  <!-- 2D NDT Mapper -->
+  <!-- 2D NDT Mappers -->
   <class type="cslibs_mapping::mapper::NDTGridMapper2D" base_class_type="cslibs_mapping::mapper::Mapper">
     <description> </description>
   </class>
@@ -104,7 +68,7 @@
     <description> </description>
   </class>
 
-  <!-- 3D NDT Mapper -->
+  <!-- 3D NDT Mappers -->
   <class type="cslibs_mapping::mapper::NDTGridMapper3D" base_class_type="cslibs_mapping::mapper::Mapper">
     <description> </description>
   </class>
@@ -145,7 +109,7 @@
     <description> </description>
   </class>
 
-  <!-- 2D ONDT Mapper -->
+  <!-- 2D ONDT Mappers -->
   <class type="cslibs_mapping::mapper::OccupancyNDTGridMapper2D" base_class_type="cslibs_mapping::mapper::Mapper">
     <description> </description>
   </class>
@@ -189,7 +153,7 @@
     <description> </description>
   </class>
 
-  <!-- 3D ONDT Mapper -->
+  <!-- 3D ONDT Mappers -->
   <class type="cslibs_mapping::mapper::OccupancyNDTGridMapper3D" base_class_type="cslibs_mapping::mapper::Mapper">
     <description> </description>
   </class>
@@ -230,7 +194,7 @@
     <description> </description>
   </class>
 
-  <!-- Oru Mapper -->
+  <!-- Oru Mappers -->
   <class type="cslibs_mapping::mapper::OruNDTOMGridMapper3D" base_class_type="cslibs_mapping::mapper::Mapper">
     <description> </description>
   </class>
@@ -247,6 +211,48 @@
     <description> </description>
   </class>
   <class type="cslibs_mapping::mapper::OruNDTGridMapper2D" base_class_type="cslibs_mapping::mapper::Mapper">
+    <description> </description>
+  </class>
+</library>
+
+<library path="libcslibs_mapping_publishers">
+  <!-- Publishers -->
+  <class type="cslibs_mapping::publisher::DistributionsPublisher" base_class_type="cslibs_mapping::publisher::Publisher">
+    <description> </description>
+  </class>
+  <class type="cslibs_mapping::publisher::DistributionsPublisher_d" base_class_type="cslibs_mapping::publisher::Publisher">
+    <description> </description>
+  </class>
+  <class type="cslibs_mapping::publisher::DistributionsPublisher_f" base_class_type="cslibs_mapping::publisher::Publisher">
+    <description> </description>
+  </class>
+  <class type="cslibs_mapping::publisher::OccupancyGridPublisher" base_class_type="cslibs_mapping::publisher::Publisher">
+    <description> </description>
+  </class>
+  <class type="cslibs_mapping::publisher::OccupancyGridPublisher_dd" base_class_type="cslibs_mapping::publisher::Publisher">
+    <description> </description>
+  </class>
+  <class type="cslibs_mapping::publisher::OccupancyGridPublisher_df" base_class_type="cslibs_mapping::publisher::Publisher">
+    <description> </description>
+  </class>
+  <class type="cslibs_mapping::publisher::OccupancyGridPublisher_ff" base_class_type="cslibs_mapping::publisher::Publisher">
+    <description> </description>
+  </class>
+  <class type="cslibs_mapping::publisher::OccupancyGridPublisher_fd" base_class_type="cslibs_mapping::publisher::Publisher">
+    <description> </description>
+  </class>
+  <class type="cslibs_mapping::publisher::PointcloudPublisher" base_class_type="cslibs_mapping::publisher::Publisher">
+    <description> </description>
+  </class>
+  <class type="cslibs_mapping::publisher::PointcloudPublisher_d" base_class_type="cslibs_mapping::publisher::Publisher">
+    <description> </description>
+  </class>
+  <class type="cslibs_mapping::publisher::PointcloudPublisher_f" base_class_type="cslibs_mapping::publisher::Publisher">
+    <description> </description>
+  </class>
+
+  <!-- Octomap Publisher -->
+  <class type="cslibs_mapping::publisher::OctomapPublisher" base_class_type="cslibs_mapping::publisher::Publisher">
     <description> </description>
   </class>
 
