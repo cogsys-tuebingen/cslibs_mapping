@@ -11,6 +11,8 @@ This package consists of the following subfolders:
 
 ## Usage
 
+Please build with `-DCMAKE_BUILD_TYPE=RelWithDebInfo` or `-DCMAKE_BUILD_TYPE=Release`.
+
 ### Dependencies
 This library depends on the following packages of our research group:
 
